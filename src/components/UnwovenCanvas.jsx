@@ -17,11 +17,13 @@ const VERTEX_SHADER = `
   uniform float uWobble;
   uniform float uSeed;
   uniform float uScrollVelocity;
+  uniform vec2 uMouse;
 
   varying vec2  vUv;
   varying float vTear;
   varying float vRim;
   varying float vRandom;
+  varying vec3  vWorld;
 
   float hash(float n) {
     return fract(sin(n * 127.1 + 311.7) * 43758.5453);
@@ -39,10 +41,18 @@ const VERTEX_SHADER = `
     float tear = max(bottom, top) * uStrength;
 
     // Scroll Distortion (Jelly effect)
-    // The center of the mesh bends based on scroll velocity
-    float distortion = uScrollVelocity * 1.5; // strongly increased!
+    float distortion = uScrollVelocity * 1.5;
     world.y -= sin(uv.x * 3.14159) * distortion;
     world.x -= sin(uv.y * 3.14159) * distortion * 0.3;
+
+    // Mouse Hover Bulge (Simulate 3D bulge in 2D by pushing XY outwards)
+    float dist = distance(world.xy, uMouse);
+    float hover = smoothstep(300.0, 0.0, dist);
+    if (dist > 0.001) {
+      vec2 pushDir = normalize(world.xy - uMouse);
+      world.xy += pushDir * hover * 2.0; // Pushes pixels outwards from the cursor
+    }
+    world.z += hover * 2.0; // Slight Z just for depth sorting above others
 
     float direction = y < 0.0 ? -1.0 : 1.0;
 
@@ -51,24 +61,18 @@ const VERTEX_SHADER = `
     vRandom = randomA;
 
     float t = pow(tear, 1.4);
-
-    // Increase effect intensity with scroll velocity
     float speedFactor = 1.0 + abs(uScrollVelocity) * 0.02;
 
     float run = t * (60.0 + randomA * 420.0) * speedFactor;
     run *= 0.85 + 0.15 * sin(uTime * (1.0 + randomB * 2.0) + randomA * 6.2831);
     
-    // Vertical unravel
     world.y += direction * run;
-
-    // Horizontal drift
     world.x += (randomA - 0.5) * 170.0 * t * t;
-
-    // Horizontal flutter
     world.x += sin(world.y * 0.02 + uTime * (1.6 + randomA * 2.2) + randomA * 6.2831)
                * (5.0 + 13.0 * randomA) * t * uWobble;
 
     vTear = tear;
+    vWorld = world.xyz;
     gl_Position = projectionMatrix * viewMatrix * world;
   }
 `;
@@ -80,11 +84,14 @@ const FRAGMENT_SHADER = `
   uniform vec2  uCardSize;
   uniform float uRadius;
   uniform float uImageAspect;
+  uniform vec2  uMouse;
+  uniform float uTime;
 
   varying vec2  vUv;
   varying float vTear;
   varying float vRim;
   varying float vRandom;
+  varying vec3  vWorld;
 
   float sdRoundBox(vec2 p, vec2 b, float r) {
     vec2 q = abs(p) - b + r;
@@ -106,11 +113,20 @@ const FRAGMENT_SHADER = `
     float alpha = cardAlpha * threadAlpha * fade;
     if (alpha < 0.003) discard;
 
+    // Mouse interactive ripple & distortion
+    float dist = distance(vWorld.xy, uMouse);
+    float hover = smoothstep(300.0, 0.0, dist);
+    float ripple = sin(dist * 0.04 - uTime * 6.0) * hover;
+    vec2 mouseDir = vWorld.xy == uMouse ? vec2(0.0) : normalize(vWorld.xy - uMouse);
+    vec2 uvDistortion = mouseDir * ripple * 0.005;
+
     float cardAspect = uCardSize.x / uCardSize.y;
     vec2 scale = cardAspect > uImageAspect
       ? vec2(1.0, uImageAspect / cardAspect)
       : vec2(cardAspect / uImageAspect, 1.0);
-    vec3 color = texture2D(uMap, (vUv - 0.5) * scale + 0.5).rgb;
+      
+    vec2 finalUv = (vUv - 0.5) * scale + 0.5 - uvDistortion;
+    vec3 color = texture2D(uMap, finalUv).rgb;
 
     color *= 1.0 - tear * 0.4 * rim * rim;                          
     color += tear * 0.18 * (1.0 - smoothstep(0.0, 0.45, rim));      
@@ -234,6 +250,7 @@ function UnwovenScene({ images }) {
     uCardSize: { value: new THREE.Vector2(cardWidth, cardHeight) },
     uRadius: { value: CONFIG.cardRadius },
     uScrollVelocity: { value: 0 },
+    uMouse: { value: new THREE.Vector2(-9999, -9999) },
   }), [size.height, cardWidth, cardHeight]);
 
   const materials = useMemo(() => {
@@ -259,6 +276,7 @@ function UnwovenScene({ images }) {
 
   const groupRef = useRef();
   const scrollYRef = useRef(typeof window !== "undefined" ? Number(sessionStorage.getItem('galleryScroll') || 0) : 0);
+  const currentMouse = useRef(new THREE.Vector2(-9999, -9999));
 
   // Track scroll velocity via Lenis
   useEffect(() => {
@@ -286,10 +304,23 @@ function UnwovenScene({ images }) {
   }, [materials]);
 
   useFrame((state) => {
+    // Smoothly interpolate mouse position (World Coordinates)
+    const targetX = (state.pointer.x * size.width) / 2;
+    const targetY = (state.pointer.y * size.height) / 2;
+    
+    // If it's the first time, snap to it, otherwise lerp
+    if (currentMouse.current.x === -9999) {
+      currentMouse.current.set(targetX, targetY);
+    } else {
+      currentMouse.current.x += (targetX - currentMouse.current.x) * 0.1;
+      currentMouse.current.y += (targetY - currentMouse.current.y) * 0.1;
+    }
+
     if (groupRef.current) {
-      // Update time
+      // Update time and mouse
       materials.forEach(mat => {
         mat.uniforms.uTime.value = state.clock.elapsedTime;
+        mat.uniforms.uMouse.value.copy(currentMouse.current);
       });
 
       // Handle vertical finite scroll based on Lenis scroll position
