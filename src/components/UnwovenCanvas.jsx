@@ -1,10 +1,13 @@
 "use client";
+/* eslint-disable react-hooks/immutability */
 
-import { useEffect, useRef, useMemo } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import * as THREE from "three";
-import { useTexture } from "@react-three/drei";
-import { useRouter } from "next/navigation";
+import React, { useRef, useMemo, useEffect, useState } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useTexture } from '@react-three/drei';
+import * as THREE from 'three';
+import { useLenis } from 'lenis/react';
+import gsap from 'gsap';
+import { useRouter } from 'next/navigation';
 
 const VERTEX_SHADER = `
   attribute float aThread;
@@ -18,6 +21,11 @@ const VERTEX_SHADER = `
   uniform float uSeed;
   uniform float uScrollVelocity;
   uniform vec2 uMouse;
+  
+  uniform float uTransitionProgress;
+  uniform vec2 uTargetSize;
+  uniform vec2 uTargetPosition;
+  uniform vec2 uCardSize;
 
   varying vec2  vUv;
   varying float vTear;
@@ -38,21 +46,22 @@ const VERTEX_SHADER = `
 
     float bottom = 1.0 - smoothstep(-uHalfHeight, -uHalfHeight + uZone, y);
     float top = smoothstep(uHalfHeight - uZone, uHalfHeight, y);
-    float tear = max(bottom, top) * uStrength;
+    // Tear fades out during transition
+    float tear = max(bottom, top) * uStrength * (1.0 - uTransitionProgress);
 
-    // Scroll Distortion (Jelly effect)
-    float distortion = uScrollVelocity * 1.5;
+    // Scroll Distortion (Jelly effect) fades out during transition
+    float distortion = uScrollVelocity * 1.5 * (1.0 - uTransitionProgress);
     world.y -= sin(uv.x * 3.14159) * distortion;
     world.x -= sin(uv.y * 3.14159) * distortion * 0.3;
 
-    // Mouse Hover Bulge (Simulate 3D bulge in 2D by pushing XY outwards)
+    // Mouse Hover Bulge
     float dist = distance(world.xy, uMouse);
-    float hover = smoothstep(300.0, 0.0, dist);
+    float hover = smoothstep(300.0, 0.0, dist) * (1.0 - uTransitionProgress);
     if (dist > 0.001) {
       vec2 pushDir = normalize(world.xy - uMouse);
-      world.xy += pushDir * hover * 2.0; // Pushes pixels outwards from the cursor
+      world.xy += pushDir * hover * 2.0; 
     }
-    world.z += hover * 2.0; // Slight Z just for depth sorting above others
+    world.z += hover * 2.0; 
 
     float direction = y < 0.0 ? -1.0 : 1.0;
 
@@ -71,6 +80,28 @@ const VERTEX_SHADER = `
     world.x += sin(world.y * 0.02 + uTime * (1.6 + randomA * 2.2) + randomA * 6.2831)
                * (5.0 + 13.0 * randomA) * t * uWobble;
 
+    // --- TRANSITION TO FULLSCREEN WITH RIPPLE ---
+    float angle = uTransitionProgress * 3.14159265 / 2.0;
+    float wave = cos(angle);
+    float c = sin(length(uv - 0.5) * 15.0 + uTransitionProgress * 12.0) * 0.5 + 0.5;
+
+    // The base origin of the mesh in world space
+    vec2 meshOrigin = world.xy - position.xy; 
+    
+    // Smoothly move the origin to the target position (center of the 600px header)
+    vec2 currentOrigin = mix(meshOrigin, uTargetPosition, uTransitionProgress);
+
+    // Scale vertices to target size (100vw x 600px) + ripple
+    vec2 targetScale = uTargetSize / uCardSize;
+    vec2 currentScale = mix(vec2(1.0), targetScale + wave * c, uTransitionProgress);
+    vec2 scaledLocalPos = position.xy * currentScale;
+
+    // Apply the expanded positions
+    world.xy = currentOrigin + scaledLocalPos;
+    
+    // Push active mesh slightly forward so it covers others (but don't pass the camera at z=10)
+    world.z += uTransitionProgress * 5.0; 
+
     vTear = tear;
     vWorld = world.xyz;
     gl_Position = projectionMatrix * viewMatrix * world;
@@ -86,6 +117,10 @@ const FRAGMENT_SHADER = `
   uniform float uImageAspect;
   uniform vec2  uMouse;
   uniform float uTime;
+  
+  uniform float uTransitionProgress;
+  uniform vec2 uTargetSize;
+  uniform float uOpacity;
 
   varying vec2  vUv;
   varying float vTear;
@@ -106,24 +141,27 @@ const FRAGMENT_SHADER = `
     float threadAlpha = 1.0 - smoothstep(coreWidth - 0.10, coreWidth + 0.06, rim);
     threadAlpha = mix(1.0, threadAlpha, smoothstep(0.03, 0.30, tear));
 
-    vec2 p = (vUv - 0.5) * uCardSize;
-    float cardAlpha = 1.0 - smoothstep(-1.5, 0.5, sdRoundBox(p, uCardSize * 0.5, uRadius));
+    vec2 currentSize = mix(uCardSize, uTargetSize, uTransitionProgress);
+    float currentRadius = mix(uRadius, 0.0, uTransitionProgress);
+
+    vec2 p = (vUv - 0.5) * currentSize;
+    float cardAlpha = 1.0 - smoothstep(-1.5, 0.5, sdRoundBox(p, currentSize * 0.5, currentRadius));
 
     float fade  = 1.0 - smoothstep(0.75, 1.0, tear) * 0.65;
-    float alpha = cardAlpha * threadAlpha * fade;
+    float alpha = cardAlpha * threadAlpha * fade * uOpacity;
     if (alpha < 0.003) discard;
 
-    // Mouse interactive ripple & distortion
+    // Mouse interactive ripple
     float dist = distance(vWorld.xy, uMouse);
-    float hover = smoothstep(300.0, 0.0, dist);
+    float hover = smoothstep(300.0, 0.0, dist) * (1.0 - uTransitionProgress);
     float ripple = sin(dist * 0.04 - uTime * 6.0) * hover;
     vec2 mouseDir = vWorld.xy == uMouse ? vec2(0.0) : normalize(vWorld.xy - uMouse);
     vec2 uvDistortion = mouseDir * ripple * 0.005;
 
-    float cardAspect = uCardSize.x / uCardSize.y;
-    vec2 scale = cardAspect > uImageAspect
-      ? vec2(1.0, uImageAspect / cardAspect)
-      : vec2(cardAspect / uImageAspect, 1.0);
+    float currentAspect = currentSize.x / currentSize.y;
+    vec2 scale = currentAspect > uImageAspect
+      ? vec2(1.0, uImageAspect / currentAspect)
+      : vec2(currentAspect / uImageAspect, 1.0);
       
     vec2 finalUv = (vUv - 0.5) * scale + 0.5 - uvDistortion;
     vec3 color = texture2D(uMap, finalUv).rgb;
@@ -135,6 +173,17 @@ const FRAGMENT_SHADER = `
     gl_FragColor = vec4(color, alpha);
   }
 `;
+
+const CONFIG = {
+  threads: 26,
+  segments: 20,
+  cardMaxHeight: 452,
+  cardAspect: 0.75,
+  cardGapRatio: 0.11,
+  cardRadius: 0,
+  tearZoneRatio: 0.26,
+  tearZoneMax: 380,
+};
 
 function buildVerticalRibbonGeometry(width, height, threads, segments) {
   const rows = segments + 1;
@@ -183,45 +232,29 @@ function buildVerticalRibbonGeometry(width, height, threads, segments) {
   return geometry;
 }
 
-const CONFIG = {
-  threads: 26,
-  segments: 20,
-  cardMaxHeight: 452,
-  cardAspect: 0.75,
-  cardGapRatio: 0.11,
-  cardRadius: 0,
-  tearZoneRatio: 0.26,
-  tearZoneMax: 380,
-};
-
-function UnwovenScene({ images }) {
-  const router = useRouter();
-  const { size, viewport } = useThree();
+const UnwovenScene = ({ images }) => {
+  const groupRef = useRef();
+  const { size, camera } = useThree();
   const textures = useTexture(images);
+  const router = useRouter();
 
   const cardHeight = Math.min(CONFIG.cardMaxHeight, size.height * 0.62);
   const cardWidth = cardHeight * CONFIG.cardAspect;
   const pitch = cardHeight + Math.max(24, cardHeight * CONFIG.cardGapRatio);
   
-  // Total distance to scroll so the last image reaches the center (y=0)
   const scrollSpan = (images.length - 1) * pitch;
 
+  const isTransitioning = useRef(false);
+
   useEffect(() => {
-    // Adjust body height for finite scrolling
-    // scrollHeight - innerHeight = maxScroll = scrollSpan
     document.body.style.height = `${scrollSpan + window.innerHeight}px`;
-    
-    // Tell Lenis to recalculate bounds and restore scroll if needed
     if (window.lenisInstance) {
       window.lenisInstance.resize();
-      
       const savedScroll = sessionStorage.getItem('galleryScroll');
       if (savedScroll) {
         const targetScroll = Number(savedScroll);
         window.scrollTo(0, targetScroll);
         window.lenisInstance.scrollTo(targetScroll, { immediate: true });
-        
-        // Force it again after a tick to beat Next.js router
         setTimeout(() => {
           window.scrollTo(0, targetScroll);
           if (window.lenisInstance) {
@@ -231,17 +264,14 @@ function UnwovenScene({ images }) {
         }, 100);
       }
     }
-    
-    return () => {
-      document.body.style.height = '';
-    };
+    return () => { document.body.style.height = ''; };
   }, [scrollSpan]);
 
   const geometry = useMemo(() => {
     return buildVerticalRibbonGeometry(cardWidth, cardHeight, CONFIG.threads, CONFIG.segments);
   }, [cardWidth, cardHeight]);
 
-  const uniforms = useMemo(() => ({
+  const baseUniforms = useMemo(() => ({
     uTime: { value: 0 },
     uHalfHeight: { value: size.height / 2 },
     uZone: { value: Math.min(size.height * CONFIG.tearZoneRatio, CONFIG.tearZoneMax) },
@@ -251,9 +281,16 @@ function UnwovenScene({ images }) {
     uRadius: { value: CONFIG.cardRadius },
     uScrollVelocity: { value: 0 },
     uMouse: { value: new THREE.Vector2(-9999, -9999) },
-  }), [size.height, cardWidth, cardHeight]);
+    uTargetSize: { value: new THREE.Vector2(size.width, 600.0) },
+    uTargetPosition: { value: new THREE.Vector2(0, size.height / 2 - 300.0) },
+  }), [size.height, size.width, cardWidth, cardHeight]);
 
-  const materials = useMemo(() => {
+  // Unique uniforms for each mesh (using useState lazy init to satisfy React Compiler)
+  const [materials] = useState(() => {
+    // Check if we are starting a reverse transition
+    const returnId = typeof window !== 'undefined' ? sessionStorage.getItem('returnTransitionFrom') : null;
+    const targetIndex = returnId ? (parseInt(returnId) - 1) % 6 : -1;
+
     return textures.map((tex, i) => {
       tex.generateMipmaps = false;
       tex.minFilter = THREE.LinearFilter;
@@ -265,50 +302,88 @@ function UnwovenScene({ images }) {
         depthTest: false,
         depthWrite: false,
         uniforms: {
-          ...uniforms,
+          ...baseUniforms,
           uMap: { value: tex },
           uSeed: { value: (i + 1) * 0.731 },
           uImageAspect: { value: tex.image.width / tex.image.height },
+          uTransitionProgress: { value: (targetIndex === i) ? 1.0 : 0.0 },
+          uOpacity: { value: 1.0 },
         },
       });
     });
-  }, [textures, uniforms]);
+  });
 
-  const groupRef = useRef();
   const scrollYRef = useRef(typeof window !== "undefined" ? Number(sessionStorage.getItem('galleryScroll') || 0) : 0);
   const currentMouse = useRef(new THREE.Vector2(-9999, -9999));
 
-  // Track scroll velocity via Lenis
   useEffect(() => {
     let lenis = window.lenisInstance;
     if (!lenis) return;
-    
     const onScroll = (e) => {
-      // e.animatedScroll is the actual pixel value scrolled
+      if (isTransitioning.current) return;
       scrollYRef.current = e.animatedScroll || e.scroll || 0;
       materials.forEach(mat => {
         mat.uniforms.uScrollVelocity.value = e.velocity || 0;
       });
     };
-    
     lenis.on('scroll', onScroll);
-    
-    // Also explicitly sync our ref immediately in case Lenis hasn't fired yet
     if (lenis.scroll !== undefined) {
       scrollYRef.current = lenis.scroll;
     }
-    
     return () => {
       lenis.off('scroll', onScroll);
     };
   }, [materials]);
 
+  // Handle Reverse Transition on Mount
+  useEffect(() => {
+    const returnId = sessionStorage.getItem('returnTransitionFrom');
+    if (returnId) {
+      const index = (parseInt(returnId) - 1) % 6;
+      if (materials[index]) {
+        isTransitioning.current = true;
+        
+        // Hide others initially
+        materials.forEach((mat, i) => {
+          if (i !== index) {
+            mat.uniforms.uOpacity.value = 0.0;
+          }
+        });
+
+        // Trigger the background fade-out overlay
+        import('./TransitionOverlay').then(m => m.triggerReverseTransition());
+
+        // Wait a tiny bit for render, then animate back
+        setTimeout(() => {
+          gsap.to(materials[index].uniforms.uTransitionProgress, {
+            value: 0.0,
+            duration: 1.0,
+            ease: 'power3.inOut',
+            onComplete: () => {
+              isTransitioning.current = false;
+              // Fade others back in
+              materials.forEach((mat, i) => {
+                if (i !== index) {
+                  gsap.to(mat.uniforms.uOpacity, {
+                    value: 1.0,
+                    duration: 0.4,
+                    ease: 'power2.inOut'
+                  });
+                }
+              });
+              materials[index].uniforms.uTransitionProgress.value = 0;
+              sessionStorage.removeItem('returnTransitionFrom');
+            }
+          });
+        }, 50); // 50ms to ensure WebGL renders one frame
+      }
+    }
+  }, [materials]);
+
   useFrame((state) => {
-    // Smoothly interpolate mouse position (World Coordinates)
     const targetX = (state.pointer.x * size.width) / 2;
     const targetY = (state.pointer.y * size.height) / 2;
     
-    // If it's the first time, snap to it, otherwise lerp
     if (currentMouse.current.x === -9999) {
       currentMouse.current.set(targetX, targetY);
     } else {
@@ -317,27 +392,57 @@ function UnwovenScene({ images }) {
     }
 
     if (groupRef.current) {
-      // Update time and mouse
       materials.forEach(mat => {
         mat.uniforms.uTime.value = state.clock.elapsedTime;
         mat.uniforms.uMouse.value.copy(currentMouse.current);
       });
 
-      // Handle vertical finite scroll based on Lenis scroll position
-      const scrollOffset = scrollYRef.current;
-      
-      groupRef.current.children.forEach((mesh, i) => {
-        const baseY = i * pitch;
-        
-        // Add staggered X position for layout (like original Codrops demo)
-        const staggers = [-300, 200, -200, 300, -350, 150];
-        mesh.position.x = staggers[i % staggers.length];
-
-        // Linear scroll (no loop)
-        mesh.position.y = scrollOffset - baseY;
-      });
+      if (!isTransitioning.current) {
+        const scrollOffset = scrollYRef.current;
+        groupRef.current.children.forEach((mesh, i) => {
+          const baseY = i * pitch;
+          const staggers = [-300, 200, -200, 300, -350, 150];
+          mesh.position.x = staggers[i % staggers.length];
+          mesh.position.y = scrollOffset - baseY;
+        });
+      }
     }
   });
+
+  const handleClick = (index, mesh) => {
+    if (isTransitioning.current) return;
+    isTransitioning.current = true;
+    
+    sessionStorage.setItem('galleryScroll', window.scrollY);
+    
+    // Fade out other meshes
+    materials.forEach((mat, i) => {
+      if (i !== index) {
+        gsap.to(mat.uniforms.uOpacity, {
+          value: 0.0,
+          duration: 0.4,
+          ease: 'power2.out'
+        });
+      }
+    });
+
+    const targetMaterial = materials[index];
+    const id = (index % 6) + 1;
+    const src = images[index];
+
+    // Trigger the background overlay and pass the image source
+    import('./TransitionOverlay').then(m => m.triggerTransition(null, src, id));
+
+    // Animate the clicked mesh
+    gsap.to(targetMaterial.uniforms.uTransitionProgress, {
+      value: 1,
+      duration: 1.0,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        router.push(`/realisation/${id}`);
+      }
+    });
+  };
 
   return (
     <group ref={groupRef}>
@@ -348,28 +453,12 @@ function UnwovenScene({ images }) {
           material={mat} 
           frustumCulled={false}
           onClick={(e) => {
-            // Calculate screen bounds for the clicked mesh
-            const vector = e.object.position.clone();
-            vector.project(e.camera); // Project to normalized device coordinates (NDC)
-            
-            // Convert NDC to screen pixels
-            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-            const y = (vector.y * -0.5 + 0.5) * window.innerHeight;
-            
-            const bounds = {
-              left: x - cardWidth / 2,
-              top: y - cardHeight / 2,
-              width: cardWidth,
-              height: cardHeight
-            };
-            
-            const id = (i % 6) + 1;
-            const src = `/assets/${id}.webp`; // The actual image src
-            
-            // Import and trigger transition
-            import('./TransitionOverlay').then(m => m.triggerTransition(bounds, src, id));
+            e.stopPropagation();
+            handleClick(i, e.object);
           }}
-          onPointerOver={() => document.body.style.cursor = 'pointer'}
+          onPointerOver={() => {
+            if (!isTransitioning.current) document.body.style.cursor = 'pointer';
+          }}
           onPointerOut={() => document.body.style.cursor = 'auto'}
         />
       ))}
@@ -395,3 +484,4 @@ export default function UnwovenCanvas() {
     </div>
   );
 }
+
