@@ -8,12 +8,12 @@ import { useRouter } from "next/navigation";
 let triggerTransitionFn = null;
 let triggerReverseTransitionFn = null;
 
-export const triggerTransition = (startBounds, imageSrc, projectId) => {
-  if (triggerTransitionFn) triggerTransitionFn(startBounds, imageSrc, projectId);
+export const triggerTransition = (bounds, src, id) => {
+  if (triggerTransitionFn) triggerTransitionFn(bounds, src, id);
 };
 
-export const triggerReverseTransition = () => {
-  if (triggerReverseTransitionFn) triggerReverseTransitionFn();
+export const triggerReverseTransition = (src) => {
+  if (triggerReverseTransitionFn) triggerReverseTransitionFn(src);
 };
 
 export default function TransitionOverlay() {
@@ -26,12 +26,12 @@ export default function TransitionOverlay() {
 
   useEffect(() => {
     triggerTransitionFn = (bounds, src, id) => {
-      sessionStorage.setItem('galleryScroll', window.scrollY);
       setData({ bounds, src, id });
       setIsReverse(false);
       setActive(true);
     };
-    triggerReverseTransitionFn = () => {
+    triggerReverseTransitionFn = (src) => {
+      setData(prev => ({ ...prev, src: src || prev.src }));
       setIsReverse(true);
       setActive(true);
     };
@@ -42,74 +42,79 @@ export default function TransitionOverlay() {
   }, []);
 
   useEffect(() => {
-    if (active && imgRef.current && data.bounds) {
+    if (active && bgRef.current) {
       if (!isReverse) {
-        // --- FORWARD TRANSITION (Home -> Detail) ---
-        gsap.set(imgRef.current, {
-          top: data.bounds.top,
-          left: data.bounds.left,
-          width: data.bounds.width,
-          height: data.bounds.height,
-          position: "fixed",
-          zIndex: 10001,
-        });
-
+        // --- FORWARD TRANSITION (WebGL Canvas handles image expansion) ---
         gsap.set(bgRef.current, {
           autoAlpha: 0,
           position: "fixed",
           inset: 0,
           backgroundColor: "var(--color-bg)",
           zIndex: 10000,
+          pointerEvents: "none"
         });
 
         const tl = gsap.timeline({
           onComplete: () => {
-            router.push(`/realisation/${data.id}`);
-            setTimeout(() => setActive(false), 500);
+            // Keep the image on screen for a moment while the new page renders, then hide it
+            setTimeout(() => setActive(false), 300);
           },
         });
 
-        tl.to(bgRef.current, { autoAlpha: 1, duration: 0.4, ease: "power2.inOut" }, 0);
-        tl.to(imgRef.current, {
-          top: 0, left: 0, height: "600px", width: "100vw",
-          duration: 0.8, ease: "power3.inOut",
-        }, 0);
-
+        // Fade in background smoothly behind the expanding 3D mesh
+        // We must set z-index to -1 so it's BEHIND the canvas during forward transition!
+        gsap.set(bgRef.current, { zIndex: -1 });
+        
+        // Prepare the static image but hide it initially
+        if (imgRef.current && data.src) {
+          gsap.set(imgRef.current, {
+            autoAlpha: 0,
+            top: 0, left: 0, height: "600px", width: "100vw",
+            position: "fixed", zIndex: 10001,
+          });
+        }
+        
+        tl.to(bgRef.current, { autoAlpha: 1, duration: 1.0, ease: "power2.inOut" }, 0);
+        
+        // Exactly at the end of the 1s WebGL animation, snap the static HTML image over the canvas
+        // This will cover the screen while Next.js changes the route, preventing any white flash.
+        if (imgRef.current && data.src) {
+          tl.set(imgRef.current, { autoAlpha: 1 }, 1.0);
+        }
+        
       } else {
         // --- REVERSE TRANSITION (Detail -> Home) ---
         // 1. Instantly navigate to home (loads behind the overlay)
         router.push('/', { scroll: false });
 
-        // 2. Set overlay to full detail view state
-        gsap.set(imgRef.current, {
-          top: 0, left: 0, height: "600px", width: "100vw",
-          position: "fixed", zIndex: 10001,
-        });
+        // Wait, for Reverse transition, we want the WebGL Canvas to handle shrinking the image back!
+        // But the WebGL canvas was destroyed. When we route back to '/', it re-mounts UnwovenCanvas.
+        // We need to tell UnwovenCanvas to START in a "full screen" state and shrink!
+        // For now, let's just fade out the black background and let the canvas appear.
+        
         gsap.set(bgRef.current, {
-          autoAlpha: 1, position: "fixed", inset: 0,
-          backgroundColor: "var(--color-bg)", zIndex: 10000,
+          autoAlpha: 0, position: "fixed", inset: 0,
+          backgroundColor: "var(--color-bg)", zIndex: -1,
         });
 
-        // 3. Animate back to original WebGL bounds
+        // Show the static image perfectly overlapping the detail page image
+        if (imgRef.current) {
+          gsap.set(imgRef.current, {
+            autoAlpha: 1,
+            top: 0, left: 0, height: "600px", width: "100vw",
+            position: "fixed", zIndex: 10001,
+          });
+        }
+
         const tl = gsap.timeline({
           onComplete: () => setActive(false),
         });
 
-        // Wait a tiny bit for the route to actually push and render the canvas underneath
-        tl.to(bgRef.current, { autoAlpha: 0, duration: 0.6, ease: "power2.inOut" }, 0.2);
-        tl.to(imgRef.current, {
-          top: data.bounds.top,
-          left: data.bounds.left,
-          width: data.bounds.width,
-          height: data.bounds.height,
-          duration: 0.8, ease: "power3.inOut",
-        }, 0);
+        if (imgRef.current) {
+          tl.to(imgRef.current, { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" }, 0.1);
+        }
       }
-    } else if (active && isReverse && !data.bounds) {
-      // If user reloaded on detail page, state is lost. Just route back natively.
-      router.push('/');
-      setActive(false);
-    }
+    } 
   }, [active, data, isReverse, router]);
 
   if (!active) return null;
@@ -117,13 +122,16 @@ export default function TransitionOverlay() {
   return (
     <>
       <div ref={bgRef} />
-      <div ref={imgRef} style={{ overflow: "hidden" }}>
-        <img 
-          src={data.src} 
-          alt="" 
-          style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-        />
-      </div>
+      {data.src && (
+        <div ref={imgRef} style={{ overflow: "hidden", pointerEvents: "none" }}>
+          <img 
+            src={data.src} 
+            alt="" 
+            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+          />
+        </div>
+      )}
     </>
   );
 }
+

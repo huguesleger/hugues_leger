@@ -8,13 +8,17 @@ export default function Gallery() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      document.body.classList.add("loading");
-      // Simulate loading time for images in WebGL (could be handled better with React Suspense)
-      setTimeout(() => {
-        document.body.classList.remove("loading");
-      }, 500);
+      const hasLoaded = sessionStorage.getItem('hasLoadedOnce');
+      if (!hasLoaded) {
+        document.body.classList.add("loading");
+        sessionStorage.setItem('hasLoadedOnce', 'true');
+        setTimeout(() => {
+          document.body.classList.remove("loading");
+        }, 500);
+      }
     }
   }, []);
+
 
   return (
     <div ref={containerRef}>

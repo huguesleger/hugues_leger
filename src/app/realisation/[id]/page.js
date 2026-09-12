@@ -15,7 +15,7 @@ export default async function RealisationPage({ params }) {
 
       {/* Right side content */}
       <div className="content__group-list">
-        <BackButton />
+        <BackButton id={id} src={src} />
         
         <div className="content__group active">
           <div className="content__title">Projet {id}</div>
