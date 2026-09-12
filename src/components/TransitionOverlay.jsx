@@ -71,7 +71,7 @@ export default function TransitionOverlay() {
 
         tl.to(bgRef.current, { autoAlpha: 1, duration: 0.4, ease: "power2.inOut" }, 0);
         tl.to(imgRef.current, {
-          top: 0, left: 0, height: "100vh", width: "75vh",
+          top: 0, left: 0, height: "600px", width: "100vw",
           duration: 0.8, ease: "power3.inOut",
         }, 0);
 
@@ -82,7 +82,7 @@ export default function TransitionOverlay() {
 
         // 2. Set overlay to full detail view state
         gsap.set(imgRef.current, {
-          top: 0, left: 0, height: "100vh", width: "75vh",
+          top: 0, left: 0, height: "600px", width: "100vw",
           position: "fixed", zIndex: 10001,
         });
         gsap.set(bgRef.current, {

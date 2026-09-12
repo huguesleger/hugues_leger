@@ -318,12 +318,10 @@ a {
  * Content: Clicked image lands here
  */
 .content__preview-img {
-  position: fixed;
+  position: relative;
   margin: 0;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  aspect-ratio: 0.75;
+  width: 100vw;
+  height: 600px;
   overflow: hidden;
 
   img {
@@ -336,9 +334,7 @@ a {
 .content__group-list {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  padding-inline: calc(75vh + 1.5vw) var(--page-padding);
-  padding-block: var(--page-padding);
+  padding: 4rem var(--page-padding);
 }
 
 .content__back {
