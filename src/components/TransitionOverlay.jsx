@@ -78,7 +78,7 @@ export default function TransitionOverlay() {
       } else {
         // --- REVERSE TRANSITION (Detail -> Home) ---
         // 1. Instantly navigate to home (loads behind the overlay)
-        router.push('/');
+        router.push('/', { scroll: false });
 
         // 2. Set overlay to full detail view state
         gsap.set(imgRef.current, {

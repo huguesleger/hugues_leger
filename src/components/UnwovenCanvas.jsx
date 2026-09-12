@@ -38,6 +38,12 @@ const VERTEX_SHADER = `
     float top = smoothstep(uHalfHeight - uZone, uHalfHeight, y);
     float tear = max(bottom, top) * uStrength;
 
+    // Scroll Distortion (Jelly effect)
+    // The center of the mesh bends based on scroll velocity
+    float distortion = uScrollVelocity * 1.5; // strongly increased!
+    world.y -= sin(uv.x * 3.14159) * distortion;
+    world.x -= sin(uv.y * 3.14159) * distortion * 0.3;
+
     float direction = y < 0.0 ? -1.0 : 1.0;
 
     float randomA = hash(aThread + uSeed * 57.0);
@@ -195,11 +201,18 @@ function UnwovenScene({ images }) {
       
       const savedScroll = sessionStorage.getItem('galleryScroll');
       if (savedScroll) {
-        // Use window.scrollTo so the browser instantly paints at the right location,
-        // and tell Lenis to sync.
-        window.scrollTo(0, Number(savedScroll));
-        window.lenisInstance.scrollTo(Number(savedScroll), { immediate: true });
-        sessionStorage.removeItem('galleryScroll');
+        const targetScroll = Number(savedScroll);
+        window.scrollTo(0, targetScroll);
+        window.lenisInstance.scrollTo(targetScroll, { immediate: true });
+        
+        // Force it again after a tick to beat Next.js router
+        setTimeout(() => {
+          window.scrollTo(0, targetScroll);
+          if (window.lenisInstance) {
+            window.lenisInstance.scrollTo(targetScroll, { immediate: true });
+          }
+          sessionStorage.removeItem('galleryScroll');
+        }, 100);
       }
     }
     
