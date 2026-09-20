@@ -49,3 +49,8 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Cache instantanément l'intro si la session est déjà initialisée (évite le flash) */
+html.hide-intro .intro-overlay {
+  display: none !important;
+}
