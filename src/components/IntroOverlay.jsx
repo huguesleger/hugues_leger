@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import Scene from './webgl/Scene';
+import Scene from "@/components/webgl/Scene";
 import { gsap } from 'gsap';
 
 export default function IntroOverlay({ children }) {

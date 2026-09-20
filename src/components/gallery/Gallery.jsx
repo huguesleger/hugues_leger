@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import UnwovenCanvas from "../UnwovenCanvas";
+import UnwovenCanvas from "@/components/UnwovenCanvas";
 
 export default function Gallery() {
   const containerRef = useRef(null);
