@@ -123,11 +123,11 @@ export default function TransitionOverlay() {
     <>
       <div ref={bgRef} />
       {data.src && (
-        <div ref={imgRef} style={{ overflow: "hidden", pointerEvents: "none" }}>
+        <div ref={imgRef} className="transition-overlay__container">
           <img 
             src={data.src} 
             alt="" 
-            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+            className="transition-overlay__img"
           />
         </div>
       )}

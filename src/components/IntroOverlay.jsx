@@ -61,7 +61,7 @@ export default function IntroOverlay({ children }) {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh' }}>
+    <div className="intro-overlay-wrapper">
 
       {/* La galerie en arrière-plan */}
       <div
@@ -79,19 +79,8 @@ export default function IntroOverlay({ children }) {
         <div
           ref={containerRef}
           className="intro-overlay"
-          style={{
-            position: 'fixed', // Empêche tout scroll pendant l'intro
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            zIndex: 50,
-            background: '#000000', // Fond noir pour correspondre au design Codrops
-            pointerEvents: 'auto',
-            touchAction: 'none' // Empêche le scroll tactile natif de fuiter
-          }}
         >
-          <div ref={canvasRef} style={{ width: '100%', height: '100%' }}>
+          <div ref={canvasRef} className="intro-overlay__canvas">
             {/* Configuration exacte du canvas de Codrops */}
             <Canvas
               dpr={[1, 2]}
@@ -114,33 +103,7 @@ export default function IntroOverlay({ children }) {
           {/* Bouton pour entrer */}
           <button
             onClick={handleEnterClick}
-            style={{
-              position: 'absolute',
-              bottom: '50px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              padding: '12px 40px',
-              background: 'white',
-              color: 'black',
-              border: 'none',
-              borderRadius: '30px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: '2px',
-              fontSize: '14px',
-              zIndex: 100,
-              boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-              transition: 'transform 0.2s ease, background 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateX(-50%) scale(1.05)';
-              e.target.style.background = '#f0f0f0';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateX(-50%) scale(1)';
-              e.target.style.background = 'white';
-            }}
+            className="intro-overlay__enter-btn"
           >
             Entrer
           </button>

@@ -1,7 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import LenisProvider from "@/components/LenisProvider";
-import "./globals.css";
-import "./gallery.css";
+import "../scss/main.scss";
 import TransitionOverlay from "@/components/TransitionOverlay";
 
 const geistSans = Geist({

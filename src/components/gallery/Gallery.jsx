@@ -22,7 +22,7 @@ export default function Gallery() {
 
   return (
     <div ref={containerRef}>
-      <header className="header" style={{ position: "fixed", top: 0, left: 0, zIndex: 10 }}>
+      <header className="header gallery__header">
         <h1 className="header__title">Portfolio</h1>
       </header>
       

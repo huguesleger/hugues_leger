@@ -7,7 +7,7 @@ export default async function RealisationPage({ params }) {
   const src = `/assets/${id}.webp`;
 
   return (
-    <main style={{ minHeight: "100vh", position: "relative", backgroundColor: "var(--color-bg)" }}>
+    <main className="page-realisation">
       {/* Left side preview image */}
       <figure className="content__preview-img">
         <img src={src} alt={`Projet ${id}`} />

@@ -477,7 +477,7 @@ export default function UnwovenCanvas() {
   ];
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "auto" }}>
+    <div className="unwoven-canvas">
       <Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }}>
         <UnwovenScene images={images} />
       </Canvas>
