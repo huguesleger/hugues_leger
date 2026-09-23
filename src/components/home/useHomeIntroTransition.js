@@ -6,6 +6,8 @@ import gsap from 'gsap';
 export const INTRO_WHEEL_THRESHOLD = 140;
 const PREVIEW_MAX_Y_PERCENT = -12;
 const IDLE_RESET_MS = 450;
+/** Galerie : part plus bas (yPercent > 0) et remonte en même temps que l’intro wave */
+const GALLERY_ENTER_Y_PERCENT = 14;
 
 export function useHomeIntroTransition({ skipIntro = false } = {}) {
   const introPanelRef = useRef(null);
@@ -106,10 +108,24 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
       return;
     }
 
+    const unwovenCanvas = gallery.querySelector('.unwoven-canvas');
+
+    gsap.set(gallery, { visibility: 'visible' });
+    if (unwovenCanvas) {
+      gsap.set(unwovenCanvas, {
+        yPercent: GALLERY_ENTER_Y_PERCENT,
+        opacity: 0.85,
+      });
+    }
+
     const tl = gsap.timeline({
       defaults: { ease: 'power2.inOut' },
       onComplete: () => {
         gsap.set(intro, { pointerEvents: 'none' });
+        if (unwovenCanvas) {
+          gsap.set(unwovenCanvas, { clearProps: 'transform,opacity' });
+        }
+        gsap.set(gallery, { clearProps: 'transform' });
         setPhase('gallery');
         unlockScroll();
         isAnimatingRef.current = false;
@@ -134,11 +150,22 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
       gallery,
       {
         opacity: 1,
-        visibility: 'visible',
-        duration: 0.8,
+        duration: 1.2,
       },
-      0.35
+      0
     );
+
+    if (unwovenCanvas) {
+      tl.to(
+        unwovenCanvas,
+        {
+          yPercent: 0,
+          opacity: 1,
+          duration: 1.2,
+        },
+        0
+      );
+    }
   }, [clearIdleReset, unlockScroll]);
 
   const handleScrollIntent = useCallback(
@@ -191,7 +218,11 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
         });
       }
       if (cover) gsap.set(cover, { opacity: 0, pointerEvents: 'none' });
-      if (gallery) gsap.set(gallery, { opacity: 1, visibility: 'visible' });
+      if (gallery) {
+        gsap.set(gallery, { opacity: 1, visibility: 'visible', yPercent: 0 });
+        const unwoven = gallery.querySelector('.unwoven-canvas');
+        if (unwoven) gsap.set(unwoven, { yPercent: 0, opacity: 1 });
+      }
       unlockScroll(false);
       return;
     }

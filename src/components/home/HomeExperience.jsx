@@ -13,6 +13,7 @@ export default function HomeExperience() {
   );
 
   const {
+    phase,
     introPanelRef,
     coverRef,
     galleryRef,
@@ -20,13 +21,15 @@ export default function HomeExperience() {
     isWaveActive,
   } = useHomeIntroTransition({ skipIntro });
 
+  const galleryScrollEnabled = phase === 'transitioning' || phase === 'gallery';
+
   return (
     <div className="home-experience">
       <div
         ref={galleryRef}
-        className={`home-gallery${isGalleryActive ? '' : ' home-gallery--hidden'}`}
+        className={`home-gallery${phase === 'intro' ? ' home-gallery--hidden' : ''}`}
       >
-        <Gallery scrollEnabled={isGalleryActive} />
+        <Gallery scrollEnabled={galleryScrollEnabled} />
       </div>
 
       <div ref={coverRef} className="home-intro-cover" aria-hidden="true" />
