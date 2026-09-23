@@ -12,7 +12,7 @@ export const WAVE_GRID_CONFIG = {
   waveJitter: 0.2,
   waveMaxHeight: 0.4,
   colorBase: '#ffffff',
-  colorHigh: '#0055ff',
+  colorHigh: '#23E1C5',
 };
 
 export const WAVE_GRID_LIGHTING = {

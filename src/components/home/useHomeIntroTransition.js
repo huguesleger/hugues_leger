@@ -6,7 +6,10 @@ import gsap from 'gsap';
 export const INTRO_WHEEL_THRESHOLD = 140;
 const PREVIEW_MAX_Y_PERCENT = -12;
 const IDLE_RESET_MS = 450;
-/** Galerie : part plus bas (yPercent > 0) et remonte en même temps que l’intro wave */
+const INTRO_EXIT_DURATION = 1.2;
+const GALLERY_FADE_DURATION = 0.85;
+const GALLERY_RISE_DURATION = 0.9;
+/** Galerie : remonte après la fin de la sortie intro */
 const GALLERY_ENTER_Y_PERCENT = 14;
 
 export function useHomeIntroTransition({ skipIntro = false } = {}) {
@@ -110,11 +113,11 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
 
     const unwovenCanvas = gallery.querySelector('.unwoven-canvas');
 
-    gsap.set(gallery, { visibility: 'visible' });
+    gsap.set(gallery, { visibility: 'visible', opacity: 0 });
     if (unwovenCanvas) {
       gsap.set(unwovenCanvas, {
         yPercent: GALLERY_ENTER_Y_PERCENT,
-        opacity: 0.85,
+        opacity: 0,
       });
     }
 
@@ -125,34 +128,43 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
         if (unwovenCanvas) {
           gsap.set(unwovenCanvas, { clearProps: 'transform,opacity' });
         }
-        gsap.set(gallery, { clearProps: 'transform' });
+        gsap.set(gallery, { clearProps: 'opacity,transform' });
         setPhase('gallery');
         unlockScroll();
         isAnimatingRef.current = false;
       },
     });
 
+    tl.addLabel('introExit', 0);
+
     tl.to(
       intro,
       {
         yPercent: -150,
         opacity: 0,
-        duration: 1.2,
+        duration: INTRO_EXIT_DURATION,
       },
-      0
+      'introExit'
     );
 
     if (cover) {
-      tl.to(cover, { opacity: 0, duration: 1.0 }, 0.15);
+      tl.to(
+        cover,
+        { opacity: 0, duration: INTRO_EXIT_DURATION * 0.85 },
+        'introExit+=0.12'
+      );
     }
+
+    tl.addLabel('galleryEnter', `introExit+=${INTRO_EXIT_DURATION}`);
 
     tl.to(
       gallery,
       {
         opacity: 1,
-        duration: 1.2,
+        duration: GALLERY_FADE_DURATION,
+        ease: 'power2.out',
       },
-      0
+      'galleryEnter'
     );
 
     if (unwovenCanvas) {
@@ -161,9 +173,10 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
         {
           yPercent: 0,
           opacity: 1,
-          duration: 1.2,
+          duration: GALLERY_RISE_DURATION,
+          ease: 'power3.out',
         },
-        0
+        'galleryEnter'
       );
     }
   }, [clearIdleReset, unlockScroll]);
