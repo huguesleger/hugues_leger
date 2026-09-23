@@ -1,12 +1,9 @@
-import Gallery from "@/components/Gallery/Gallery";
-import IntroOverlay from "@/components/IntroOverlay";
+import HomeExperience from '@/components/home/HomeExperience';
 
 export default function Home() {
   return (
     <main>
-      <IntroOverlay>
-        <Gallery />
-      </IntroOverlay>
+      <HomeExperience />
     </main>
   );
 }

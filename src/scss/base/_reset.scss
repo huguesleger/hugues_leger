@@ -23,6 +23,14 @@ body {
   scrollbar-width: none;
   -ms-overflow-style: none;
   overscroll-behavior: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 *,
@@ -63,9 +71,4 @@ a {
   html {
     color-scheme: dark;
   }
-}
-
-/* Cache instantanément l'intro si la session est déjà initialisée (évite le flash) */
-html.hide-intro .intro-overlay {
-  display: none !important;
 }

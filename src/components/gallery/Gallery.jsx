@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import UnwovenCanvas from "@/components/UnwovenCanvas";
 
-export default function Gallery() {
+export default function Gallery({ scrollEnabled = true }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -19,14 +19,13 @@ export default function Gallery() {
     }
   }, []);
 
-
   return (
     <div ref={containerRef}>
       <header className="header gallery__header">
         <h1 className="header__title">Portfolio</h1>
       </header>
-      
-      <UnwovenCanvas />
+
+      <UnwovenCanvas scrollEnabled={scrollEnabled} />
     </div>
   );
 }

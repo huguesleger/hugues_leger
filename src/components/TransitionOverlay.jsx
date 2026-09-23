@@ -87,11 +87,6 @@ export default function TransitionOverlay() {
         // 1. Instantly navigate to home (loads behind the overlay)
         router.push('/', { scroll: false });
 
-        // Wait, for Reverse transition, we want the WebGL Canvas to handle shrinking the image back!
-        // But the WebGL canvas was destroyed. When we route back to '/', it re-mounts UnwovenCanvas.
-        // We need to tell UnwovenCanvas to START in a "full screen" state and shrink!
-        // For now, let's just fade out the black background and let the canvas appear.
-        
         gsap.set(bgRef.current, {
           autoAlpha: 0, position: "fixed", inset: 0,
           backgroundColor: "var(--color-bg)", zIndex: -1,
