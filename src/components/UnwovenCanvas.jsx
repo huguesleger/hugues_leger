@@ -252,6 +252,34 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     });
   }, [materials, pitch, images.length, scrollEnabled]);
 
+  // Handle Gallery Enter animation from Intro
+  useEffect(() => {
+    const handlePrepare = () => {
+      if (groupRef.current) {
+        // Start the group lower (-14% of window height) immediately
+        groupRef.current.position.y = -size.height * 0.14;
+      }
+    };
+
+    const handleStart = (e) => {
+      if (!groupRef.current) return;
+      const duration = e.detail?.duration || 0.9;
+      
+      gsap.to(groupRef.current.position, {
+        y: 0,
+        duration: duration,
+        ease: 'power3.out',
+      });
+    };
+
+    window.addEventListener('prepare-gallery-enter', handlePrepare);
+    window.addEventListener('start-gallery-enter', handleStart);
+    return () => {
+      window.removeEventListener('prepare-gallery-enter', handlePrepare);
+      window.removeEventListener('start-gallery-enter', handleStart);
+    };
+  }, [size.height]);
+
   useFrame((state) => {
     const targetX = (state.pointer.x * size.width) / 2;
     const targetY = (state.pointer.y * size.height) / 2;

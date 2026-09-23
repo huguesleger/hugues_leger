@@ -21,7 +21,7 @@ export default function HomeExperience() {
     isWaveActive,
   } = useHomeIntroTransition({ skipIntro });
 
-  const galleryScrollEnabled = phase === 'transitioning' || phase === 'gallery';
+  const galleryScrollEnabled = phase === 'gallery';
 
   return (
     <div className="home-experience">

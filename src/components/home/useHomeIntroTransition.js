@@ -115,10 +115,7 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
 
     gsap.set(gallery, { visibility: 'visible', opacity: 0 });
     if (unwovenCanvas) {
-      gsap.set(unwovenCanvas, {
-        yPercent: GALLERY_ENTER_Y_PERCENT,
-        opacity: 0,
-      });
+      window.dispatchEvent(new CustomEvent('prepare-gallery-enter'));
     }
 
     const tl = gsap.timeline({
@@ -126,7 +123,7 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
       onComplete: () => {
         gsap.set(intro, { pointerEvents: 'none' });
         if (unwovenCanvas) {
-          gsap.set(unwovenCanvas, { clearProps: 'transform,opacity' });
+          gsap.set(unwovenCanvas, { clearProps: 'opacity' });
         }
         gsap.set(gallery, { clearProps: 'opacity,transform' });
         setPhase('gallery');
@@ -168,16 +165,9 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
     );
 
     if (unwovenCanvas) {
-      tl.to(
-        unwovenCanvas,
-        {
-          yPercent: 0,
-          opacity: 1,
-          duration: GALLERY_RISE_DURATION,
-          ease: 'power3.out',
-        },
-        'galleryEnter'
-      );
+      tl.add(() => {
+        window.dispatchEvent(new CustomEvent('start-gallery-enter', { detail: { duration: GALLERY_RISE_DURATION } }));
+      }, 'galleryEnter');
     }
   }, [clearIdleReset, unlockScroll]);
 
@@ -233,8 +223,8 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
       if (cover) gsap.set(cover, { opacity: 0, pointerEvents: 'none' });
       if (gallery) {
         gsap.set(gallery, { opacity: 1, visibility: 'visible', yPercent: 0 });
-        const unwoven = gallery.querySelector('.unwoven-canvas');
-        if (unwoven) gsap.set(unwoven, { yPercent: 0, opacity: 1 });
+        const unwovenCanvas = gallery.querySelector('.unwoven-canvas');
+        if (unwovenCanvas) gsap.set(unwovenCanvas, { opacity: 1 });
       }
       unlockScroll(false);
       return;
