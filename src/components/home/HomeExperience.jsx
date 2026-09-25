@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Gallery from '@/components/gallery/Gallery';
-import WaveGridCanvas from '@/components/waveGrid/WaveGridCanvas';
+import LiquidIntroCanvas from '@/components/liquidIntro/LiquidIntroCanvas';
 import { useHomeIntroTransition } from './useHomeIntroTransition';
 
 export default function HomeExperience() {
@@ -39,7 +39,7 @@ export default function HomeExperience() {
         className="home-intro"
         aria-label="Introduction"
       >
-        <WaveGridCanvas active={isWaveActive} />
+        <LiquidIntroCanvas active={isWaveActive} />
         <p className="home-intro__hint" aria-hidden="true">
           Scroll
         </p>
