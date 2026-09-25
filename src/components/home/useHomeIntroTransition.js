@@ -52,13 +52,20 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
     if (!intro || isAnimatingRef.current) return;
 
     clearIdleReset();
+    const startProgress = accumulatedRef.current / INTRO_WHEEL_THRESHOLD;
     accumulatedRef.current = 0;
 
-    gsap.to(intro, {
-      yPercent: 0,
+    // Anime le retour vers le haut (progression = 0)
+    gsap.to({ p: startProgress }, {
+      p: 0,
       duration: 0.65,
       ease: 'power2.out',
-      overwrite: true,
+      onUpdate: function() {
+        const val = this.targets()[0].p;
+        window.dispatchEvent(new CustomEvent('intro-scroll-progress', { detail: val }));
+        const opacity = 1 - (val * 0.3);
+        gsap.set(intro, { opacity });
+      }
     });
   }, [clearIdleReset]);
 
@@ -75,21 +82,25 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
     }, IDLE_RESET_MS);
   }, [clearIdleReset, releaseIntroPreview]);
 
-  const applyIntroPreview = useCallback(
+    const applyIntroPreview = useCallback(
     (progress, { animate = false } = {}) => {
       const intro = introPanelRef.current;
       if (!intro || isAnimatingRef.current) return;
 
-      const yPercent = PREVIEW_MAX_Y_PERCENT * progress;
+      // Dispatch event for LiquidIntroScene to react
+      window.dispatchEvent(new CustomEvent('intro-scroll-progress', { detail: progress }));
+
+      // Optionnel : on peut commencer à baisser très légèrement l'opacité globale
+      const opacity = 1 - (progress * 0.3);
       if (animate) {
         gsap.to(intro, {
-          yPercent,
+          opacity,
           duration: 0.2,
           ease: 'power2.out',
           overwrite: true,
         });
       } else {
-        gsap.set(intro, { yPercent });
+        gsap.set(intro, { opacity });
       }
     },
     []
@@ -134,15 +145,20 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
 
     tl.addLabel('introExit', 0);
 
+    // L'intro fond complètement sur place au lieu de slider vers le haut
     tl.to(
       intro,
       {
-        yPercent: -150,
         opacity: 0,
         duration: INTRO_EXIT_DURATION,
       },
       'introExit'
     );
+
+    // On informe la sphère que la transition finale a commencé pour qu'elle chute
+    tl.add(() => {
+      window.dispatchEvent(new CustomEvent('intro-scroll-progress', { detail: 1.5 })); // Force la sphère à tomber
+    }, 'introExit');
 
     if (cover) {
       tl.to(
@@ -170,6 +186,61 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
       }, 'galleryEnter');
     }
   }, [clearIdleReset, unlockScroll]);
+
+  const runEnterTimeline = useCallback(() => {
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    setPhase('transitioning');
+    lockScroll();
+
+    const intro = introPanelRef.current;
+    const cover = coverRef.current;
+    const gallery = galleryRef.current;
+
+    const tl = gsap.timeline({
+      defaults: { ease: 'power2.inOut' },
+      onComplete: () => {
+        gsap.set(gallery, { visibility: 'hidden', opacity: 0 });
+        gsap.set(intro, { pointerEvents: 'auto' });
+        setPhase('intro');
+        isAnimatingRef.current = false;
+        accumulatedRef.current = 0; // Reset scroll progress
+      },
+    });
+
+    tl.addLabel('galleryExit', 0);
+    tl.to(gallery, { opacity: 0, duration: GALLERY_FADE_DURATION }, 'galleryExit');
+
+    tl.addLabel('introEnter', `galleryExit+=${GALLERY_FADE_DURATION * 0.5}`);
+    tl.to(intro, { opacity: 1, duration: INTRO_EXIT_DURATION }, 'introEnter');
+
+    const unwovenCanvas = gallery.querySelector('.unwoven-canvas');
+    if (unwovenCanvas) {
+      tl.add(() => {
+        window.dispatchEvent(new CustomEvent('start-gallery-exit', { detail: { duration: INTRO_EXIT_DURATION } }));
+      }, 'galleryExit');
+    }
+    
+    // On force la valeur de départ du shader sans lissage pour tuer l'effet de rebond
+    window.dispatchEvent(new CustomEvent('intro-scroll-snap', { detail: -1.5 }));
+
+    // Anime la sphère pour la faire remonter et réapparaitre le texte depuis le bas
+    tl.add(() => {
+      gsap.to({ p: -1.5 }, {
+        p: 0,
+        duration: INTRO_EXIT_DURATION,
+        ease: 'power2.out',
+        onUpdate: function() {
+          const val = this.targets()[0].p;
+          window.dispatchEvent(new CustomEvent('intro-scroll-progress', { detail: val }));
+        }
+      });
+    }, 'introEnter');
+
+    if (cover) {
+      tl.to(cover, { opacity: 1, duration: INTRO_EXIT_DURATION }, 'introEnter');
+    }
+  }, [lockScroll]);
 
   const handleScrollIntent = useCallback(
     (delta) => {
@@ -215,14 +286,15 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
       const gallery = galleryRef.current;
       if (intro) {
         gsap.set(intro, {
-          yPercent: -150,
           opacity: 0,
           pointerEvents: 'none',
         });
+        // S'assurer que le WebGL est dans l'état "terminé"
+        window.dispatchEvent(new CustomEvent('intro-scroll-snap', { detail: 1.5 }));
       }
       if (cover) gsap.set(cover, { opacity: 0, pointerEvents: 'none' });
       if (gallery) {
-        gsap.set(gallery, { opacity: 1, visibility: 'visible', yPercent: 0 });
+        gsap.set(gallery, { opacity: 1, visibility: 'visible' });
         const unwovenCanvas = gallery.querySelector('.unwoven-canvas');
         if (unwovenCanvas) gsap.set(unwovenCanvas, { opacity: 1 });
       }
@@ -281,6 +353,26 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
       window.removeEventListener('touchmove', onTouchMove);
     };
   }, [handleScrollIntent, phase]);
+
+  // Détection du scroll vers le haut quand on est dans la galerie
+  useEffect(() => {
+    if (phase !== 'gallery') return;
+
+    const onWheelGallery = (e) => {
+      if (isAnimatingRef.current) return;
+      
+      const lenis = window.lenisInstance;
+      const scrollY = lenis ? lenis.scroll : window.scrollY;
+      
+      // Si on est tout en haut et qu'on scrolle encore vers le haut
+      if (scrollY <= 0 && e.deltaY < -10) {
+        runEnterTimeline();
+      }
+    };
+
+    window.addEventListener('wheel', onWheelGallery, { passive: true });
+    return () => window.removeEventListener('wheel', onWheelGallery);
+  }, [phase, runEnterTimeline]);
 
   return {
     phase,

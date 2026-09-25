@@ -272,11 +272,24 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
       });
     };
 
+    const handleExit = (e) => {
+      if (!groupRef.current) return;
+      const duration = e.detail?.duration || 0.65;
+      
+      gsap.to(groupRef.current.position, {
+        y: -size.height * 0.14,
+        duration: duration,
+        ease: 'power3.inOut',
+      });
+    };
+
     window.addEventListener('prepare-gallery-enter', handlePrepare);
     window.addEventListener('start-gallery-enter', handleStart);
+    window.addEventListener('start-gallery-exit', handleExit);
     return () => {
       window.removeEventListener('prepare-gallery-enter', handlePrepare);
       window.removeEventListener('start-gallery-enter', handleStart);
+      window.removeEventListener('start-gallery-exit', handleExit);
     };
   }, [size.height]);
 

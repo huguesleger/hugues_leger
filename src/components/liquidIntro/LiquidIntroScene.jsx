@@ -17,37 +17,65 @@ const bgVertexShader = /* glsl */`
 `;
 
 const bgFragmentShader = /* glsl */`
-  uniform sampler2D uTexture;
+  uniform sampler2D uTexCreative;
+  uniform sampler2D uTexDeveloper;
   uniform vec2 uMouse;
   uniform float uVelocity;
+  uniform float uProgress;
   varying vec2 vUv;
 
   void main() {
     // Calcul de la distance entre le pixel et la souris
     float dist = distance(vUv, uMouse);
     
-    // Rayon de l'effet (assez large pour être fluide)
+    // Rayon de l'effet
     float radius = 0.35;
     
     vec2 distortedUv = vUv;
     
     // Si on est proche de la souris, on applique la distorsion
     if (dist < radius) {
-      // Transition ultra douce (cloche)
       float influence = smoothstep(radius, 0.0, dist);
-      
-      // La direction de la déformation part du centre de la souris
       vec2 dir = normalize(vUv - uMouse);
-      
-      // La force dépend de la vitesse de la souris (uVelocity)
-      // Une onde douce basée sur un sinus pour un effet loupe/liquide
-      // Force constante pour garantir que l'effet est toujours visible
       float wave = sin(influence * 3.14159) * 0.02;
-      
       distortedUv = vUv - dir * wave;
     }
     
-    vec4 color = texture2D(uTexture, distortedUv);
+    // Le texte se fond dans le fond (#f0f0f0)
+    vec3 bgColor = vec3(0.941, 0.941, 0.941);
+    
+    // Parallax : on décale les UV en Y différemment pour les deux textes
+    vec2 uvCreative = distortedUv;
+    vec2 uvDeveloper = distortedUv;
+    
+    // CREATIVE monte un peu plus vite avec une légère rotation vers la droite
+    vec2 centerC = vec2(0.5, 0.5);
+    float angleC = -uProgress * 0.08;
+    float cosC = cos(angleC); float sinC = sin(angleC);
+    uvCreative -= centerC;
+    uvCreative = vec2(cosC * uvCreative.x - sinC * uvCreative.y, sinC * uvCreative.x + cosC * uvCreative.y);
+    uvCreative += centerC;
+    uvCreative.y -= uProgress * 0.12;
+    
+    // DEVELOPER monte plus lentement avec une rotation plus légère
+    vec2 centerD = vec2(0.5, 0.5);
+    float angleD = -uProgress * 0.04;
+    float cosD = cos(angleD); float sinD = sin(angleD);
+    uvDeveloper -= centerD;
+    uvDeveloper = vec2(cosD * uvDeveloper.x - sinD * uvDeveloper.y, sinD * uvDeveloper.x + cosD * uvDeveloper.y);
+    uvDeveloper += centerD;
+    uvDeveloper.y -= uProgress * 0.05;
+    
+    vec4 colorCreative = texture2D(uTexCreative, uvCreative);
+    vec4 colorDeveloper = texture2D(uTexDeveloper, uvDeveloper);
+    
+    // On superpose DEVELOPER sur CREATIVE
+    vec4 color = mix(colorCreative, colorDeveloper, colorDeveloper.a);
+    
+    // Le texte s'estompe en fonction de l'éloignement du centre (abs(uProgress))
+    float fade = smoothstep(0.4, 0.9, abs(uProgress));
+    color.rgb = mix(color.rgb, vec3(0.941, 0.941, 0.941), fade);
+    
     gl_FragColor = color;
   }
 `;
@@ -122,7 +150,7 @@ const fragmentShader = /* glsl */`
   }
 `;
 
-export default function LiquidIntroScene() {
+export default function LiquidIntroScene({ active = true }) {
   const { gl, scene, viewport } = useThree();
   const blobRef = useRef();
   const planeMeshRef = useRef();
@@ -141,11 +169,32 @@ export default function LiquidIntroScene() {
     uFrequency: { value: 0.9 },
   }), []);
 
+  const scrollProgress = useRef(0);
+  const lerpedScrollProgress = useRef(0);
+
+  useEffect(() => {
+    const onScrollProgress = (e) => {
+      scrollProgress.current = e.detail;
+    };
+    const onSnap = (e) => {
+      scrollProgress.current = e.detail;
+      lerpedScrollProgress.current = e.detail;
+    };
+    window.addEventListener('intro-scroll-progress', onScrollProgress);
+    window.addEventListener('intro-scroll-snap', onSnap);
+    return () => {
+      window.removeEventListener('intro-scroll-progress', onScrollProgress);
+      window.removeEventListener('intro-scroll-snap', onSnap);
+    };
+  }, []);
+
   // Uniforms pour le shader de distorsion fluide
   const bgUniforms = useMemo(() => ({
-    uTexture: { value: null },
+    uTexCreative: { value: null },
+    uTexDeveloper: { value: null },
     uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-    uVelocity: { value: 0 }
+    uVelocity: { value: 0 },
+    uProgress: { value: 0 }
   }), []);
 
   // Écouter le mouvement de la souris
@@ -173,33 +222,44 @@ export default function LiquidIntroScene() {
     };
   }, [gl, scene]);
 
-  // Canvas 2D → CanvasTexture pour le texte de fond
-  const canvasTexture = useMemo(() => {
+  // Canvas 2D → CanvasTextures pour l'effet parallax
+  const textures = useMemo(() => {
     const w = 2048;
     const h = 1024;
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
+    const leftMargin = 40; 
+    
+    // Texture 1 : CREATIVE + fond gris
+    const canvas1 = document.createElement('canvas');
+    canvas1.width = w;
+    canvas1.height = h;
+    const ctx1 = canvas1.getContext('2d');
+    ctx1.fillStyle = '#f0f0f0';
+    ctx1.fillRect(0, 0, w, h);
+    ctx1.fillStyle = '#111111';
+    ctx1.font = `800 ${h * 0.28}px Inter, Arial Black, sans-serif`;
+    ctx1.textAlign = 'left';
+    ctx1.textBaseline = 'middle';
+    ctx1.fillText('CREATIVE', leftMargin, h * 0.50);
+    const texCreative = new THREE.CanvasTexture(canvas1);
+    texCreative.needsUpdate = true;
+    bgUniforms.uTexCreative.value = texCreative;
 
-    ctx.fillStyle = '#f0f0f0';
-    ctx.fillRect(0, 0, w, h);
+    // Texture 2 : DEVELOPER avec fond transparent
+    const canvas2 = document.createElement('canvas');
+    canvas2.width = w;
+    canvas2.height = h;
+    const ctx2 = canvas2.getContext('2d');
+    ctx2.clearRect(0, 0, w, h);
+    ctx2.fillStyle = '#333333';
+    ctx2.font = `500 ${h * 0.18}px Inter, Arial, sans-serif`;
+    ctx2.textAlign = 'left';
+    ctx2.textBaseline = 'middle';
+    ctx2.fillText('DEVELOPER', leftMargin, h * 0.75);
+    const texDeveloper = new THREE.CanvasTexture(canvas2);
+    texDeveloper.needsUpdate = true;
+    bgUniforms.uTexDeveloper.value = texDeveloper;
 
-    ctx.fillStyle = '#111111';
-    ctx.font = `800 ${h * 0.28}px Inter, Arial Black, sans-serif`;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    const leftMargin = 40; // Décale d'environ 20px visuellement sur l'écran
-    ctx.fillText('CREATIVE', leftMargin, h * 0.50);
-
-    ctx.fillStyle = '#333333';
-    ctx.font = `500 ${h * 0.18}px Inter, Arial, sans-serif`;
-    ctx.fillText('DEVELOPER', leftMargin, h * 0.75);
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.needsUpdate = true;
-    bgUniforms.uTexture.value = tex;
-    return tex;
+    return { texCreative, texDeveloper };
   }, [bgUniforms]);
 
   // Custom Shader Material via CSM (technique Pavel Mazhuga)
@@ -218,13 +278,21 @@ export default function LiquidIntroScene() {
     dispersion: 5,
     envMapIntensity: 0.5,  // réduit l'intensité des reflets d'environnement
     transparent: true,
-    silent: true, // supprime les warnings CSM
   }), [uniforms]);
 
 
   useFrame(({ clock }) => {
+    if (!active) return;
+    
     uniforms.uTime.value = clock.elapsedTime;
     const t = clock.elapsedTime;
+    
+    // Application de la progression de scroll lissée (lerp) pour un rendu fluide
+    lerpedScrollProgress.current += (scrollProgress.current - lerpedScrollProgress.current) * 0.04;
+    bgUniforms.uProgress.value = lerpedScrollProgress.current;
+    if (planeMeshRef.current && planeMeshRef.current.material) {
+      planeMeshRef.current.material.uniforms.uProgress.value = lerpedScrollProgress.current;
+    }
 
     // Calcul de la vélocité réelle de la souris
     const dx = mouse.current.x - lastMousePos.current.x;
@@ -254,11 +322,20 @@ export default function LiquidIntroScene() {
       blobRef.current.rotation.y = t * 0.65 + lerpedMouse.current.x * 0.3;
       blobRef.current.rotation.z = t * 0.1;
 
-      // Position : flottement organique + dérive souris un peu plus marquée
+      // Position : flottement organique + dérive souris
       const mouseInfluenceX = lerpedMouse.current.x * 0.8;
       const mouseInfluenceY = lerpedMouse.current.y * 0.6;
+      
+      // La sphère tombe vers le bas à l'aller, et retombe depuis le haut au retour
+      const scrollDrop = -lerpedScrollProgress.current * viewport.height * 0.8;
+      
       blobRef.current.position.x = Math.sin(t * 0.35) * 0.3 + mouseInfluenceX;
-      blobRef.current.position.y = Math.sin(t * 0.5) * 0.2 + Math.cos(t * 0.3) * 0.15 + mouseInfluenceY;
+      blobRef.current.position.y = Math.sin(t * 0.5) * 0.2 + Math.cos(t * 0.3) * 0.15 + mouseInfluenceY + scrollDrop;
+    }
+    
+    // Le texte (et son fond) glisse physiquement vers le haut
+    if (planeMeshRef.current) {
+      planeMeshRef.current.position.y = lerpedScrollProgress.current * viewport.height * 0.8;
     }
   });
 
@@ -268,7 +345,7 @@ export default function LiquidIntroScene() {
   return (
     <>
       {/* Plan de fond — texte Canvas2D avec distorsion Fluide/Smudge */}
-      <mesh ref={planeMeshRef} position={[0, 0, -2]} scale={[viewport.width * 1.25, viewport.height * 1.25, 1]}>
+      <mesh key="parallax-v2" ref={planeMeshRef} position={[0, 0, -2]} scale={[viewport.width * 1.25, viewport.height * 1.25, 1]}>
         <planeGeometry args={[1, 1]} />
         <shaderMaterial
           vertexShader={bgVertexShader}

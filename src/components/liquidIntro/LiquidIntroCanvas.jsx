@@ -5,7 +5,8 @@ import { Suspense } from 'react';
 import LiquidIntroScene from './LiquidIntroScene';
 
 export default function LiquidIntroCanvas({ active = true }) {
-  if (!active) return null;
+  // On ne démonte plus le canvas pour éviter de recréer le contexte WebGL au retour
+  // L'optimisation se fait via frameloop="demand" ou en désactivant le useFrame dans la scène si besoin
 
   return (
     <div className="liquid-intro-canvas">
@@ -15,7 +16,7 @@ export default function LiquidIntroCanvas({ active = true }) {
         dpr={[1, 2]}
       >
         <Suspense fallback={null}>
-          <LiquidIntroScene />
+          <LiquidIntroScene active={active} />
         </Suspense>
       </Canvas>
     </div>
