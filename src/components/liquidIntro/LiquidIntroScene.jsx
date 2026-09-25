@@ -7,6 +7,53 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla';
 import gsap from 'gsap';
 
+// ─── Shaders de l'effet Fluide/Loupe (Texte de fond) ─────────────────────────
+const bgVertexShader = /* glsl */`
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const bgFragmentShader = /* glsl */`
+  uniform sampler2D uTexture;
+  uniform vec2 uMouse;
+  uniform float uVelocity;
+  varying vec2 vUv;
+
+  void main() {
+    // Calcul de la distance entre le pixel et la souris
+    float dist = distance(vUv, uMouse);
+    
+    // Rayon de l'effet (assez large pour être fluide)
+    float radius = 0.35;
+    
+    vec2 distortedUv = vUv;
+    
+    // Si on est proche de la souris, on applique la distorsion
+    if (dist < radius) {
+      // Transition ultra douce (cloche)
+      float influence = smoothstep(radius, 0.0, dist);
+      
+      // La direction de la déformation part du centre de la souris
+      vec2 dir = normalize(vUv - uMouse);
+      
+      // La force dépend de la vitesse de la souris (uVelocity)
+      // Une onde douce basée sur un sinus pour un effet loupe/liquide
+      // Force constante pour garantir que l'effet est toujours visible
+      float wave = sin(influence * 3.14159) * 0.02;
+      
+      distortedUv = vUv - dir * wave;
+    }
+    
+    vec4 color = texture2D(uTexture, distortedUv);
+    gl_FragColor = color;
+  }
+`;
+
+
+
 // ─── Vertex Shader : déformation Simplex 3D + recalcul des normals ───────────
 const vertexShader = /* glsl */`
   // Simplex 3D Noise (Ashima Arts / Ian McEwan)
@@ -83,6 +130,9 @@ export default function LiquidIntroScene() {
   const mouse = useRef({ x: 0, y: 0 });
   // Position lerped (suit la souris en retard)
   const lerpedMouse = useRef({ x: 0, y: 0 });
+  // Vélocité de la souris
+  const mouseVelocity = useRef(0);
+  const lastMousePos = useRef({ x: 0, y: 0 });
 
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
@@ -91,9 +141,17 @@ export default function LiquidIntroScene() {
     uFrequency: { value: 0.9 },
   }), []);
 
+  // Uniforms pour le shader de distorsion fluide
+  const bgUniforms = useMemo(() => ({
+    uTexture: { value: null },
+    uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+    uVelocity: { value: 0 }
+  }), []);
+
   // Écouter le mouvement de la souris
   useEffect(() => {
     const onMove = (e) => {
+      // Pour le blob (-1 à 1)
       mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
     };
@@ -132,16 +190,17 @@ export default function LiquidIntroScene() {
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     const leftMargin = 40; // Décale d'environ 20px visuellement sur l'écran
-    ctx.fillText('CREATIVE', leftMargin, h * 0.35);
+    ctx.fillText('CREATIVE', leftMargin, h * 0.50);
 
     ctx.fillStyle = '#333333';
     ctx.font = `500 ${h * 0.18}px Inter, Arial, sans-serif`;
-    ctx.fillText('DEVELOPER', leftMargin, h * 0.60);
+    ctx.fillText('DEVELOPER', leftMargin, h * 0.75);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.needsUpdate = true;
+    bgUniforms.uTexture.value = tex;
     return tex;
-  }, []);
+  }, [bgUniforms]);
 
   // Custom Shader Material via CSM (technique Pavel Mazhuga)
   const material = useMemo(() => new CustomShaderMaterial({
@@ -165,8 +224,26 @@ export default function LiquidIntroScene() {
 
   useFrame(({ clock }) => {
     uniforms.uTime.value = clock.elapsedTime;
+    const t = clock.elapsedTime;
+
+    // Calcul de la vélocité réelle de la souris
+    const dx = mouse.current.x - lastMousePos.current.x;
+    const dy = mouse.current.y - lastMousePos.current.y;
+    const speed = Math.sqrt(dx * dx + dy * dy);
+    
+    // On lerp la vélocité pour qu'elle monte vite et descende doucement (retour à zéro fluide)
+    mouseVelocity.current += (speed - mouseVelocity.current) * 0.1;
+    bgUniforms.uVelocity.value = mouseVelocity.current;
+    
+    lastMousePos.current.x = mouse.current.x;
+    lastMousePos.current.y = mouse.current.y;
+
+    // Mise à jour de la position pour le shader de fond (0 à 1, inversion Y)
+    // On utilise la vraie position de la souris (avec un léger lerp si on veut, ici on utilise la lerpedMouse)
+    bgUniforms.uMouse.value.x = (lerpedMouse.current.x + 1) * 0.5;
+    bgUniforms.uMouse.value.y = (lerpedMouse.current.y + 1) * 0.5;
+
     if (blobRef.current) {
-      const t = clock.elapsedTime;
 
       // Lerp de la souris — très doux (0.02)
       lerpedMouse.current.x += (mouse.current.x - lerpedMouse.current.x) * 0.19;
@@ -190,10 +267,17 @@ export default function LiquidIntroScene() {
 
   return (
     <>
-      {/* Plan de fond — texte Canvas2D */}
+      {/* Plan de fond — texte Canvas2D avec distorsion Fluide/Smudge */}
       <mesh ref={planeMeshRef} position={[0, 0, -2]} scale={[viewport.width * 1.25, viewport.height * 1.25, 1]}>
         <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial map={canvasTexture} toneMapped={false} />
+        <shaderMaterial
+          vertexShader={bgVertexShader}
+          fragmentShader={bgFragmentShader}
+          uniforms={bgUniforms}
+          toneMapped={false}
+          // IMPORTANT: transparent doit être false pour que le verre de la sphère puisse le réfracter !
+          transparent={false}
+        />
       </mesh>
 
       {/* Blob organique — IcosahedronGeometry (plus de détails que la sphère) */}
