@@ -22,6 +22,7 @@ const bgFragmentShader = /* glsl */`
   uniform vec2 uMouse;
   uniform float uVelocity;
   uniform float uProgress;
+  uniform vec2 uResolution;
   varying vec2 vUv;
 
   void main() {
@@ -31,40 +32,57 @@ const bgFragmentShader = /* glsl */`
     // Rayon de l'effet
     float radius = 0.35;
     
-    vec2 distortedUv = vUv;
+    // On utilise un mode CONTAIN avec un ratio natif 2:1 (2048x1024)
+    // Cela garantit que le texte remplit un maximum de largeur sur desktop sans jamais déborder ou se déformer
+    float screenAspect = uResolution.x / uResolution.y;
+    float texAspect = 2.0; 
+    
+    vec2 baseUv = vUv;
+    baseUv -= 0.5;
+    if (screenAspect > texAspect) {
+      // Écran plus large (desktop) : on ajoute des marges sur les côtés
+      baseUv.x *= screenAspect / texAspect;
+    } else {
+      // Écran plus haut (mobile) : on ajoute des marges en haut et en bas
+      baseUv.y *= texAspect / screenAspect;
+    }
+    baseUv += 0.5;
+    
+    vec2 distortedUv = baseUv;
     
     // Si on est proche de la souris, on applique la distorsion
     if (dist < radius) {
       float influence = smoothstep(radius, 0.0, dist);
-      vec2 dir = normalize(vUv - uMouse);
+      vec2 dir = normalize(vUv - uMouse); // La direction de la souris reste en espace écran
       float wave = sin(influence * 3.14159) * 0.02;
-      distortedUv = vUv - dir * wave;
+      distortedUv = baseUv - dir * wave;
     }
     
     // Le texte se fond dans le fond (#f0f0f0)
     vec3 bgColor = vec3(0.941, 0.941, 0.941);
     
-    // Parallax : on décale les UV en Y différemment pour les deux textes
-    vec2 uvCreative = distortedUv;
-    vec2 uvDeveloper = distortedUv;
-    
-    // CREATIVE monte un peu plus vite avec une légère rotation vers la droite
+    // CREATIVE monte un peu plus vite avec une légère rotation
     vec2 centerC = vec2(0.5, 0.5);
     float angleC = -uProgress * 0.08;
     float cosC = cos(angleC); float sinC = sin(angleC);
-    uvCreative -= centerC;
-    uvCreative = vec2(cosC * uvCreative.x - sinC * uvCreative.y, sinC * uvCreative.x + cosC * uvCreative.y);
-    uvCreative += centerC;
-    uvCreative.y -= uProgress * 0.12;
+    
+    // Plus besoin de corriger le ratio ici, distortedUv est déjà isométrique !
+    vec2 uvC = distortedUv - centerC;
+    uvC = vec2(cosC * uvC.x - sinC * uvC.y, sinC * uvC.x + cosC * uvC.y);
+    uvC += centerC;
+    uvC.y -= uProgress * 0.12;
+    vec2 uvCreative = uvC;
     
     // DEVELOPER monte plus lentement avec une rotation plus légère
     vec2 centerD = vec2(0.5, 0.5);
     float angleD = -uProgress * 0.04;
     float cosD = cos(angleD); float sinD = sin(angleD);
-    uvDeveloper -= centerD;
-    uvDeveloper = vec2(cosD * uvDeveloper.x - sinD * uvDeveloper.y, sinD * uvDeveloper.x + cosD * uvDeveloper.y);
-    uvDeveloper += centerD;
-    uvDeveloper.y -= uProgress * 0.05;
+    
+    vec2 uvD = distortedUv - centerD;
+    uvD = vec2(cosD * uvD.x - sinD * uvD.y, sinD * uvD.x + cosD * uvD.y);
+    uvD += centerD;
+    uvD.y -= uProgress * 0.05;
+    vec2 uvDeveloper = uvD;
     
     vec4 colorCreative = texture2D(uTexCreative, uvCreative);
     vec4 colorDeveloper = texture2D(uTexDeveloper, uvDeveloper);
@@ -151,7 +169,7 @@ const fragmentShader = /* glsl */`
 `;
 
 export default function LiquidIntroScene({ active = true }) {
-  const { gl, scene, viewport } = useThree();
+  const { gl, scene, viewport, size } = useThree();
   const blobRef = useRef();
   const planeMeshRef = useRef();
   // Position souris normalisée [-1, 1]
@@ -194,7 +212,8 @@ export default function LiquidIntroScene({ active = true }) {
     uTexDeveloper: { value: null },
     uMouse: { value: new THREE.Vector2(0.5, 0.5) },
     uVelocity: { value: 0 },
-    uProgress: { value: 0 }
+    uProgress: { value: 0 },
+    uResolution: { value: new THREE.Vector2(1, 1) }
   }), []);
 
   // Écouter le mouvement de la souris
@@ -222,11 +241,20 @@ export default function LiquidIntroScene({ active = true }) {
     };
   }, [gl, scene]);
 
-  // Canvas 2D → CanvasTextures pour l'effet parallax
+  // Canvas 2D → CanvasTextures fixes (2048x1024 - Ratio 2:1 natif pour un texte immense)
   const textures = useMemo(() => {
+    // Un canvas 2:1 permet au texte de s'étaler sur toute la largeur (desktop)
     const w = 2048;
     const h = 1024;
-    const leftMargin = 40; 
+    const leftMargin = w * 0.04; 
+    
+    // Tailles originales exactes de la première version (gigantesque sur desktop)
+    const titleSize = 286; 
+    const subtitleSize = 184;
+    
+    const centerY = h * 0.5;
+    const creativeY = centerY - titleSize * 0.1;
+    const developerY = creativeY + titleSize * 0.75 + subtitleSize * 0.5;
     
     // Texture 1 : CREATIVE + fond gris
     const canvas1 = document.createElement('canvas');
@@ -236,11 +264,13 @@ export default function LiquidIntroScene({ active = true }) {
     ctx1.fillStyle = '#f0f0f0';
     ctx1.fillRect(0, 0, w, h);
     ctx1.fillStyle = '#111111';
-    ctx1.font = `800 ${h * 0.28}px Inter, Arial Black, sans-serif`;
+    ctx1.font = `800 ${titleSize}px Inter, Arial Black, sans-serif`;
     ctx1.textAlign = 'left';
     ctx1.textBaseline = 'middle';
-    ctx1.fillText('CREATIVE', leftMargin, h * 0.50);
+    ctx1.fillText('CREATIVE', leftMargin, creativeY);
     const texCreative = new THREE.CanvasTexture(canvas1);
+    texCreative.wrapS = THREE.ClampToEdgeWrapping;
+    texCreative.wrapT = THREE.ClampToEdgeWrapping;
     texCreative.needsUpdate = true;
     bgUniforms.uTexCreative.value = texCreative;
 
@@ -251,11 +281,13 @@ export default function LiquidIntroScene({ active = true }) {
     const ctx2 = canvas2.getContext('2d');
     ctx2.clearRect(0, 0, w, h);
     ctx2.fillStyle = '#333333';
-    ctx2.font = `500 ${h * 0.18}px Inter, Arial, sans-serif`;
+    ctx2.font = `500 ${subtitleSize}px Inter, Arial, sans-serif`;
     ctx2.textAlign = 'left';
     ctx2.textBaseline = 'middle';
-    ctx2.fillText('DEVELOPER', leftMargin, h * 0.75);
+    ctx2.fillText('DEVELOPER', leftMargin, developerY);
     const texDeveloper = new THREE.CanvasTexture(canvas2);
+    texDeveloper.wrapS = THREE.ClampToEdgeWrapping;
+    texDeveloper.wrapT = THREE.ClampToEdgeWrapping;
     texDeveloper.needsUpdate = true;
     bgUniforms.uTexDeveloper.value = texDeveloper;
 
@@ -292,6 +324,7 @@ export default function LiquidIntroScene({ active = true }) {
     bgUniforms.uProgress.value = lerpedScrollProgress.current;
     if (planeMeshRef.current && planeMeshRef.current.material) {
       planeMeshRef.current.material.uniforms.uProgress.value = lerpedScrollProgress.current;
+      planeMeshRef.current.material.uniforms.uResolution.value.set(size.width, size.height);
     }
 
     // Calcul de la vélocité réelle de la souris
@@ -340,7 +373,15 @@ export default function LiquidIntroScene({ active = true }) {
   });
 
 
-  const blobRadius = Math.min(viewport.width, viewport.height) * 0.28;
+  // Adapter la taille de la sphère selon l'orientation (mobile vs desktop)
+  const isMobile = viewport.width < viewport.height;
+  const blobRadius = isMobile 
+    ? viewport.width * 0.20 // Sphère plus petite sur mobile (20% de la largeur)
+    : Math.min(viewport.width, viewport.height) * 0.28; // Original sur desktop
+    
+  // Rendre l'amplitude de déformation (uDistort) proportionnelle à la taille de la sphère
+  // L'ancien uDistort était 0.35 pour un rayon d'environ 2.2 (soit un ratio de ~0.15)
+  uniforms.uDistort.value = blobRadius * 0.15;
 
   return (
     <>
