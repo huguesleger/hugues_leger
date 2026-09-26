@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Gallery from "@/components/gallery/Gallery";
-import LiquidIntroCanvas from "@/components/liquidIntro/LiquidIntroCanvas";
+import Gallery from "@/components/webgl/gallerie/Gallery";
+import LiquidIntroCanvas from "@/components/webgl/liquidIntro/LiquidIntroCanvas";
 import { useHomeIntroTransition } from "./useHomeIntroTransition";
 
 export default function HomeExperience() {

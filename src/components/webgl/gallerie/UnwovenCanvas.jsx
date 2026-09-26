@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import {
   VERTEX_SHADER,
   FRAGMENT_SHADER,
-} from "@/components/webgl/unwovenShaders";
+} from "./unwovenShaders";
 
 const CONFIG = {
   threads: 26,
@@ -371,7 +371,7 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     const targetMaterial = materials[index];
     const id = (index % 6) + 1;
     const src = images[index];
-    import("./TransitionOverlay").then((m) =>
+    import("@/components/TransitionOverlay").then((m) =>
       m.triggerTransition(null, src, id),
     );
     gsap.to(targetMaterial.uniforms.uTransitionProgress, {
