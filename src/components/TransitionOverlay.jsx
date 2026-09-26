@@ -47,7 +47,7 @@ export default function TransitionOverlay() {
           position: "fixed",
           inset: 0,
           backgroundColor: "var(--color-bg)",
-          zIndex: 10000,
+          zIndex: 50,
           pointerEvents: "none",
         });
 
@@ -65,7 +65,7 @@ export default function TransitionOverlay() {
             height: "600px",
             width: "100vw",
             position: "fixed",
-            zIndex: 10001,
+            zIndex: 60,
           });
         }
 
@@ -95,7 +95,7 @@ export default function TransitionOverlay() {
             height: "600px",
             width: "100vw",
             position: "fixed",
-            zIndex: 10001,
+            zIndex: 60,
           });
         }
 
