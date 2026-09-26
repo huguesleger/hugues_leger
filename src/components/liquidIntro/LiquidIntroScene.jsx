@@ -239,8 +239,11 @@ const vertexShader = /* glsl */`
   varying vec3 vNorm;
 
   void main() {
-    // Déplacer les vertices le long de leur normale
-    float d = snoise(normalize(position) * uFrequency + uTime * uSpeed) * uDistort;
+    // On utilise uTime pour un mouvement cyclique continu. 
+    // Les fonctions cos/sin maintiennent les coordonnées proches de zéro,
+    // évitant ainsi le problème de précision (FP32) du snoise après plusieurs heures.
+    vec3 pOffset = vec3(cos(uTime), sin(uTime), sin(uTime * 0.8)) * 1.5;
+    float d = snoise(normalize(position) * uFrequency + pOffset) * uDistort;
     vec3 newPos = position + normal * d;
 
     // Recalcul des normals par différences finies (technique Pavel Mazhuga)
@@ -249,8 +252,8 @@ const vertexShader = /* glsl */`
     vec3 tangent1 = normalize(cross(normal, vec3(0.0, 1.0, 0.0)));
     vec3 tangent2 = normalize(cross(normal, tangent1));
 
-    float d1 = snoise(normalize(position + tangent1 * eps) * uFrequency + uTime * uSpeed) * uDistort;
-    float d2 = snoise(normalize(position + tangent2 * eps) * uFrequency + uTime * uSpeed) * uDistort;
+    float d1 = snoise(normalize(position + tangent1 * eps) * uFrequency + pOffset) * uDistort;
+    float d2 = snoise(normalize(position + tangent2 * eps) * uFrequency + pOffset) * uDistort;
 
     vec3 p1 = (position + tangent1 * eps) + normal * d1;
     vec3 p2 = (position + tangent2 * eps) + normal * d2;
@@ -444,7 +447,8 @@ export default function LiquidIntroScene({ active = true }) {
   useFrame(({ clock }) => {
     if (!active) return;
 
-    uniforms.uTime.value = clock.elapsedTime;
+    const animSpeed = uniforms.uSpeed.value;
+    uniforms.uTime.value = (clock.elapsedTime * animSpeed) % (Math.PI * 10.0);
     const t = clock.elapsedTime;
 
     // Application de la progression de scroll lissée (lerp) pour un rendu fluide
