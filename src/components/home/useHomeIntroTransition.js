@@ -90,17 +90,12 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
       // Dispatch event for LiquidIntroScene to react
       window.dispatchEvent(new CustomEvent('intro-scroll-progress', { detail: progress }));
 
-      // Optionnel : on peut commencer à baisser très légèrement l'opacité globale
-      const opacity = 1 - (progress * 0.3);
       if (animate) {
         gsap.to(intro, {
-          opacity,
           duration: 0.2,
           ease: 'power2.out',
           overwrite: true,
         });
-      } else {
-        gsap.set(intro, { opacity });
       }
     },
     []
@@ -268,8 +263,8 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
         return;
       }
 
+      // La transition d'intro suit le scroll, on n'utilise plus scheduleIdleReset() pour forcer le retour en haut.
       applyIntroPreview(progress, { animate: true });
-      scheduleIdleReset();
     },
     [
       applyIntroPreview,

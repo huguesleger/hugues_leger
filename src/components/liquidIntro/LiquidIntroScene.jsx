@@ -58,8 +58,9 @@ const bgFragmentShader = /* glsl */`
       distortedUv = baseUv - dir * wave;
     }
     
-    // Le texte se fond dans le fond (#f0f0f0)
-    vec3 bgColor = vec3(0.941, 0.941, 0.941);
+    // On récupère dynamiquement la couleur de fond depuis un pixel sûr (en haut à gauche) 
+    // pour garantir que le fondu corresponde exactement à la couleur #161515, peu importe l'espace colorimétrique
+    vec3 bgColor = texture2D(uTexCreative, vec2(0.0, 0.0)).rgb;
     
     // CREATIVE monte un peu plus vite avec une légère rotation
     vec2 centerC = vec2(0.5, 0.5);
@@ -88,14 +89,14 @@ const bgFragmentShader = /* glsl */`
     vec4 colorDeveloper = texture2D(uTexDeveloper, uvDeveloper);
     
     // On superpose DEVELOPER sur CREATIVE
-    // On utilise uniquement le canal alpha comme masque pour forcer la couleur noire.
-    // Cela supprime totalement le liseré blanc (causé par l'anti-aliasing subpixel du navigateur sur fond transparent).
+    // On utilise uniquement le canal alpha comme masque pour forcer la couleur blanche.
+    // Cela supprime totalement le liseré (causé par l'anti-aliasing subpixel du navigateur sur fond transparent).
     vec4 color = colorCreative;
-    color.rgb = mix(color.rgb, vec3(0.0), colorDeveloper.a);
+    color.rgb = mix(color.rgb, vec3(1.0), colorDeveloper.a);
     
     // Le texte s'estompe en fonction de l'éloignement du centre (abs(uProgress))
     float fade = smoothstep(0.4, 0.9, abs(uProgress));
-    color.rgb = mix(color.rgb, vec3(0.941, 0.941, 0.941), fade);
+    color.rgb = mix(color.rgb, bgColor, fade);
     
     gl_FragColor = color;
   }
@@ -264,9 +265,10 @@ export default function LiquidIntroScene({ active = true }) {
     canvas1.width = w;
     canvas1.height = h;
     const ctx1 = canvas1.getContext('2d');
-    ctx1.fillStyle = '#101010';
+    ctx1.fillStyle = '#161515';
     ctx1.fillRect(0, 0, w, h);
-    ctx1.fillStyle = '#000000';
+
+    ctx1.fillStyle = '#ffffff';
     ctx1.font = `800 ${titleSize}px Inter, Arial Black, sans-serif`;
     ctx1.textAlign = 'left';
     ctx1.textBaseline = 'middle';
@@ -283,7 +285,7 @@ export default function LiquidIntroScene({ active = true }) {
     canvas2.height = h;
     const ctx2 = canvas2.getContext('2d');
     ctx2.clearRect(0, 0, w, h);
-    ctx2.fillStyle = '#000000';
+    ctx2.fillStyle = '#ffffff';
     ctx2.font = `600 ${subtitleSize}px Inter, Arial, sans-serif`;
     ctx2.textAlign = 'left';
     ctx2.textBaseline = 'middle';
