@@ -24,6 +24,46 @@ const bgFragmentShader = /* glsl */`
   uniform float uProgress;
   uniform vec2 uResolution;
   varying vec2 vUv;
+  
+  // Simplex Noise 2D (plus rond et organique que le Value Noise)
+  vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+  
+  float noise(vec2 v){
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+    vec2 i  = floor(v + dot(v, C.yy) );
+    vec2 x0 = v -   i + dot(i, C.xx);
+    vec2 i1;
+    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod(i, 289.0);
+    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+    m = m*m ;
+    m = m*m ;
+    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+    vec3 h = abs(x) - 0.5;
+    vec3 ox = floor(x + 0.5);
+    vec3 a0 = x - ox;
+    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+    vec3 g;
+    g.x  = a0.x  * x0.x  + h.x  * x0.y;
+    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+    // On remet la plage entre 0.0 et 1.0
+    return (130.0 * dot(m, g)) * 0.5 + 0.5;
+  }
+  
+  // FBM (Fractal Brownian Motion) pour un bruit plus détaillé (fumée/sable)
+  float fbm(vec2 st) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      for (int i = 0; i < 4; i++) {
+          value += amplitude * noise(st);
+          st *= 2.0;
+          amplitude *= 0.5;
+      }
+      return value;
+  }
 
   void main() {
     // Calcul de la distance entre le pixel et la souris
@@ -85,18 +125,78 @@ const bgFragmentShader = /* glsl */`
     uvD.y -= uProgress * 0.05;
     vec2 uvDeveloper = uvD;
     
-    vec4 colorCreative = texture2D(uTexCreative, uvCreative);
-    vec4 colorDeveloper = texture2D(uTexDeveloper, uvDeveloper);
+    // --- OPTION 4 : LENS BLUR (Flou d'objectif inspiré de Codrops) ---
+    // Le flou commence à 0.05 et s'intensifie
+    float blurProgress = smoothstep(0.05, 0.7, abs(uProgress));
     
-    // On superpose DEVELOPER sur CREATIVE
-    // On utilise uniquement le canal alpha comme masque pour forcer la couleur blanche.
-    // Cela supprime totalement le liseré (causé par l'anti-aliasing subpixel du navigateur sur fond transparent).
+    // Rayon du flou maximum (ajustable)
+    float maxBlur = 0.04;
+    float blurRadius = blurProgress * maxBlur;
+    
+    // On prépare les couleurs
+    vec4 colorCreative = vec4(0.0);
+    vec4 colorDeveloper = vec4(0.0);
+    
+    // Si le rayon est tout petit, on fait un sample direct pour économiser des calculs
+    if (blurRadius < 0.001) {
+        colorCreative = texture2D(uTexCreative, uvCreative);
+        colorDeveloper = texture2D(uTexDeveloper, uvDeveloper);
+    } else {
+        // Algorithme de Lens Blur (Bokeh) avec plusieurs directions
+        const float TAU = 6.28318530718;
+        const float directions = 16.0; // Plus il y a de directions, plus le flou est rond
+        const float quality = 3.0;     // Nombre de samples par direction
+        float total = 1.0;
+        
+        // Echantillon central
+        colorCreative = texture2D(uTexCreative, uvCreative);
+        colorDeveloper = texture2D(uTexDeveloper, uvDeveloper);
+        
+        for (float d = 0.0; d < TAU; d += TAU / directions) {
+            for (float i = 1.0 / quality; i <= 1.0; i += 1.0 / quality) {
+                vec2 offset = vec2(cos(d), sin(d)) * blurRadius * i;
+                // Correction du ratio d'aspect pour que le flou soit bien rond
+                offset.x *= uResolution.y / uResolution.x;
+                
+                colorCreative += texture2D(uTexCreative, uvCreative + offset);
+                colorDeveloper += texture2D(uTexDeveloper, uvDeveloper + offset);
+                total += 1.0;
+            }
+        }
+        
+        // --- Ajout de la traînée (Streak / Motion Blur directionnel) ---
+        // Direction de la traînée (vers le haut en UV = le visuel bave vers le bas)
+        vec2 trailDir = normalize(vec2(-0.3, 1.0)); 
+        
+        // Longueur beaucoup plus importante (40% de l'écran)
+        float trailLength = blurProgress * 0.4; 
+        const float trailSamples = 30.0; // Plus de samples pour éviter l'effet "haché" sur une grande longueur
+        
+        for (float i = 1.0; i <= trailSamples; i += 1.0) {
+            float f = i / trailSamples;
+            // Poids ÉNORME (x15) pour que la traînée prenne le dessus sur le flou central
+            // Courbe plus douce (pow 1.5) pour que la traînée reste bien lumineuse loin du texte
+            float weight = pow(1.0 - f, 1.5) * 15.0; 
+            
+            vec2 offset = trailDir * trailLength * f;
+            offset.x *= uResolution.y / uResolution.x;
+            
+            colorCreative += texture2D(uTexCreative, uvCreative + offset) * weight;
+            colorDeveloper += texture2D(uTexDeveloper, uvDeveloper + offset) * weight;
+            total += weight;
+        }
+        
+        colorCreative /= total;
+        colorDeveloper /= total;
+    }
+    
     vec4 color = colorCreative;
+    
+    // Superposition de DEVELOPER
     color.rgb = mix(color.rgb, vec3(1.0), colorDeveloper.a);
     
-    // Le texte s'estompe en fonction de l'éloignement du centre (abs(uProgress))
-    float fade = smoothstep(0.4, 0.9, abs(uProgress));
-    color.rgb = mix(color.rgb, bgColor, fade);
+    // Fondu global dans le fond pour faire disparaître le texte flou
+    color.rgb = mix(color.rgb, bgColor, blurProgress);
     
     gl_FragColor = color;
   }
