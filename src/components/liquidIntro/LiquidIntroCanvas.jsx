@@ -10,6 +10,13 @@ export default function LiquidIntroCanvas({ active = true }) {
 
   return (
     <div className="liquid-intro-canvas">
+      {/* Éléments invisibles pour forcer le navigateur à charger les typographies nativement */}
+      <div style={{ fontFamily: 'SF_pro_display', fontWeight: 600, position: 'absolute', opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
+        preload sf
+      </div>
+      <div style={{ fontFamily: 'Jost', position: 'absolute', opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
+        preload jost
+      </div>
       <Canvas
         camera={{ position: [0, 0, 8], fov: 50 }}
         gl={{ antialias: true }}

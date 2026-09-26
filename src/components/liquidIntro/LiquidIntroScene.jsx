@@ -1,7 +1,7 @@
 'use client';
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla';
@@ -273,6 +273,19 @@ const fragmentShader = /* glsl */`
 `;
 
 export default function LiquidIntroScene({ active = true }) {
+  const [fontLoaded, setFontLoaded] = useState(false);
+
+  useEffect(() => {
+    // Le navigateur va maintenant charger la police grâce à l'élément HTML invisible
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        setFontLoaded(true);
+      });
+    } else {
+      setFontLoaded(true);
+    }
+  }, []);
+
   const { gl, scene, viewport, size } = useThree();
   const blobRef = useRef();
   const planeMeshRef = useRef();
@@ -353,12 +366,20 @@ export default function LiquidIntroScene({ active = true }) {
     const leftMargin = w * 0.04;
 
     // Tailles originales exactes de la première version (gigantesque sur desktop)
-    const titleSize = 286;
+    const titleSize = 350;
     const subtitleSize = 184;
 
     const centerY = h * 0.5;
-    const creativeY = centerY - titleSize * 0.1;
-    const developerY = creativeY + titleSize * 0.75 + subtitleSize * 0.5;
+    // On remonte un peu le texte Creative pour bien centrer verticalement le bloc global
+    const creativeY = centerY - titleSize * 0.25;
+
+    // On réduit l'espace entre Creative et Developer (avant c'était titleSize * 0.75 + ...)
+    const developerY = creativeY + titleSize * 0.75;
+
+    // Décalage X pour compenser le "vide" naturel à gauche des différentes polices 
+    // et aligner parfaitement le "C" et le "D" sur une ligne verticale.
+    const creativeX = leftMargin;
+    const developerX = leftMargin + 15; // Ajuste ce +5 si le D de Developer est encore trop à gauche ou à droite
 
     // Texture 1 : CREATIVE + fond gris
     const canvas1 = document.createElement('canvas');
@@ -369,10 +390,11 @@ export default function LiquidIntroScene({ active = true }) {
     ctx1.fillRect(0, 0, w, h);
 
     ctx1.fillStyle = '#ffffff';
-    ctx1.font = `800 ${titleSize}px Inter, Arial Black, sans-serif`;
+    ctx1.font = `600 ${titleSize}px "SF_pro_display", sans-serif`;
+    ctx1.letterSpacing = '-0.1em'; // Rapprochement des lettres
     ctx1.textAlign = 'left';
     ctx1.textBaseline = 'middle';
-    ctx1.fillText('CREATIVE', leftMargin, creativeY);
+    ctx1.fillText('CREATIVE', creativeX, creativeY);
     const texCreative = new THREE.CanvasTexture(canvas1);
     texCreative.wrapS = THREE.ClampToEdgeWrapping;
     texCreative.wrapT = THREE.ClampToEdgeWrapping;
@@ -386,10 +408,11 @@ export default function LiquidIntroScene({ active = true }) {
     const ctx2 = canvas2.getContext('2d');
     ctx2.clearRect(0, 0, w, h);
     ctx2.fillStyle = '#ffffff';
-    ctx2.font = `600 ${subtitleSize}px Inter, Arial, sans-serif`;
+    ctx2.font = `400 ${subtitleSize}px Jost, sans-serif`;
+    ctx2.letterSpacing = '-0.1em'; // Rapprochement des lettres
     ctx2.textAlign = 'left';
     ctx2.textBaseline = 'middle';
-    ctx2.fillText('DEVELOPER', leftMargin, developerY);
+    ctx2.fillText('DEVELOPER', developerX, developerY);
     const texDeveloper = new THREE.CanvasTexture(canvas2);
     texDeveloper.wrapS = THREE.ClampToEdgeWrapping;
     texDeveloper.wrapT = THREE.ClampToEdgeWrapping;
@@ -397,7 +420,7 @@ export default function LiquidIntroScene({ active = true }) {
     bgUniforms.uTexDeveloper.value = texDeveloper;
 
     return { texCreative, texDeveloper };
-  }, [bgUniforms]);
+  }, [bgUniforms, fontLoaded]);
 
   // Custom Shader Material via CSM (technique Pavel Mazhuga)
   const material = useMemo(() => new CustomShaderMaterial({
