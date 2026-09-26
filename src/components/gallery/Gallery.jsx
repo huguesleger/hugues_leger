@@ -21,10 +21,6 @@ export default function Gallery({ scrollEnabled = true }) {
 
   return (
     <div ref={containerRef}>
-      <header className="header gallery__header">
-        <h1 className="header__title">Portfolio</h1>
-      </header>
-
       <UnwovenCanvas scrollEnabled={scrollEnabled} />
     </div>
   );
