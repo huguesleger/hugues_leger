@@ -1,14 +1,17 @@
 "use client";
 /* eslint-disable react-hooks/immutability */
 
-import React, { useRef, useMemo, useEffect, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useTexture } from '@react-three/drei';
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { useRouter } from 'next/navigation';
+import React, { useRef, useMemo, useEffect, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useTexture } from "@react-three/drei";
+import * as THREE from "three";
+import gsap from "gsap";
+import { useRouter } from "next/navigation";
 
-import { VERTEX_SHADER, FRAGMENT_SHADER } from '@/components/webgl/unwovenShaders';
+import {
+  VERTEX_SHADER,
+  FRAGMENT_SHADER,
+} from "@/components/webgl/unwovenShaders";
 
 const CONFIG = {
   threads: 26,
@@ -16,14 +19,13 @@ const CONFIG = {
   cardMaxHeight: 452,
   cardAspect: 0.75,
   cardGapRatio: 0.11,
-  cardRadius: 0,
   tearZoneRatio: 0.26,
   tearZoneMax: 380,
 };
 
 function getGalleryScroll() {
   const lenis = window.lenisInstance;
-  if (lenis && typeof lenis.scroll === 'number') {
+  if (lenis && typeof lenis.scroll === "number") {
     return lenis.scroll;
   }
   return window.scrollY;
@@ -37,7 +39,12 @@ function restoreGalleryScroll(targetScroll, scrollRef) {
 
 const STAGGERS = [-300, 200, -200, 300, -350, 150];
 
-function syncMeshScrollPositions(group, pitch, scrollOffset, screenWidth = 1000) {
+function syncMeshScrollPositions(
+  group,
+  pitch,
+  scrollOffset,
+  screenWidth = 1000,
+) {
   if (!group) return;
   const isMobile = screenWidth < 768;
   group.children.forEach((mesh, i) => {
@@ -60,7 +67,7 @@ function buildVerticalRibbonGeometry(width, height, threads, segments) {
   let v = 0;
   for (let t = 0; t < threads; t++) {
     for (let col = 0; col < 2; col++) {
-      const ux = (t + col) / threads; // 0 at left, 1 at right
+      const ux = (t + col) / threads;
       for (let r = 0; r < rows; r++) {
         const vy = r / segments;
         positions[v * 3 + 0] = (ux - 0.5) * width;
@@ -90,6 +97,7 @@ function buildVerticalRibbonGeometry(width, height, threads, segments) {
   geometry.setAttribute("aRim", new THREE.BufferAttribute(rims, 1));
   geometry.setAttribute("aThread", new THREE.BufferAttribute(threadIds, 1));
   geometry.setIndex(indices);
+  geometry.computeBoundingSphere();
   return geometry;
 }
 
@@ -101,8 +109,6 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
 
   let cardHeight = Math.min(CONFIG.cardMaxHeight, size.height * 0.62);
   let cardWidth = cardHeight * CONFIG.cardAspect;
-
-  // Rendre les cartes responsives : on s'assure qu'elles ne dépassent jamais 90% de la largeur de l'écran (sur mobile)
   const maxCardWidth = size.width * 0.9;
   if (cardWidth > maxCardWidth) {
     cardWidth = maxCardWidth;
@@ -115,9 +121,9 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
 
   const isTransitioning = useRef(false);
   const scrollYRef = useRef(
-    typeof window !== 'undefined'
-      ? Number(sessionStorage.getItem('galleryScroll') || getGalleryScroll())
-      : 0
+    typeof window !== "undefined"
+      ? Number(sessionStorage.getItem("galleryScroll") || getGalleryScroll())
+      : 0,
   );
 
   useEffect(() => {
@@ -126,41 +132,53 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     document.body.style.height = `${scrollSpan + window.innerHeight}px`;
     window.lenisInstance?.resize();
 
-    const savedScroll = sessionStorage.getItem('galleryScroll');
+    const savedScroll = sessionStorage.getItem("galleryScroll");
     if (savedScroll !== null) {
       const targetScroll = Number(savedScroll);
       restoreGalleryScroll(targetScroll, scrollYRef);
-      syncMeshScrollPositions(groupRef.current, pitch, targetScroll, size.width);
-      sessionStorage.removeItem('galleryScroll');
+      syncMeshScrollPositions(
+        groupRef.current,
+        pitch,
+        targetScroll,
+        size.width,
+      );
+      sessionStorage.removeItem("galleryScroll");
     }
 
     return () => {
-      document.body.style.height = '';
+      document.body.style.height = "";
     };
   }, [scrollSpan, pitch, scrollEnabled]);
 
   const geometry = useMemo(() => {
-    return buildVerticalRibbonGeometry(cardWidth, cardHeight, CONFIG.threads, CONFIG.segments);
+    return buildVerticalRibbonGeometry(
+      cardWidth,
+      cardHeight,
+      CONFIG.threads,
+      CONFIG.segments,
+    );
   }, [cardWidth, cardHeight]);
 
-  const baseUniforms = useMemo(() => ({
-    uTime: { value: 0 },
-    uHalfHeight: { value: size.height / 2 },
-    uZone: { value: Math.min(size.height * CONFIG.tearZoneRatio, CONFIG.tearZoneMax) },
-    uStrength: { value: 1.0 },
-    uWobble: { value: 1.0 },
-    uCardSize: { value: new THREE.Vector2(cardWidth, cardHeight) },
-    uRadius: { value: CONFIG.cardRadius },
-    uScrollVelocity: { value: 0 },
-    uMouse: { value: new THREE.Vector2(-9999, -9999) },
-    uTargetSize: { value: new THREE.Vector2(size.width, 600.0) },
-    uTargetPosition: { value: new THREE.Vector2(0, size.height / 2 - 300.0) },
-  }), [size.height, size.width, cardWidth, cardHeight]);
-
-  // Unique uniforms for each mesh (using useState lazy init to satisfy React Compiler)
+  const baseUniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uHalfHeight: { value: size.height / 2 },
+      uZone: {
+        value: Math.min(size.height * CONFIG.tearZoneRatio, CONFIG.tearZoneMax),
+      },
+      uCardSize: { value: new THREE.Vector2(cardWidth, cardHeight) },
+      uScrollVelocity: { value: 0 },
+      uMouse: { value: new THREE.Vector2(-9999, -9999) },
+      uTargetSize: { value: new THREE.Vector2(size.width, 600.0) },
+      uTargetPosition: { value: new THREE.Vector2(0, size.height / 2 - 300.0) },
+    }),
+    [size.height, size.width, cardWidth, cardHeight],
+  );
   const [materials] = useState(() => {
-    // Check if we are starting a reverse transition
-    const returnId = typeof window !== 'undefined' ? sessionStorage.getItem('returnTransitionFrom') : null;
+    const returnId =
+      typeof window !== "undefined"
+        ? sessionStorage.getItem("returnTransitionFrom")
+        : null;
     const targetIndex = returnId ? (parseInt(returnId) - 1) % 6 : -1;
 
     return textures.map((tex, i) => {
@@ -178,7 +196,7 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
           uMap: { value: tex },
           uSeed: { value: (i + 1) * 0.731 },
           uImageAspect: { value: tex.image.width / tex.image.height },
-          uTransitionProgress: { value: (targetIndex === i) ? 1.0 : 0.0 },
+          uTransitionProgress: { value: targetIndex === i ? 1.0 : 0.0 },
           uOpacity: { value: 1.0 },
         },
       });
@@ -201,27 +219,30 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
       });
     };
 
-    lenis.on('scroll', onScroll);
-    if (typeof lenis.scroll === 'number') {
+    lenis.on("scroll", onScroll);
+    if (typeof lenis.scroll === "number") {
       scrollYRef.current = lenis.scroll;
     }
 
     return () => {
-      lenis.off('scroll', onScroll);
+      lenis.off("scroll", onScroll);
     };
   }, [materials, scrollEnabled]);
-
-  // Reverse transition WebGL animation (overlay is triggered from BackButton)
   useEffect(() => {
     if (!scrollEnabled) return;
 
-    const returnId = sessionStorage.getItem('returnTransitionFrom');
+    const returnId = sessionStorage.getItem("returnTransitionFrom");
     if (!returnId) return;
 
     const index = (parseInt(returnId, 10) - 1) % images.length;
     if (!materials[index]) return;
 
-    syncMeshScrollPositions(groupRef.current, pitch, scrollYRef.current, size.width);
+    syncMeshScrollPositions(
+      groupRef.current,
+      pitch,
+      scrollYRef.current,
+      size.width,
+    );
     isTransitioning.current = true;
 
     materials.forEach((mat, i) => {
@@ -234,21 +255,26 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
       gsap.to(materials[index].uniforms.uTransitionProgress, {
         value: 0.0,
         duration: 1.0,
-        ease: 'power3.inOut',
+        ease: "power3.inOut",
         onComplete: () => {
           const finalScroll = getGalleryScroll();
           restoreGalleryScroll(finalScroll, scrollYRef);
-          syncMeshScrollPositions(groupRef.current, pitch, finalScroll, size.width);
+          syncMeshScrollPositions(
+            groupRef.current,
+            pitch,
+            finalScroll,
+            size.width,
+          );
           materials[index].uniforms.uTransitionProgress.value = 0;
           isTransitioning.current = false;
-          sessionStorage.removeItem('returnTransitionFrom');
+          sessionStorage.removeItem("returnTransitionFrom");
 
           materials.forEach((mat, i) => {
             if (i !== index) {
               gsap.to(mat.uniforms.uOpacity, {
                 value: 1.0,
                 duration: 0.4,
-                ease: 'power2.inOut',
+                ease: "power2.inOut",
               });
             }
           });
@@ -260,12 +286,9 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
       requestAnimationFrame(runReverse);
     });
   }, [materials, pitch, images.length, scrollEnabled]);
-
-  // Handle Gallery Enter animation from Intro
   useEffect(() => {
     const handlePrepare = () => {
       if (groupRef.current) {
-        // Start the group lower (-14% of window height) immediately
         groupRef.current.position.y = -size.height * 0.14;
       }
     };
@@ -273,39 +296,39 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     const handleStart = (e) => {
       if (!groupRef.current) return;
       const duration = e.detail?.duration || 0.9;
-      
+
       gsap.to(groupRef.current.position, {
         y: 0,
         duration: duration,
-        ease: 'power3.out',
+        ease: "power3.out",
       });
     };
 
     const handleExit = (e) => {
       if (!groupRef.current) return;
       const duration = e.detail?.duration || 0.65;
-      
+
       gsap.to(groupRef.current.position, {
         y: -size.height * 0.14,
         duration: duration,
-        ease: 'power3.inOut',
+        ease: "power3.inOut",
       });
     };
 
-    window.addEventListener('prepare-gallery-enter', handlePrepare);
-    window.addEventListener('start-gallery-enter', handleStart);
-    window.addEventListener('start-gallery-exit', handleExit);
+    window.addEventListener("prepare-gallery-enter", handlePrepare);
+    window.addEventListener("start-gallery-enter", handleStart);
+    window.addEventListener("start-gallery-exit", handleExit);
     return () => {
-      window.removeEventListener('prepare-gallery-enter', handlePrepare);
-      window.removeEventListener('start-gallery-enter', handleStart);
-      window.removeEventListener('start-gallery-exit', handleExit);
+      window.removeEventListener("prepare-gallery-enter", handlePrepare);
+      window.removeEventListener("start-gallery-enter", handleStart);
+      window.removeEventListener("start-gallery-exit", handleExit);
     };
   }, [size.height]);
 
   useFrame((state) => {
     const targetX = (state.pointer.x * size.width) / 2;
     const targetY = (state.pointer.y * size.height) / 2;
-    
+
     if (currentMouse.current.x === -9999) {
       currentMouse.current.set(targetX, targetY);
     } else {
@@ -314,13 +337,18 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     }
 
     if (groupRef.current) {
-      materials.forEach(mat => {
+      materials.forEach((mat) => {
         mat.uniforms.uTime.value = state.clock.elapsedTime;
         mat.uniforms.uMouse.value.copy(currentMouse.current);
       });
 
       if (!isTransitioning.current) {
-        syncMeshScrollPositions(groupRef.current, pitch, scrollYRef.current, size.width);
+        syncMeshScrollPositions(
+          groupRef.current,
+          pitch,
+          scrollYRef.current,
+          size.width,
+        );
       }
     }
   });
@@ -328,16 +356,14 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
   const handleClick = (index, mesh) => {
     if (isTransitioning.current) return;
     isTransitioning.current = true;
-    
-    sessionStorage.setItem('galleryScroll', String(getGalleryScroll()));
-    
-    // Fade out other meshes
+
+    sessionStorage.setItem("galleryScroll", String(getGalleryScroll()));
     materials.forEach((mat, i) => {
       if (i !== index) {
         gsap.to(mat.uniforms.uOpacity, {
           value: 0.0,
           duration: 0.4,
-          ease: 'power2.out'
+          ease: "power2.out",
         });
       }
     });
@@ -345,42 +371,41 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     const targetMaterial = materials[index];
     const id = (index % 6) + 1;
     const src = images[index];
-
-    // Trigger the background overlay and pass the image source
-    import('./TransitionOverlay').then(m => m.triggerTransition(null, src, id));
-
-    // Animate the clicked mesh
+    import("./TransitionOverlay").then((m) =>
+      m.triggerTransition(null, src, id),
+    );
     gsap.to(targetMaterial.uniforms.uTransitionProgress, {
       value: 1,
       duration: 1.0,
-      ease: 'power3.inOut',
+      ease: "power3.inOut",
       onComplete: () => {
         router.push(`/realisation/${id}`);
-      }
+      },
     });
   };
 
   return (
     <group ref={groupRef}>
       {materials.map((mat, i) => (
-        <mesh 
-          key={i} 
-          geometry={geometry} 
-          material={mat} 
+        <mesh
+          key={i}
+          geometry={geometry}
+          material={mat}
           frustumCulled={false}
           onClick={(e) => {
             e.stopPropagation();
             handleClick(i, e.object);
           }}
           onPointerOver={() => {
-            if (!isTransitioning.current) document.body.style.cursor = 'pointer';
+            if (!isTransitioning.current)
+              document.body.style.cursor = "pointer";
           }}
-          onPointerOut={() => document.body.style.cursor = 'auto'}
+          onPointerOut={() => (document.body.style.cursor = "auto")}
         />
       ))}
     </group>
   );
-}
+};
 
 export default function UnwovenCanvas({ scrollEnabled = true }) {
   const images = [
@@ -394,10 +419,13 @@ export default function UnwovenCanvas({ scrollEnabled = true }) {
 
   return (
     <div className="unwoven-canvas">
-      <Canvas orthographic camera={{ position: [0, 0, 10], zoom: 1 }}>
+      <Canvas
+        orthographic
+        camera={{ position: [0, 0, 10], zoom: 1 }}
+        style={{ pointerEvents: "auto" }}
+      >
         <UnwovenScene images={images} scrollEnabled={scrollEnabled} />
       </Canvas>
     </div>
   );
 }
-

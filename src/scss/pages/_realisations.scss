@@ -1,7 +1,6 @@
-@use '../abstract/variables' as *;
+@use "../abstract/variables" as *;
 
 .page-realisation {
-
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -10,11 +9,5 @@
 
   background-color: $bg-realisation;
   min-height: 100vh;
-  position: relative; 
-
-
-
-
-
-
+  position: relative;
 }

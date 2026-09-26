@@ -16,7 +16,7 @@ export default function LenisProvider({ children }) {
       gestureDirection: "vertical",
       smooth: true,
     });
-    
+
     window.lenisInstance = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);

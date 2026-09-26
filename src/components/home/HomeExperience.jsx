@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Gallery from '@/components/gallery/Gallery';
-import LiquidIntroCanvas from '@/components/liquidIntro/LiquidIntroCanvas';
-import { useHomeIntroTransition } from './useHomeIntroTransition';
+import { useState } from "react";
+import Gallery from "@/components/gallery/Gallery";
+import LiquidIntroCanvas from "@/components/liquidIntro/LiquidIntroCanvas";
+import { useHomeIntroTransition } from "./useHomeIntroTransition";
 
 export default function HomeExperience() {
   const [skipIntro] = useState(
     () =>
-      typeof window !== 'undefined' &&
-      sessionStorage.getItem('returnTransitionFrom') != null
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("returnTransitionFrom") != null,
   );
 
   const {
@@ -21,13 +21,13 @@ export default function HomeExperience() {
     isWaveActive,
   } = useHomeIntroTransition({ skipIntro });
 
-  const galleryScrollEnabled = phase === 'gallery';
+  const galleryScrollEnabled = phase === "gallery";
 
   return (
     <div className="home-experience">
       <div
         ref={galleryRef}
-        className={`home-gallery${phase === 'intro' ? ' home-gallery--hidden' : ''}`}
+        className={`home-gallery${phase === "intro" ? " home-gallery--hidden" : ""}`}
       >
         <Gallery scrollEnabled={galleryScrollEnabled} />
       </div>

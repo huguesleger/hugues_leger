@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
-
-// Singleton to trigger transition from anywhere
 let triggerTransitionFn = null;
 let triggerReverseTransitionFn = null;
 
@@ -31,7 +29,7 @@ export default function TransitionOverlay() {
       setActive(true);
     };
     triggerReverseTransitionFn = (src) => {
-      setData(prev => ({ ...prev, src: src || prev.src }));
+      setData((prev) => ({ ...prev, src: src || prev.src }));
       setIsReverse(true);
       setActive(true);
     };
@@ -44,60 +42,60 @@ export default function TransitionOverlay() {
   useEffect(() => {
     if (active && bgRef.current) {
       if (!isReverse) {
-        // --- FORWARD TRANSITION (WebGL Canvas handles image expansion) ---
         gsap.set(bgRef.current, {
           autoAlpha: 0,
           position: "fixed",
           inset: 0,
           backgroundColor: "var(--color-bg)",
           zIndex: 10000,
-          pointerEvents: "none"
+          pointerEvents: "none",
         });
 
         const tl = gsap.timeline({
           onComplete: () => {
-            // Keep the image on screen for a moment while the new page renders, then hide it
             setTimeout(() => setActive(false), 300);
           },
         });
-
-        // Fade in background smoothly behind the expanding 3D mesh
-        // We must set z-index to -1 so it's BEHIND the canvas during forward transition!
         gsap.set(bgRef.current, { zIndex: -1 });
-        
-        // Prepare the static image but hide it initially
         if (imgRef.current && data.src) {
           gsap.set(imgRef.current, {
             autoAlpha: 0,
-            top: 0, left: 0, height: "600px", width: "100vw",
-            position: "fixed", zIndex: 10001,
+            top: 0,
+            left: 0,
+            height: "600px",
+            width: "100vw",
+            position: "fixed",
+            zIndex: 10001,
           });
         }
-        
-        tl.to(bgRef.current, { autoAlpha: 1, duration: 1.0, ease: "power2.inOut" }, 0);
-        
-        // Exactly at the end of the 1s WebGL animation, snap the static HTML image over the canvas
-        // This will cover the screen while Next.js changes the route, preventing any white flash.
+
+        tl.to(
+          bgRef.current,
+          { autoAlpha: 1, duration: 1.0, ease: "power2.inOut" },
+          0,
+        );
         if (imgRef.current && data.src) {
           tl.set(imgRef.current, { autoAlpha: 1 }, 1.0);
         }
-        
       } else {
-        // --- REVERSE TRANSITION (Detail -> Home) ---
-        // 1. Instantly navigate to home (loads behind the overlay)
-        router.push('/', { scroll: false });
+        router.push("/", { scroll: false });
 
         gsap.set(bgRef.current, {
-          autoAlpha: 0, position: "fixed", inset: 0,
-          backgroundColor: "var(--color-bg)", zIndex: -1,
+          autoAlpha: 0,
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "var(--color-bg)",
+          zIndex: -1,
         });
-
-        // Show the static image perfectly overlapping the detail page image
         if (imgRef.current) {
           gsap.set(imgRef.current, {
             autoAlpha: 1,
-            top: 0, left: 0, height: "600px", width: "100vw",
-            position: "fixed", zIndex: 10001,
+            top: 0,
+            left: 0,
+            height: "600px",
+            width: "100vw",
+            position: "fixed",
+            zIndex: 10001,
           });
         }
 
@@ -106,10 +104,14 @@ export default function TransitionOverlay() {
         });
 
         if (imgRef.current) {
-          tl.to(imgRef.current, { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" }, 0.1);
+          tl.to(
+            imgRef.current,
+            { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" },
+            0.1,
+          );
         }
       }
-    } 
+    }
   }, [active, data, isReverse, router]);
 
   if (!active) return null;
@@ -119,14 +121,9 @@ export default function TransitionOverlay() {
       <div ref={bgRef} />
       {data.src && (
         <div ref={imgRef} className="transition-overlay__container">
-          <img 
-            src={data.src} 
-            alt="" 
-            className="transition-overlay__img"
-          />
+          <img src={data.src} alt="" className="transition-overlay__img" />
         </div>
       )}
     </>
   );
 }
-

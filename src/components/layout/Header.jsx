@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Header() {
   return (
@@ -13,9 +13,15 @@ export default function Header() {
       </div>
       <nav className="header-nav">
         <ul>
-          <li><Link href="#works">Works</Link></li>
-          <li><Link href="#about">About</Link></li>
-          <li><Link href="#contact">Contact</Link></li>
+          <li>
+            <Link href="#works">Works</Link>
+          </li>
+          <li>
+            <Link href="#about">About</Link>
+          </li>
+          <li>
+            <Link href="#contact">Contact</Link>
+          </li>
         </ul>
       </nav>
     </header>

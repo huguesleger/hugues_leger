@@ -1,4 +1,4 @@
-@use '../abstract/variables' as *;
+@use "../abstract/variables" as *;
 
 html.home-intro-lock {
   overflow: hidden;
@@ -48,6 +48,7 @@ html.home-intro-lock body {
   overflow: hidden;
   will-change: transform;
   transform-origin: 50% 50%;
+  pointer-events: none;
 
   &__hint {
     position: absolute;

@@ -1,4 +1,3 @@
-
 import LenisProvider from "@/components/LenisProvider";
 import "../scss/main.scss";
 import TransitionOverlay from "@/components/TransitionOverlay";

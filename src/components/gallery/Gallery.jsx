@@ -8,10 +8,10 @@ export default function Gallery({ scrollEnabled = true }) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const hasLoaded = sessionStorage.getItem('hasLoadedOnce');
+      const hasLoaded = sessionStorage.getItem("hasLoadedOnce");
       if (!hasLoaded) {
         document.body.classList.add("loading");
-        sessionStorage.setItem('hasLoadedOnce', 'true');
+        sessionStorage.setItem("hasLoadedOnce", "true");
         setTimeout(() => {
           document.body.classList.remove("loading");
         }, 500);

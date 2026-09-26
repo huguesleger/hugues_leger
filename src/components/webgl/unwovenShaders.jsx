@@ -5,8 +5,6 @@ export const VERTEX_SHADER = `
   uniform float uTime;
   uniform float uHalfHeight;
   uniform float uZone;
-  uniform float uStrength;
-  uniform float uWobble;
   uniform float uSeed;
   uniform float uScrollVelocity;
   uniform vec2 uMouse;
@@ -35,15 +33,10 @@ export const VERTEX_SHADER = `
 
     float bottom = 1.0 - smoothstep(-uHalfHeight, -uHalfHeight + uZone, y);
     float top = smoothstep(uHalfHeight - uZone, uHalfHeight, y);
-    // Tear fades out during transition
-    float tear = max(bottom, top) * uStrength * (1.0 - uTransitionProgress);
-
-    // Scroll Distortion (Jelly effect) fades out during transition
+    float tear = max(bottom, top) * (1.0 - uTransitionProgress);
     float distortion = uScrollVelocity * 1.5 * (1.0 - uTransitionProgress);
     world.y -= sin(uv.x * 3.14159) * distortion;
     world.x -= sin(uv.y * 3.14159) * distortion * 0.3;
-
-    // Mouse Hover Bulge
     float dist = distance(world.xy, uMouse);
     float hover = smoothstep(300.0, 0.0, dist) * (1.0 - uTransitionProgress);
     if (dist > 0.001) {
@@ -67,28 +60,16 @@ export const VERTEX_SHADER = `
     world.y += direction * run;
     world.x += (randomA - 0.5) * 170.0 * t * t;
     world.x += sin(world.y * 0.02 + uTime * (1.6 + randomA * 2.2) + randomA * 6.2831)
-               * (5.0 + 13.0 * randomA) * t * uWobble;
-
-    // --- TRANSITION TO FULLSCREEN WITH RIPPLE ---
+               * (5.0 + 13.0 * randomA) * t;
     float angle = uTransitionProgress * 3.14159265 / 2.0;
     float wave = cos(angle);
     float c = sin(length(uv - 0.5) * 15.0 + uTransitionProgress * 12.0) * 0.5 + 0.5;
-
-    // The base origin of the mesh in world space
-    vec2 meshOrigin = world.xy - position.xy; 
-    
-    // Smoothly move the origin to the target position (center of the 600px header)
+    vec2 meshOrigin = world.xy - position.xy;
     vec2 currentOrigin = mix(meshOrigin, uTargetPosition, uTransitionProgress);
-
-    // Scale vertices to target size (100vw x 600px) + ripple
     vec2 targetScale = uTargetSize / uCardSize;
     vec2 currentScale = mix(vec2(1.0), targetScale + wave * c, uTransitionProgress);
     vec2 scaledLocalPos = position.xy * currentScale;
-
-    // Apply the expanded positions
     world.xy = currentOrigin + scaledLocalPos;
-    
-    // Push active mesh slightly forward so it covers others (but don't pass the camera at z=10)
     world.z += uTransitionProgress * 5.0; 
 
     vTear = tear;
@@ -102,7 +83,6 @@ export const FRAGMENT_SHADER = `
 
   uniform sampler2D uMap;
   uniform vec2  uCardSize;
-  uniform float uRadius;
   uniform float uImageAspect;
   uniform vec2  uMouse;
   uniform float uTime;
@@ -131,16 +111,13 @@ export const FRAGMENT_SHADER = `
     threadAlpha = mix(1.0, threadAlpha, smoothstep(0.03, 0.30, tear));
 
     vec2 currentSize = mix(uCardSize, uTargetSize, uTransitionProgress);
-    float currentRadius = mix(uRadius, 0.0, uTransitionProgress);
 
     vec2 p = (vUv - 0.5) * currentSize;
-    float cardAlpha = 1.0 - smoothstep(-1.5, 0.5, sdRoundBox(p, currentSize * 0.5, currentRadius));
+    float cardAlpha = 1.0 - smoothstep(-1.5, 0.5, sdRoundBox(p, currentSize * 0.5, 0.0));
 
     float fade  = 1.0 - smoothstep(0.75, 1.0, tear) * 0.65;
     float alpha = cardAlpha * threadAlpha * fade * uOpacity;
     if (alpha < 0.003) discard;
-
-    // Mouse interactive ripple
     float dist = distance(vWorld.xy, uMouse);
     float hover = smoothstep(300.0, 0.0, dist) * (1.0 - uTransitionProgress);
     float ripple = sin(dist * 0.04 - uTime * 6.0) * hover;

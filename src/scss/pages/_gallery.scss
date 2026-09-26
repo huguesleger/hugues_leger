@@ -1,4 +1,4 @@
-@use '../abstract/variables' as *;
+@use "../abstract/variables" as *;
 
 @media (scripting: enabled) {
   .loading {
@@ -28,13 +28,23 @@
 }
 
 @keyframes loaderAnim {
-  0% { transform: scaleX(0); transform-origin: 0% 50%; }
-  50% { transform: scaleX(1); transform-origin: 0% 50%; }
-  50.1% { transform: scaleX(1); transform-origin: 100% 50%; }
-  100% { transform: scaleX(0); transform-origin: 100% 50%; }
+  0% {
+    transform: scaleX(0);
+    transform-origin: 0% 50%;
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: 0% 50%;
+  }
+  50.1% {
+    transform: scaleX(1);
+    transform-origin: 100% 50%;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: 100% 50%;
+  }
 }
-
-
 
 .gallery {
   display: flex;
@@ -43,7 +53,7 @@
   gap: 12vh;
   width: 100%;
   padding-top: 14vh;
-  
+
   &__header {
     position: fixed;
     top: 0;
@@ -65,14 +75,24 @@
     height: 600px;
     overflow: hidden;
 
-    img { width: 100%; height: 100%; object-fit: cover; }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
-  &__group-list { display: flex; flex-direction: column; padding: 4rem $page-padding; }
+  &__group-list {
+    display: flex;
+    flex-direction: column;
+    padding: 4rem $page-padding;
+  }
 
   &__group {
     display: none;
-    &.active { display: block; }
+    &.active {
+      display: block;
+    }
   }
 
   &__title {
@@ -84,7 +104,9 @@
     margin-bottom: 3rem;
     margin-top: 40vh;
     color: #141414;
-    &:focus { outline: none; }
+    &:focus {
+      outline: none;
+    }
   }
 
   &__description {
