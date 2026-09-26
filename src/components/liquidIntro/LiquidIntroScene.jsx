@@ -88,7 +88,10 @@ const bgFragmentShader = /* glsl */`
     vec4 colorDeveloper = texture2D(uTexDeveloper, uvDeveloper);
     
     // On superpose DEVELOPER sur CREATIVE
-    vec4 color = mix(colorCreative, colorDeveloper, colorDeveloper.a);
+    // On utilise uniquement le canal alpha comme masque pour forcer la couleur noire.
+    // Cela supprime totalement le liseré blanc (causé par l'anti-aliasing subpixel du navigateur sur fond transparent).
+    vec4 color = colorCreative;
+    color.rgb = mix(color.rgb, vec3(0.0), colorDeveloper.a);
     
     // Le texte s'estompe en fonction de l'éloignement du centre (abs(uProgress))
     float fade = smoothstep(0.4, 0.9, abs(uProgress));
@@ -246,24 +249,24 @@ export default function LiquidIntroScene({ active = true }) {
     // Un canvas 2:1 permet au texte de s'étaler sur toute la largeur (desktop)
     const w = 2048;
     const h = 1024;
-    const leftMargin = w * 0.04; 
-    
+    const leftMargin = w * 0.04;
+
     // Tailles originales exactes de la première version (gigantesque sur desktop)
-    const titleSize = 286; 
+    const titleSize = 286;
     const subtitleSize = 184;
-    
+
     const centerY = h * 0.5;
     const creativeY = centerY - titleSize * 0.1;
     const developerY = creativeY + titleSize * 0.75 + subtitleSize * 0.5;
-    
+
     // Texture 1 : CREATIVE + fond gris
     const canvas1 = document.createElement('canvas');
     canvas1.width = w;
     canvas1.height = h;
     const ctx1 = canvas1.getContext('2d');
-    ctx1.fillStyle = '#f0f0f0';
+    ctx1.fillStyle = '#101010';
     ctx1.fillRect(0, 0, w, h);
-    ctx1.fillStyle = '#111111';
+    ctx1.fillStyle = '#000000';
     ctx1.font = `800 ${titleSize}px Inter, Arial Black, sans-serif`;
     ctx1.textAlign = 'left';
     ctx1.textBaseline = 'middle';
@@ -280,8 +283,8 @@ export default function LiquidIntroScene({ active = true }) {
     canvas2.height = h;
     const ctx2 = canvas2.getContext('2d');
     ctx2.clearRect(0, 0, w, h);
-    ctx2.fillStyle = '#333333';
-    ctx2.font = `500 ${subtitleSize}px Inter, Arial, sans-serif`;
+    ctx2.fillStyle = '#000000';
+    ctx2.font = `600 ${subtitleSize}px Inter, Arial, sans-serif`;
     ctx2.textAlign = 'left';
     ctx2.textBaseline = 'middle';
     ctx2.fillText('DEVELOPER', leftMargin, developerY);
@@ -315,10 +318,10 @@ export default function LiquidIntroScene({ active = true }) {
 
   useFrame(({ clock }) => {
     if (!active) return;
-    
+
     uniforms.uTime.value = clock.elapsedTime;
     const t = clock.elapsedTime;
-    
+
     // Application de la progression de scroll lissée (lerp) pour un rendu fluide
     lerpedScrollProgress.current += (scrollProgress.current - lerpedScrollProgress.current) * 0.04;
     bgUniforms.uProgress.value = lerpedScrollProgress.current;
@@ -331,11 +334,11 @@ export default function LiquidIntroScene({ active = true }) {
     const dx = mouse.current.x - lastMousePos.current.x;
     const dy = mouse.current.y - lastMousePos.current.y;
     const speed = Math.sqrt(dx * dx + dy * dy);
-    
+
     // On lerp la vélocité pour qu'elle monte vite et descende doucement (retour à zéro fluide)
     mouseVelocity.current += (speed - mouseVelocity.current) * 0.1;
     bgUniforms.uVelocity.value = mouseVelocity.current;
-    
+
     lastMousePos.current.x = mouse.current.x;
     lastMousePos.current.y = mouse.current.y;
 
@@ -358,14 +361,14 @@ export default function LiquidIntroScene({ active = true }) {
       // Position : flottement organique + dérive souris
       const mouseInfluenceX = lerpedMouse.current.x * 0.8;
       const mouseInfluenceY = lerpedMouse.current.y * 0.6;
-      
+
       // La sphère tombe vers le bas à l'aller, et retombe depuis le haut au retour
       const scrollDrop = -lerpedScrollProgress.current * viewport.height * 0.8;
-      
+
       blobRef.current.position.x = Math.sin(t * 0.35) * 0.3 + mouseInfluenceX;
       blobRef.current.position.y = Math.sin(t * 0.5) * 0.2 + Math.cos(t * 0.3) * 0.15 + mouseInfluenceY + scrollDrop;
     }
-    
+
     // Le texte (et son fond) glisse physiquement vers le haut
     if (planeMeshRef.current) {
       planeMeshRef.current.position.y = lerpedScrollProgress.current * viewport.height * 0.8;
@@ -375,10 +378,10 @@ export default function LiquidIntroScene({ active = true }) {
 
   // Adapter la taille de la sphère selon l'orientation (mobile vs desktop)
   const isMobile = viewport.width < viewport.height;
-  const blobRadius = isMobile 
+  const blobRadius = isMobile
     ? viewport.width * 0.20 // Sphère plus petite sur mobile (20% de la largeur)
     : Math.min(viewport.width, viewport.height) * 0.28; // Original sur desktop
-    
+
   // Rendre l'amplitude de déformation (uDistort) proportionnelle à la taille de la sphère
   // L'ancien uDistort était 0.35 pour un rayon d'environ 2.2 (soit un ratio de ~0.15)
   uniforms.uDistort.value = blobRadius * 0.15;
