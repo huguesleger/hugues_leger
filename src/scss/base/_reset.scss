@@ -20,17 +20,7 @@ body {
   font-family: "host-grotesk", Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   overscroll-behavior: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-html::-webkit-scrollbar {
-  display: none;
 }
 
 *,

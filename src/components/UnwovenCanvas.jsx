@@ -37,10 +37,11 @@ function restoreGalleryScroll(targetScroll, scrollRef) {
 
 const STAGGERS = [-300, 200, -200, 300, -350, 150];
 
-function syncMeshScrollPositions(group, pitch, scrollOffset) {
+function syncMeshScrollPositions(group, pitch, scrollOffset, screenWidth = 1000) {
   if (!group) return;
+  const isMobile = screenWidth < 768;
   group.children.forEach((mesh, i) => {
-    mesh.position.x = STAGGERS[i % STAGGERS.length];
+    mesh.position.x = isMobile ? 0 : STAGGERS[i % STAGGERS.length];
     mesh.position.y = scrollOffset - i * pitch;
   });
 }
@@ -98,10 +99,18 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
   const textures = useTexture(images);
   const router = useRouter();
 
-  const cardHeight = Math.min(CONFIG.cardMaxHeight, size.height * 0.62);
-  const cardWidth = cardHeight * CONFIG.cardAspect;
+  let cardHeight = Math.min(CONFIG.cardMaxHeight, size.height * 0.62);
+  let cardWidth = cardHeight * CONFIG.cardAspect;
+
+  // Rendre les cartes responsives : on s'assure qu'elles ne dépassent jamais 90% de la largeur de l'écran (sur mobile)
+  const maxCardWidth = size.width * 0.9;
+  if (cardWidth > maxCardWidth) {
+    cardWidth = maxCardWidth;
+    cardHeight = cardWidth / CONFIG.cardAspect;
+  }
+
   const pitch = cardHeight + Math.max(24, cardHeight * CONFIG.cardGapRatio);
-  
+
   const scrollSpan = (images.length - 1) * pitch;
 
   const isTransitioning = useRef(false);
@@ -121,7 +130,7 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     if (savedScroll !== null) {
       const targetScroll = Number(savedScroll);
       restoreGalleryScroll(targetScroll, scrollYRef);
-      syncMeshScrollPositions(groupRef.current, pitch, targetScroll);
+      syncMeshScrollPositions(groupRef.current, pitch, targetScroll, size.width);
       sessionStorage.removeItem('galleryScroll');
     }
 
@@ -212,7 +221,7 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     const index = (parseInt(returnId, 10) - 1) % images.length;
     if (!materials[index]) return;
 
-    syncMeshScrollPositions(groupRef.current, pitch, scrollYRef.current);
+    syncMeshScrollPositions(groupRef.current, pitch, scrollYRef.current, size.width);
     isTransitioning.current = true;
 
     materials.forEach((mat, i) => {
@@ -229,7 +238,7 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
         onComplete: () => {
           const finalScroll = getGalleryScroll();
           restoreGalleryScroll(finalScroll, scrollYRef);
-          syncMeshScrollPositions(groupRef.current, pitch, finalScroll);
+          syncMeshScrollPositions(groupRef.current, pitch, finalScroll, size.width);
           materials[index].uniforms.uTransitionProgress.value = 0;
           isTransitioning.current = false;
           sessionStorage.removeItem('returnTransitionFrom');
@@ -311,7 +320,7 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
       });
 
       if (!isTransitioning.current) {
-        syncMeshScrollPositions(groupRef.current, pitch, scrollYRef.current);
+        syncMeshScrollPositions(groupRef.current, pitch, scrollYRef.current, size.width);
       }
     }
   });
