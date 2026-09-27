@@ -12,6 +12,7 @@ import {
   vertexShader,
   fragmentShader,
 } from "./liquidIntroShaders";
+import IntroParticles from "./IntroParticles";
 
 export default function LiquidIntroScene({ active = true }) {
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -240,6 +241,8 @@ export default function LiquidIntroScene({ active = true }) {
       <mesh ref={blobRef} material={material}>
         <icosahedronGeometry args={[blobRadius, 100]} />
       </mesh>
+
+      <IntroParticles mouseRef={mouse} count={2500} />
     </>
   );
 }
