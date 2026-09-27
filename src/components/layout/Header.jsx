@@ -12,17 +12,29 @@ export default function Header() {
         </Link>
       </div>
       <nav className="header-nav">
-        <ul>
-          <li>
-            <Link href="#works">Works</Link>
-          </li>
-          <li>
-            <Link href="#about">About</Link>
-          </li>
-          <li>
-            <Link href="#contact">Contact</Link>
-          </li>
-        </ul>
+        <div className="nav-items">
+          <Link href="#works" className="item-link">
+            <div className="item-wrap">
+              <span className="item">Works</span>
+              <span className="item-hover">Works</span>
+              <span className="item-circle"></span>
+            </div>
+          </Link>
+          <Link href="#about" className="item-link">
+            <div className="item-wrap">
+              <span className="item">About</span>
+              <span className="item-hover">About</span>
+              <span className="item-circle"></span>
+            </div>
+          </Link>
+          <Link href="#contact" className="item-link">
+            <div className="item-wrap">
+              <span className="item">Contact</span>
+              <span className="item-hover">Contact</span>
+              <span className="item-circle"></span>
+            </div>
+          </Link>
+        </div>
       </nav>
     </header>
   );

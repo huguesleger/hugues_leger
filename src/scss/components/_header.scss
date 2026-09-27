@@ -12,12 +12,13 @@
   color: #ffffff;
   pointer-events: none;
 
-  .header-logo,
   .header-nav {
     pointer-events: auto;
   }
 
   .header-logo {
+    pointer-events: none;
+    
     a {
       display: flex;
       align-items: center;
@@ -25,12 +26,14 @@
       text-decoration: none;
       color: inherit;
       overflow: hidden;
+      pointer-events: none;
     }
 
     img {
       height: 35px;
       width: auto;
       display: block;
+      pointer-events: auto;
     }
 
     .logo-text {
@@ -43,34 +46,77 @@
       transform: translateY(15px);
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
+      pointer-events: none;
     }
-    &:hover .logo-text {
+    a:hover .logo-text {
       opacity: 1;
       transform: translateY(0);
     }
   }
 
   .header-nav {
-    ul {
+    .nav-items {
       display: flex;
+      align-items: center;
       gap: 2rem;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-      font-family: "Jost", sans-serif;
-      text-transform: uppercase;
-      font-weight: 500;
-      font-size: 0.9rem;
-      letter-spacing: 0.05em;
-      transition: opacity 0.3s ease;
-
-      &:hover {
-        opacity: 0.7;
+      
+      .item-link {
+        font-family: "Jost", sans-serif;
+        text-transform: uppercase;
+        font-weight: 500;
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        color: inherit;
+        
+        .item-wrap {
+          position: relative;
+          
+          span {
+            transition: transform 0.45s cubic-bezier(0.1, 0.76, 0.4, 0.94);
+            display: block;
+            line-height: 1.2rem;
+          }
+          
+          .item-hover {
+            transform-origin: 50% 50%;
+            transform: translate3d(0, 0, 0) rotateX(-90deg);
+            position: absolute;
+          }
+          
+          .item-circle {
+            width: 4px;
+            height: 4px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            bottom: -8px;
+            transform: translate(-50%, 0);
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+          }
+        }
+        
+        &:hover,
+        &.item-active {
+          .item-wrap {
+            .item {
+              transform: translate3d(0, -50%, 0) rotateX(-90deg);
+            }
+            .item-hover {
+              transform: translate3d(0, -100%, 0);
+            }
+          }
+        }
+        
+        &.item-active {
+          .item-wrap {
+            .item-circle {
+              opacity: 1;
+            }
+          }
+        }
       }
     }
   }
