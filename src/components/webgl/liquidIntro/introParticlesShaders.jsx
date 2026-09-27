@@ -2,6 +2,8 @@ export const particlesVertexShader = `
   uniform float uTime;
   uniform vec2 uMouse;
   uniform vec2 uResolution;
+  uniform vec3 uBlobPos;
+  uniform float uProgress;
   
   attribute float aRandom;
   attribute float aSize;
@@ -105,6 +107,24 @@ export const particlesVertexShader = `
       
       targetPos.xy += (dir + swirl) * force * 1.5;
       targetPos.z += force * 1.0; // Push forward slightly
+    }
+
+    // Attraction to the blob when scrolling down
+    if (uProgress > 0.0) {
+      // Offset to keep a small cloud around the blob instead of a single point
+      vec3 offset = vec3(
+        snoise(noisePos * 1.5),
+        snoise(noisePos * 1.5 + vec3(10.0)),
+        snoise(noisePos * 1.5 + vec3(20.0))
+      ) * 2.0; 
+      
+      // Also add some of their original position to maintain the shape slightly
+      offset += pos * 0.15;
+      
+      // Smoothly mix between their free-floating position and the blob orbit
+      // use an easing on uProgress for a snappier effect
+      float easeProgress = smoothstep(0.0, 0.8, uProgress);
+      targetPos = mix(targetPos, uBlobPos + offset, easeProgress);
     }
 
     vec4 mvPosition = modelViewMatrix * vec4(targetPos, 1.0);

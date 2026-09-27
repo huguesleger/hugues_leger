@@ -242,7 +242,7 @@ export default function LiquidIntroScene({ active = true }) {
         <icosahedronGeometry args={[blobRadius, 100]} />
       </mesh>
 
-      <IntroParticles mouseRef={mouse} count={2500} />
+      <IntroParticles mouseRef={mouse} blobRef={blobRef} scrollProgressRef={lerpedScrollProgress} count={2500} />
     </>
   );
 }

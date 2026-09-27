@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { particlesVertexShader, particlesFragmentShader } from './introParticlesShaders';
 
-export default function IntroParticles({ count = 3000, mouseRef }) {
+export default function IntroParticles({ count = 3000, mouseRef, blobRef, scrollProgressRef }) {
   const pointsRef = useRef();
   const materialRef = useRef();
 
@@ -32,6 +32,8 @@ export default function IntroParticles({ count = 3000, mouseRef }) {
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uMouse: { value: new THREE.Vector2(0, 0) },
+    uBlobPos: { value: new THREE.Vector3(0, 0, 0) },
+    uProgress: { value: 0 },
   }), []);
 
   const localMouse = useRef(new THREE.Vector2(0, 0));
@@ -44,6 +46,12 @@ export default function IntroParticles({ count = 3000, mouseRef }) {
         localMouse.current.x += (mouseRef.current.x - localMouse.current.x) * 0.05;
         localMouse.current.y += (mouseRef.current.y - localMouse.current.y) * 0.05;
         materialRef.current.uniforms.uMouse.value.copy(localMouse.current);
+      }
+      if (blobRef && blobRef.current) {
+        materialRef.current.uniforms.uBlobPos.value.copy(blobRef.current.position);
+      }
+      if (scrollProgressRef && scrollProgressRef.current !== undefined) {
+        materialRef.current.uniforms.uProgress.value = scrollProgressRef.current;
       }
     }
   });
