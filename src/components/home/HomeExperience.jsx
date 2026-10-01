@@ -4,6 +4,7 @@ import { useState } from "react";
 import Gallery from "@/components/webgl/gallerie/Gallery";
 import LiquidIntroCanvas from "@/components/webgl/liquidIntro/LiquidIntroCanvas";
 import { useHomeIntroTransition } from "./useHomeIntroTransition";
+import ScrollExploreBadge from "./ScrollExploreBadge";
 
 export default function HomeExperience() {
   const [skipIntro] = useState(
@@ -40,10 +41,9 @@ export default function HomeExperience() {
         aria-label="Introduction"
       >
         <LiquidIntroCanvas active={isWaveActive} />
-        <p className="home-intro__hint" aria-hidden="true">
-          Scroll
-        </p>
       </section>
+
+      <ScrollExploreBadge phase={phase} />
     </div>
   );
 }
