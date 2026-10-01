@@ -1,0 +1,199 @@
+@use "../abstract/variables" as *;
+
+@media (min-width: 1100px) and (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  mix-blend-mode: difference;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+
+  .cursor-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .cursor-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: #fff;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: scale(1, 1);
+      transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1);
+
+      .cursor-label {
+        font-size: 4px;
+        text-align: center;
+        line-height: 1;
+        opacity: 0;
+        transition: opacity 0.12s ease-out;
+      }
+
+      .cursor-label-canvas {
+        font-size: 4px;
+        text-align: center;
+        line-height: 1;
+        transition: opacity 0.12s ease-out;
+
+        &.label-hidden {
+          opacity: 0;
+          width: 0;
+          visibility: hidden;
+        }
+      }
+
+      .cursor-drag {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        transition-delay: 0.2s;
+
+        .arrow-right {
+          width: 0;
+          height: 0;
+          position: absolute;
+          z-index: 1;
+          border-width: 4px;
+          border-style: solid;
+          border-color: transparent;
+          border-left-color: $foreground;
+          right: -12px;
+          top: 50%;
+          transform: translateY(-50%);
+          transition: right 0.2s ease-in-out;
+        }
+
+        .arrow-left {
+          width: 0;
+          height: 0;
+          position: absolute;
+          z-index: 1;
+          border-width: 4px;
+          border-style: solid;
+          border-color: transparent;
+          border-right-color: $foreground;
+          left: -12px;
+          top: 50%;
+          transform: translateY(-50%);
+          transition: left 0.2s ease-in-out;
+        }
+      }
+    }
+
+    &.is-hover {
+      .cursor-circle {
+        transform: scale(3, 3);
+      }
+    }
+  }
+
+  &.has-label {
+    mix-blend-mode: initial;
+
+    .cursor-wrapper.is-hover {
+      .cursor-circle {
+        transform: scale(4, 4);
+
+        .cursor-label {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  &.has-canvas {
+    mix-blend-mode: initial;
+
+    .cursor-circle {
+      transform: scale(4, 4);
+      background-color: #fff;
+
+      .cursor-label-canvas {
+        opacity: 1;
+        color: $foreground;
+        width: auto;
+        visibility: visible;
+      }
+    }
+
+    &.has-label {
+      .cursor-label-canvas {
+        opacity: 0;
+        visibility: hidden;
+        width: 0;
+      }
+    }
+  }
+
+  &.has-big {
+    .cursor-wrapper.is-hover {
+      .cursor-circle {
+        transform: scale(4, 4);
+      }
+    }
+  }
+
+  &.has-drag {
+    mix-blend-mode: initial;
+
+    .cursor-circle {
+      transform: scale(2, 2);
+      background-color: $foreground;
+
+      .cursor-drag {
+        opacity: 1;
+      }
+    }
+  }
+
+  &.has-dark {
+    .cursor-circle {
+      background-color: $foreground;
+
+      .cursor-label {
+        color: #fff;
+      }
+    }
+  }
+}
+
+.is-draggy {
+  .cursor {
+    .cursor-circle {
+      .cursor-drag {
+        .arrow-right {
+          right: -15px;
+        }
+
+        .arrow-left {
+          left: -15px;
+        }
+      }
+    }
+  }
+}
+
+.cursor.has-label.has-canvas {
+  transition: none;
+}
+
+@media (pointer: coarse) {
+  .cursor {
+    display: none;
+  }
+}

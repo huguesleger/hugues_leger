@@ -7,6 +7,7 @@ import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
+import { setCursorCanvasHover } from "@/lib/cursorDom";
 
 import {
   VERTEX_SHADER,
@@ -397,10 +398,11 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
             handleClick(i, e.object);
           }}
           onPointerOver={() => {
-            if (!isTransitioning.current)
-              document.body.style.cursor = "pointer";
+            if (!isTransitioning.current) {
+              setCursorCanvasHover(true);
+            }
           }}
-          onPointerOut={() => (document.body.style.cursor = "auto")}
+          onPointerOut={() => setCursorCanvasHover(false)}
         />
       ))}
     </group>
