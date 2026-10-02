@@ -10,6 +10,49 @@ export const GALLERY_CONFIG = {
 
 export const GALLERY_STAGGERS = [-300, 200, -200, 300, -350, 150];
 
+/** Viewport height multipliers for contact zone (slide up + text reveal). */
+export const CONTACT_SLIDE_SCROLL = 1;
+export const CONTACT_TEXT_SCROLL = 0.85;
+
+export function getGalleryScrollSpan(
+  projectCount,
+  viewportWidth,
+  viewportHeight,
+) {
+  if (projectCount <= 1) return 0;
+  const { pitch } = getCardDimensions(viewportWidth, viewportHeight);
+  return (projectCount - 1) * pitch;
+}
+
+export function getContactSlideDistance(viewportHeight) {
+  return viewportHeight * CONTACT_SLIDE_SCROLL;
+}
+
+export function getContactTextScrollDistance(viewportHeight) {
+  return viewportHeight * CONTACT_TEXT_SCROLL;
+}
+
+export function getContactScrollDistance(viewportHeight) {
+  return (
+    getContactSlideDistance(viewportHeight) +
+    getContactTextScrollDistance(viewportHeight)
+  );
+}
+
+export function getGalleryDocumentHeight(
+  projectCount,
+  viewportWidth,
+  viewportHeight,
+) {
+  const scrollSpan = getGalleryScrollSpan(
+    projectCount,
+    viewportWidth,
+    viewportHeight,
+  );
+  const contactScroll = getContactScrollDistance(viewportHeight);
+  return scrollSpan + viewportHeight + contactScroll;
+}
+
 export function getCardDimensions(viewportWidth, viewportHeight) {
   let cardHeight = Math.min(
     GALLERY_CONFIG.cardMaxHeight,

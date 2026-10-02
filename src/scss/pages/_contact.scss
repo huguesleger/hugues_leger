@@ -1,0 +1,85 @@
+@use "../abstract/variables" as *;
+
+.gallery-contact {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background: #000000;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(0, 100%, 0);
+  will-change: transform;
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100%;
+    width: 100%;
+    padding: 12vh $page-padding 10vh;
+    max-width: min(72rem, 100%);
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  &__statement {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    font-family: "ivyora-display", serif;
+    font-weight: 400;
+    font-size: clamp(2.25rem, 6.5vw, 5rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  &__word {
+    display: inline;
+    white-space: normal;
+  }
+
+  &__email-block {
+    align-self: flex-start;
+    margin-top: clamp(3rem, 10vh, 6rem);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    opacity: 0;
+    color: #ffffff;
+    transition: opacity 0.25s ease;
+
+    &:hover .gallery-contact__email,
+    &:focus-visible .gallery-contact__email {
+      opacity: 0.75;
+    }
+
+    &:focus-visible {
+      outline: 1px solid rgba(255, 255, 255, 0.35);
+      outline-offset: 6px;
+    }
+  }
+
+  &__copy-hint {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-family: "host-grotesk", Arial, Helvetica, sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  &__email {
+    display: block;
+    font-family: "ivyora-display", serif;
+    font-size: clamp(1.75rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    transition: opacity 0.2s ease;
+  }
+}

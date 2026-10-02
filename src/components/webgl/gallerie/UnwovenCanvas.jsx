@@ -114,9 +114,6 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
   useEffect(() => {
     if (!scrollEnabled) return;
 
-    document.body.style.height = `${scrollSpan + window.innerHeight}px`;
-    window.lenisInstance?.resize();
-
     const savedScroll = sessionStorage.getItem("galleryScroll");
     if (savedScroll !== null) {
       const targetScroll = Number(savedScroll);
@@ -129,11 +126,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
       );
       sessionStorage.removeItem("galleryScroll");
     }
-
-    return () => {
-      document.body.style.height = "";
-    };
-  }, [scrollSpan, pitch, scrollEnabled]);
+  }, [scrollSpan, pitch, scrollEnabled, size.width]);
 
   const geometry = useMemo(() => {
     return buildVerticalRibbonGeometry(
