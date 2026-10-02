@@ -8,21 +8,17 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { setCursorCanvasHover } from "@/lib/cursorDom";
+import { GALLERY_PROJECTS } from "@/lib/galleryProjects";
+import {
+  GALLERY_CONFIG,
+  syncMeshScrollPositions,
+} from "@/lib/galleryLayout";
+import GalleryProjectLabels from "./GalleryProjectLabels";
 
 import {
   VERTEX_SHADER,
   FRAGMENT_SHADER,
 } from "./unwovenShaders";
-
-const CONFIG = {
-  threads: 26,
-  segments: 20,
-  cardMaxHeight: 452,
-  cardAspect: 0.75,
-  cardGapRatio: 0.11,
-  tearZoneRatio: 0.26,
-  tearZoneMax: 380,
-};
 
 function getGalleryScroll() {
   const lenis = window.lenisInstance;
@@ -36,22 +32,6 @@ function restoreGalleryScroll(targetScroll, scrollRef) {
   scrollRef.current = targetScroll;
   window.scrollTo(0, targetScroll);
   window.lenisInstance?.scrollTo(targetScroll, { immediate: true });
-}
-
-const STAGGERS = [-300, 200, -200, 300, -350, 150];
-
-function syncMeshScrollPositions(
-  group,
-  pitch,
-  scrollOffset,
-  screenWidth = 1000,
-) {
-  if (!group) return;
-  const isMobile = screenWidth < 768;
-  group.children.forEach((mesh, i) => {
-    mesh.position.x = isMobile ? 0 : STAGGERS[i % STAGGERS.length];
-    mesh.position.y = scrollOffset - i * pitch;
-  });
 }
 
 function buildVerticalRibbonGeometry(width, height, threads, segments) {
@@ -102,21 +82,25 @@ function buildVerticalRibbonGeometry(width, height, threads, segments) {
   return geometry;
 }
 
-const UnwovenScene = ({ images, scrollEnabled = true }) => {
+const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
   const groupRef = useRef();
   const { size } = useThree();
   const textures = useTexture(images);
   const router = useRouter();
 
-  let cardHeight = Math.min(CONFIG.cardMaxHeight, size.height * 0.62);
-  let cardWidth = cardHeight * CONFIG.cardAspect;
+  let cardHeight = Math.min(
+    GALLERY_CONFIG.cardMaxHeight,
+    size.height * 0.62,
+  );
+  let cardWidth = cardHeight * GALLERY_CONFIG.cardAspect;
   const maxCardWidth = size.width * 0.9;
   if (cardWidth > maxCardWidth) {
     cardWidth = maxCardWidth;
-    cardHeight = cardWidth / CONFIG.cardAspect;
+    cardHeight = cardWidth / GALLERY_CONFIG.cardAspect;
   }
 
-  const pitch = cardHeight + Math.max(24, cardHeight * CONFIG.cardGapRatio);
+  const pitch =
+    cardHeight + Math.max(24, cardHeight * GALLERY_CONFIG.cardGapRatio);
 
   const scrollSpan = (images.length - 1) * pitch;
 
@@ -155,8 +139,8 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
     return buildVerticalRibbonGeometry(
       cardWidth,
       cardHeight,
-      CONFIG.threads,
-      CONFIG.segments,
+      GALLERY_CONFIG.threads,
+      GALLERY_CONFIG.segments,
     );
   }, [cardWidth, cardHeight]);
 
@@ -165,7 +149,10 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
       uTime: { value: 0 },
       uHalfHeight: { value: size.height / 2 },
       uZone: {
-        value: Math.min(size.height * CONFIG.tearZoneRatio, CONFIG.tearZoneMax),
+        value: Math.min(
+          size.height * GALLERY_CONFIG.tearZoneRatio,
+          GALLERY_CONFIG.tearZoneMax,
+        ),
       },
       uCardSize: { value: new THREE.Vector2(cardWidth, cardHeight) },
       uScrollVelocity: { value: 0 },
@@ -351,6 +338,13 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
           size.width,
         );
       }
+
+      if (layoutSyncRef) {
+        layoutSyncRef.current = {
+          opacities: materials.map((mat) => mat.uniforms.uOpacity.value),
+          hideAll: isTransitioning.current,
+        };
+      }
     }
   });
 
@@ -410,23 +404,28 @@ const UnwovenScene = ({ images, scrollEnabled = true }) => {
 };
 
 export default function UnwovenCanvas({ scrollEnabled = true }) {
-  const images = [
-    "/assets/1.webp",
-    "/assets/2.webp",
-    "/assets/3.webp",
-    "/assets/4.webp",
-    "/assets/5.webp",
-    "/assets/6.webp",
-  ];
+  const layoutSyncRef = useRef({
+    opacities: GALLERY_PROJECTS.map(() => 1),
+    hideAll: false,
+  });
+  const images = GALLERY_PROJECTS.map((project) => project.image);
 
   return (
     <div className="unwoven-canvas">
+      <GalleryProjectLabels
+        scrollEnabled={scrollEnabled}
+        layoutSyncRef={layoutSyncRef}
+      />
       <Canvas
         orthographic
         camera={{ position: [0, 0, 10], zoom: 1 }}
         style={{ pointerEvents: "auto" }}
       >
-        <UnwovenScene images={images} scrollEnabled={scrollEnabled} />
+        <UnwovenScene
+          images={images}
+          scrollEnabled={scrollEnabled}
+          layoutSyncRef={layoutSyncRef}
+        />
       </Canvas>
     </div>
   );
