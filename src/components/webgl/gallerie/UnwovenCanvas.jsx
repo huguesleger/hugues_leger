@@ -249,6 +249,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
           materials[index].uniforms.uTransitionProgress.value = 0;
           isTransitioning.current = false;
           sessionStorage.removeItem("returnTransitionFrom");
+          window.dispatchEvent(new CustomEvent("gallery-project-return"));
 
           materials.forEach((mat, i) => {
             if (i !== index) {
@@ -346,6 +347,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
     isTransitioning.current = true;
 
     sessionStorage.setItem("galleryScroll", String(getGalleryScroll()));
+    window.dispatchEvent(new CustomEvent("gallery-project-open"));
     materials.forEach((mat, i) => {
       if (i !== index) {
         gsap.to(mat.uniforms.uOpacity, {

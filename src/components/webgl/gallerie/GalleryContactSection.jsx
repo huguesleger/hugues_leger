@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 import { GALLERY_PROJECTS } from "@/lib/galleryProjects";
 import {
   getContactSlideDistance,
@@ -42,6 +43,7 @@ export default function GalleryContactSection({ scrollEnabled }) {
   const emailBlockRef = useRef(null);
   const [copied, setCopied] = useState(false);
   const copyResetTimerRef = useRef(null);
+  const fadeRef = useRef({ value: 1 });
 
   const copyEmail = useCallback(async () => {
     try {
@@ -68,10 +70,34 @@ export default function GalleryContactSection({ scrollEnabled }) {
   }, []);
 
   useEffect(() => {
+    const fade = fadeRef.current;
+
+    const handleProjectOpen = () => {
+      gsap.to(fade, { value: 0, duration: 0.4, ease: "power2.out" });
+    };
+
+    const handleProjectReturn = () => {
+      gsap.to(fade, { value: 1, duration: 0.6, ease: "power2.inOut" });
+    };
+
+    window.addEventListener("gallery-project-open", handleProjectOpen);
+    window.addEventListener("gallery-project-return", handleProjectReturn);
+    return () => {
+      gsap.killTweensOf(fade);
+      window.removeEventListener("gallery-project-open", handleProjectOpen);
+      window.removeEventListener("gallery-project-return", handleProjectReturn);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!scrollEnabled) return;
 
     let frameId = 0;
     const projectCount = GALLERY_PROJECTS.length;
+
+    if (sessionStorage.getItem("returnTransitionFrom") != null) {
+      fadeRef.current.value = 0;
+    }
 
     const update = () => {
       const viewportWidth = window.innerWidth;
@@ -96,11 +122,12 @@ export default function GalleryContactSection({ scrollEnabled }) {
           section.style.pointerEvents = "none";
           section.style.transform = "translate3d(0, 100%, 0)";
         } else {
-          section.style.visibility = "visible";
-          section.style.opacity = "1";
+          const fade = fadeRef.current.value;
+          section.style.visibility = fade > 0 ? "visible" : "hidden";
+          section.style.opacity = String(fade);
           section.style.transform = `translate3d(0, ${(1 - slideProgress) * 100}%, 0)`;
           section.style.pointerEvents =
-            slideProgress >= 0.98 ? "auto" : "none";
+            slideProgress >= 0.98 && fade >= 1 ? "auto" : "none";
         }
       }
 
