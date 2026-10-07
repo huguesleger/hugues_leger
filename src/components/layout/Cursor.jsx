@@ -4,24 +4,24 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { usePathname } from "next/navigation";
 import { getMousePos } from "@/lib/getMousePos";
+import { isCursorCanvasHover, setCursorCanvasHover } from "@/lib/cursorDom";
 
 const DESKTOP_MIN_WIDTH = 1100;
 const CURSOR_HOVER_SELECTOR =
   "a, button, .btn-main, [data-cursor], [data-cursor-label], [data-cursor-big], [data-cursor-dark]";
 
-function resetCursorState(cursorEl, wrapperEl, labelEl, labelCanvasEl) {
+function resetCursorState(cursorEl, wrapperEl, labelEl) {
+  setCursorCanvasHover(false);
   wrapperEl?.classList.remove("is-hover");
   if (!cursorEl) return;
-  cursorEl.classList.remove("has-label", "has-big", "has-dark", "has-canvas");
+  cursorEl.classList.remove("has-label", "has-big", "has-dark");
   if (labelEl) labelEl.textContent = "";
-  labelCanvasEl?.classList.add("label-hidden");
 }
 
 export default function Cursor() {
   const cursorRef = useRef(null);
   const cursorWrapperRef = useRef(null);
   const labelRef = useRef(null);
-  const labelCanvasRef = useRef(null);
   const mouseIsHoverRef = useRef(false);
   const reducedMotionRef = useRef(false);
 
@@ -41,9 +41,8 @@ export default function Cursor() {
     const cursor = cursorRef.current;
     const wrapper = cursorWrapperRef.current;
     const label = labelRef.current;
-    const labelCanvas = labelCanvasRef.current;
 
-    resetCursorState(cursor, wrapper, label, labelCanvas);
+    resetCursorState(cursor, wrapper, label);
 
     if (window.innerWidth < DESKTOP_MIN_WIDTH || !cursor) {
       document.documentElement.classList.remove("has-custom-cursor");
@@ -90,6 +89,8 @@ export default function Cursor() {
         if (hoverTarget.hasAttribute("data-cursor-dark")) {
           cursor.classList.add("has-dark");
         }
+      } else if (isCursorCanvasHover()) {
+        mouseIsHoverRef.current = true;
       } else {
         mouseIsHoverRef.current = false;
         cursor.classList.remove("has-label", "has-big", "has-dark");
@@ -108,7 +109,7 @@ export default function Cursor() {
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
       document.documentElement.classList.remove("has-custom-cursor");
-      resetCursorState(cursor, wrapper, label, labelCanvas);
+      resetCursorState(cursor, wrapper, label);
     };
   }, [pathname]);
 
@@ -117,12 +118,6 @@ export default function Cursor() {
       <div className="cursor-wrapper" ref={cursorWrapperRef}>
         <div className="cursor-circle" id="cursor-circle">
           <div className="cursor-label" ref={labelRef} />
-          <div
-            className="cursor-label-canvas label-hidden"
-            ref={labelCanvasRef}
-          >
-            View
-          </div>
           <div className="cursor-drag">
             <div className="arrow-left" />
             <div className="arrow-right" />

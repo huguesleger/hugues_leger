@@ -1,0 +1,49 @@
+@use "../abstract/variables" as *;
+
+.wrap-copy {
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+
+  .inner-label {
+    overflow: hidden;
+    height: 1rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .copy-label,
+  .copied-label {
+    font-family: $font-jost;
+    font-size: 0.688rem;
+    color: $color-text;
+    display: block;
+    transition-duration: 250ms;
+    transform: translateY(0) rotate(0.01deg);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .copy-email {
+    display: block;
+    font-family: $font-jost;
+  }
+
+  &.copied {
+    .copy-label,
+    .copied-label {
+      transform: translateY(-100%) rotate(0.01deg);
+    }
+
+    .copied-label {
+      transition-delay: 100ms;
+    }
+  }
+
+  &:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.35);
+    outline-offset: 6px;
+  }
+}

@@ -63,7 +63,7 @@ export default function TransitionOverlay() {
             top: 0,
             left: 0,
             height: "600px",
-            width: "100vw",
+            width: "100%",
             position: "fixed",
             zIndex: 60,
           });
@@ -93,7 +93,7 @@ export default function TransitionOverlay() {
             top: 0,
             left: 0,
             height: "600px",
-            width: "100vw",
+            width: "100%",
             position: "fixed",
             zIndex: 60,
           });

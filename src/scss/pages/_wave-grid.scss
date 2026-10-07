@@ -13,7 +13,9 @@ html.home-intro-lock body {
 .home-experience {
   position: relative;
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .home-gallery {
@@ -72,7 +74,7 @@ html.home-intro-lock body {
 
   &__text {
     fill: #ffffff;
-    font-family: "Jost", sans-serif;
+    font-family: $font-jost;
     font-size: 21px;
     font-weight: 400;
     letter-spacing: 0.05em;

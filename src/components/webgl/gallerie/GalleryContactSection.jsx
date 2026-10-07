@@ -7,7 +7,7 @@ import {
   getContactTextScrollDistance,
   getGalleryScrollSpan,
 } from "@/lib/galleryLayout";
-
+import Footer from "@/components/layout/Footer";
 const STATEMENT =
   "I design interfaces, craft interactive experiences, and build fluid animations.";
 const WORDS = STATEMENT.split(" ");
@@ -40,17 +40,31 @@ export default function GalleryContactSection({ scrollEnabled }) {
   const sectionRef = useRef(null);
   const wordRefs = useRef([]);
   const emailBlockRef = useRef(null);
-  const [copyLabel, setCopyLabel] = useState("copy to clipboard");
+  const [copied, setCopied] = useState(false);
+  const copyResetTimerRef = useRef(null);
 
   const copyEmail = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(EMAIL);
-      setCopyLabel("Copied");
-      window.setTimeout(() => setCopyLabel("copy to clipboard"), 2000);
+      setCopied(true);
+      if (copyResetTimerRef.current) {
+        window.clearTimeout(copyResetTimerRef.current);
+      }
+      copyResetTimerRef.current = window.setTimeout(() => {
+        setCopied(false);
+        copyResetTimerRef.current = null;
+      }, 2500);
     } catch {
-      setCopyLabel("Copy failed");
-      window.setTimeout(() => setCopyLabel("copy to clipboard"), 2000);
+      setCopied(false);
     }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (copyResetTimerRef.current) {
+        window.clearTimeout(copyResetTimerRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -151,13 +165,19 @@ export default function GalleryContactSection({ scrollEnabled }) {
         <button
           type="button"
           ref={emailBlockRef}
-          className="gallery-contact__email-block"
+          className={`gallery-contact__email-block wrap-copy${copied ? " copied" : ""}`}
+          data-cursor-label="Copy"
           onClick={copyEmail}
         >
-          <span className="gallery-contact__copy-hint">{copyLabel}</span>
-          <span className="gallery-contact__email">{EMAIL}</span>
+          <div className="inner-label">
+            <span className="copy-label">copy to clipboard</span>
+            <span className="copied-label">copied</span>
+          </div>
+          <span className="copy-email">{EMAIL}</span>
         </button>
+
       </div>
+      <Footer className="site-footer--contact" />
     </section>
   );
 }

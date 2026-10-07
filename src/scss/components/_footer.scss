@@ -1,0 +1,24 @@
+@use "../abstract/variables" as *;
+
+.site-footer {
+  width: 100%;
+  padding: 1rem clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem);
+
+  &__copy {
+    margin: 0;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: $color-text;
+  }
+
+  &--contact {
+    flex-shrink: 0;
+
+    .site-footer__copy {
+      color: $color-white;
+    }
+  }
+}

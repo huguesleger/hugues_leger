@@ -2,10 +2,13 @@
 @use "base/typography";
 @use "base/reset";
 @use "base/cursor";
+@use "base/base";
 @use "components/button";
+@use "components/copy-email";
 @use "components/overlays";
 @use "components/canvas";
 @use "components/header";
+@use "components/footer";
 @use "pages/wave-grid";
 @use "pages/gallery";
 @use "pages/contact";
