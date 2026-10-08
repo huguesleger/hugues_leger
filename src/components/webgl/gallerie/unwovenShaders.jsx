@@ -132,10 +132,6 @@ export const FRAGMENT_SHADER = `
     vec2 finalUv = (vUv - 0.5) * scale + 0.5 - uvDistortion;
     vec3 color = texture2D(uMap, finalUv).rgb;
 
-    color *= 1.0 - tear * 0.4 * rim * rim;                          
-    color += tear * 0.18 * (1.0 - smoothstep(0.0, 0.45, rim));      
-    color = mix(color, vec3(1.0), smoothstep(0.55, 1.0, tear) * 0.8); 
-
     gl_FragColor = vec4(color, alpha);
   }
 `;

@@ -51,14 +51,33 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     [],
   );
 
+  const transitionState = useMemo(() => {
+    if (typeof window === "undefined") return { isReturning: false, targetIndex: -1 };
+    const returnId = sessionStorage.getItem(WORKS_STORAGE.returnFrom);
+    const origin = sessionStorage.getItem(WORKS_STORAGE.origin);
+    if (!returnId || origin !== "/works") return { isReturning: false, targetIndex: -1 };
+    
+    let index = Number(sessionStorage.getItem(WORKS_STORAGE.card) ?? -1);
+    if (index < 0 || index >= dims.count) {
+      const pIndex = projects.findIndex((p) => String(p.id) === returnId);
+      index = pIndex >= 0 ? pIndex : -1;
+    }
+    return { isReturning: true, targetIndex: index };
+  }, [dims.count, projects]);
+
   const cards = useMemo(() => {
     return Array.from({ length: dims.count }, (_, i) => {
       const projectIndex = i % projects.length;
-      const tex = textures[projectIndex];
+      const baseTex = textures[projectIndex];
+      const tex = baseTex.clone();
       tex.generateMipmaps = false;
       tex.minFilter = THREE.LinearFilter;
       tex.magFilter = THREE.LinearFilter;
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.needsUpdate = true;
+
+      const isTarget = transitionState.isReturning && transitionState.targetIndex === i;
+      const initialFade = transitionState.isReturning && !isTarget ? 0 : 1;
 
       const material = new THREE.ShaderMaterial({
         vertexShader: WORKS_VERTEX_SHADER,
@@ -77,8 +96,8 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
           uLeanA: { value: 0 },
           uDent: { value: WORKS_CONFIG.sheet.dent },
           uShade: { value: WORKS_CONFIG.sheet.shade },
-          uTransition: { value: 0 },
-          uOpacity: { value: 1 },
+          uTransition: { value: isTarget ? 1 : 0 },
+          uOpacity: { value: initialFade },
           uHover: { value: 0 },
           uCardSize: { value: new THREE.Vector2() },
           uTargetSize: { value: new THREE.Vector2() },
@@ -86,9 +105,9 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
         },
       });
 
-      return { material, projectIndex, fade: { value: 1 } };
+      return { material, projectIndex, fade: { value: initialFade } };
     });
-  }, [dims.count, projects.length, textures]);
+  }, [dims.count, projects.length, textures, transitionState]);
 
   useEffect(() => {
     return () => cards.forEach((card) => card.material.dispose());

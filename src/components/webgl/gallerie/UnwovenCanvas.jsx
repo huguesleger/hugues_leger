@@ -104,7 +104,9 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
 
   const scrollSpan = (images.length - 1) * pitch;
 
-  const isTransitioning = useRef(false);
+  const isTransitioning = useRef(
+    typeof window !== "undefined" && !!sessionStorage.getItem("returnTransitionFrom")
+  );
   const scrollYRef = useRef(
     typeof window !== "undefined"
       ? Number(sessionStorage.getItem("galleryScroll") || getGalleryScroll())
@@ -178,7 +180,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
           uSeed: { value: (i + 1) * 0.731 },
           uImageAspect: { value: tex.image.width / tex.image.height },
           uTransitionProgress: { value: targetIndex === i ? 1.0 : 0.0 },
-          uOpacity: { value: 1.0 },
+          uOpacity: { value: targetIndex !== -1 && targetIndex !== i ? 0.0 : 1.0 },
         },
       });
     });
@@ -402,7 +404,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
 export default function UnwovenCanvas({ scrollEnabled = true }) {
   const layoutSyncRef = useRef({
     opacities: GALLERY_PROJECTS.map(() => 1),
-    hideAll: false,
+    hideAll: typeof window !== "undefined" && !!sessionStorage.getItem("returnTransitionFrom"),
   });
   const images = GALLERY_PROJECTS.map((project) => project.image);
 
