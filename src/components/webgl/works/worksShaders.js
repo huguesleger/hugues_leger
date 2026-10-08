@@ -144,6 +144,9 @@ export const WORKS_FRAGMENT_SHADER = `
   uniform float uShade;
   uniform vec2  uCardSize;
   uniform vec2  uTargetSize;
+  
+  uniform vec2  uMouse;
+  uniform float uTime;
 
   varying vec2 vUv;
   varying vec3 vFlat;
@@ -198,7 +201,14 @@ export const WORKS_FRAGMENT_SHADER = `
     vec2 scale = aspect > uImageAspect
       ? vec2(1.0, uImageAspect / aspect)
       : vec2(aspect / uImageAspect, 1.0);
-    vec3 color = texture2D(uMap, (uv - 0.5) * scale + 0.5).rgb;
+      
+    float dist = distance(vFlat.xy, uMouse);
+    float hoverDistortion = smoothstep(300.0, 0.0, dist) * (1.0 - uTransition);
+    float ripple = sin(dist * 0.04 - uTime * 6.0) * hoverDistortion;
+    vec2 mouseDir = vFlat.xy == uMouse ? vec2(0.0) : normalize(vFlat.xy - uMouse);
+    vec2 uvDistortion = mouseDir * ripple * 0.005 * uSheetP;
+      
+    vec3 color = texture2D(uMap, (uv - 0.5) * scale + 0.5 - uvDistortion).rgb;
 
     if (uSheetP > 0.001) {
       float depth = sheetShade(vFlat.x, vUv);

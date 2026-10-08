@@ -99,6 +99,8 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
           uTransition: { value: isTarget ? 1 : 0 },
           uOpacity: { value: initialFade },
           uHover: { value: 0 },
+          uMouse: { value: new THREE.Vector2(-9999, -9999) },
+          uTime: { value: 0 },
           uCardSize: { value: new THREE.Vector2() },
           uTargetSize: { value: new THREE.Vector2() },
           uTargetPosition: { value: new THREE.Vector2() },
@@ -221,15 +223,27 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       ? "View"
       : "Open";
 
-  useFrame((_, delta) => {
-    const state = scrollRef.current;
-    const dt = Math.min(delta, 1 / 20);
-    stepWorksScroll(state, dt);
+  const currentMouse = useRef(new THREE.Vector2(-9999, -9999));
 
-    const progress = smoothstep(0, dims.introDistance, state.current);
+  useFrame((state, delta) => {
+    const dt = Math.min(delta, 1 / 20);
+    const scrollState = scrollRef.current;
+    stepWorksScroll(scrollState, dt);
+
+    const targetX = (state.pointer.x * size.width) / 2;
+    const targetY = (state.pointer.y * size.height) / 2;
+
+    if (currentMouse.current.x === -9999) {
+      currentMouse.current.set(targetX, targetY);
+    } else {
+      currentMouse.current.x += (targetX - currentMouse.current.x) * 0.1;
+      currentMouse.current.y += (targetY - currentMouse.current.y) * 0.1;
+    }
+
+    const progress = smoothstep(0, dims.introDistance, scrollState.current);
     const arcAmount = 1 - progress;
 
-    if (!state.locked && !state.dragging) {
+    if (!scrollState.locked && !scrollState.dragging) {
       driftRef.current += dt * WORKS_CONFIG.idleDrift * arcAmount;
     }
     const offset = getOffset();
@@ -248,7 +262,7 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     const cardHeight = lerp(arcDims.height, lineDims.height, progress);
     const sheetConfig = dims.sheet;
     const halfWidth = size.width / 2;
-    const sheetV = normalizeSheetVelocity(state.velocity * 60, sheetConfig.velNorm);
+    const sheetV = normalizeSheetVelocity(scrollState.velocity * 60, sheetConfig.velNorm);
     const sheetD =
       halfWidth * sheetConfig.depth * (1 + WORKS_CONFIG.sheet.velDepth * sheetV);
     let activeIndex = 0;
@@ -269,8 +283,10 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       const visibility = lerp(arc.opacity, line.opacity, progress);
       mesh.visible = visibility * card.fade.value > 0.003;
 
-      const isHovered = hoveredRef.current === i && !state.locked;
+      const isHovered = hoveredRef.current === i && !scrollState.locked;
       const uniforms = card.material.uniforms;
+      uniforms.uMouse.value.copy(currentMouse.current);
+      uniforms.uTime.value = state.clock.elapsedTime;
       uniforms.uSheetW.value = halfWidth;
       uniforms.uSheetD.value = sheetD;
       uniforms.uSheetT.value = sheetConfig.span;
@@ -294,7 +310,7 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     if (syncRef) {
       syncRef.current.activeIndex = activeIndex;
       syncRef.current.progress = progress;
-      syncRef.current.hidden = state.locked;
+      syncRef.current.hidden = scrollState.locked;
     }
   });
 
