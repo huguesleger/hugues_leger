@@ -208,7 +208,20 @@ export const WORKS_FRAGMENT_SHADER = `
     vec2 mouseDir = vFlat.xy == uMouse ? vec2(0.0) : normalize(vFlat.xy - uMouse);
     vec2 uvDistortion = mouseDir * ripple * 0.005 * uSheetP;
       
-    vec3 color = texture2D(uMap, (uv - 0.5) * scale + 0.5 - uvDistortion).rgb;
+    vec2 finalUv = (uv - 0.5) * scale + 0.5 - uvDistortion;
+    
+    vec3 color = vec3(0.0);
+    float blurAmount = uSheetV * 0.03 * uSheetP * (1.0 - uTransition);
+    
+    if (blurAmount > 0.0001) {
+      for (int i = -3; i <= 3; i++) {
+        float offset = float(i) * blurAmount;
+        color += texture2D(uMap, finalUv + vec2(offset, 0.0)).rgb;
+      }
+      color /= 7.0;
+    } else {
+      color = texture2D(uMap, finalUv).rgb;
+    }
 
     if (uSheetP > 0.001) {
       float depth = sheetShade(vFlat.x, vUv);
