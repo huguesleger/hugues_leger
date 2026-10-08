@@ -16,6 +16,7 @@ import {
   getUnrolledX,
   getWorksDimensions,
   lerp,
+  normalizeSheetVelocity,
   smoothstep,
 } from "@/lib/worksLayout";
 import { stepWorksScroll } from "./useWorksScroll";
@@ -67,12 +68,15 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
         uniforms: {
           uMap: { value: tex },
           uImageAspect: { value: tex.image.width / tex.image.height },
-          uProgress: { value: 0 },
-          uVelocity: { value: 0 },
-          uWaveAmp: { value: 0 },
-          uWaveFreq: { value: 0 },
-          uWaveVelocityMax: { value: WORKS_CONFIG.waveVelocityMax },
-          uHalfWidth: { value: 1 },
+          uSheetW: { value: 1 },
+          uSheetD: { value: 0 },
+          uSheetT: { value: 1 },
+          uSheetC: { value: 1 },
+          uSheetP: { value: 0 },
+          uSheetV: { value: 0 },
+          uLeanA: { value: 0 },
+          uDent: { value: WORKS_CONFIG.sheet.dent },
+          uShade: { value: WORKS_CONFIG.sheet.shade },
           uTransition: { value: 0 },
           uOpacity: { value: 1 },
           uHover: { value: 0 },
@@ -223,6 +227,11 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     const arcScale = arcDims.pitch / lineDims.pitch;
     const cardWidth = lerp(arcDims.width, lineDims.width, progress);
     const cardHeight = lerp(arcDims.height, lineDims.height, progress);
+    const sheetConfig = dims.sheet;
+    const halfWidth = size.width / 2;
+    const sheetV = normalizeSheetVelocity(state.velocity * 60, sheetConfig.velNorm);
+    const sheetD =
+      halfWidth * sheetConfig.depth * (1 + WORKS_CONFIG.sheet.velDepth * sheetV);
     let activeIndex = 0;
     let activeDistance = Infinity;
 
@@ -243,11 +252,13 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
 
       const isHovered = hoveredRef.current === i && !state.locked;
       const uniforms = card.material.uniforms;
-      uniforms.uProgress.value = progress;
-      uniforms.uVelocity.value = state.velocity;
-      uniforms.uWaveAmp.value = dims.waveAmp;
-      uniforms.uWaveFreq.value = dims.waveFreq;
-      uniforms.uHalfWidth.value = size.width / 2;
+      uniforms.uSheetW.value = halfWidth;
+      uniforms.uSheetD.value = sheetD;
+      uniforms.uSheetT.value = sheetConfig.span;
+      uniforms.uSheetC.value = sheetConfig.curve;
+      uniforms.uSheetP.value = progress * (1 - uniforms.uTransition.value);
+      uniforms.uSheetV.value = sheetV;
+      uniforms.uLeanA.value = halfWidth * sheetConfig.door;
       uniforms.uOpacity.value = visibility * card.fade.value;
       uniforms.uHover.value += ((isHovered ? 1 : 0) - uniforms.uHover.value) * 0.1;
       uniforms.uCardSize.value.set(cardWidth, cardHeight);

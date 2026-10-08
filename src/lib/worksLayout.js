@@ -7,12 +7,17 @@ export const WORKS_CONFIG = {
   minCards: 12,
   segments: 32,
   introDistanceRatio: 1,
-  waveAmpRatio: 0.35,
-  waveLengthRatio: 1.4,
-  waveVelocityMax: 30,
+  cameraFov: 75,
+  sheet: {
+    desktop: { depth: 0.2, span: 1.15, door: -0.12, curve: 1, velNorm: 550 },
+    mobile: { depth: 0.18, span: 1, door: 0, curve: 0, velNorm: 245 },
+    velDepth: 1.1,
+    shade: 0.55,
+    dent: 0.06,
+  },
   arcTilt: 0.12,
   arcRoll: -0.06,
-  arcDepthRatio: 0.35,
+  arcDepthRatio: 0.05,
   idleDrift: 60,
   wheelMultiplier: 1,
   dragMultiplier: 1.6,
@@ -68,9 +73,14 @@ export function getWorksDimensions(viewportWidth, viewportHeight, projectCount) 
       totalWidth: count * lineCard.pitch,
     },
     introDistance: viewportHeight * WORKS_CONFIG.introDistanceRatio,
-    waveAmp: lineCard.height * WORKS_CONFIG.waveAmpRatio,
-    waveFreq: (Math.PI * 2) / (viewportWidth * WORKS_CONFIG.waveLengthRatio),
+    sheet: isMobile ? WORKS_CONFIG.sheet.mobile : WORKS_CONFIG.sheet.desktop,
   };
+}
+
+/** Vitesse de scroll (px/s) vers 0..1, courbe tanh signée au carré. */
+export function normalizeSheetVelocity(pxPerSecond, velNorm) {
+  const t = Math.tanh(pxPerSecond / velNorm);
+  return Math.min(1, Math.abs(t * Math.abs(t)));
 }
 
 export function wrap(value, length) {

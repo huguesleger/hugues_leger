@@ -3,9 +3,10 @@
 
 import { Suspense, useLayoutEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
+import { WORKS_CONFIG } from "@/lib/worksLayout";
 import WorksScene from "./WorksScene";
 
-const FOV = 35;
+const FOV = WORKS_CONFIG.cameraFov;
 
 function PixelPerspectiveCamera() {
   const { camera, size } = useThree();
