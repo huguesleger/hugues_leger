@@ -1,9 +1,12 @@
+@use "../abstract/variables" as *;
+
 .unwoven-canvas {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   will-change: transform;
+  background: $color-bg;
 
   canvas {
     pointer-events: auto;

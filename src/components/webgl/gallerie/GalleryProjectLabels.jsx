@@ -60,17 +60,7 @@ export default function GalleryProjectLabels({ scrollEnabled, layoutSyncRef }) {
         el.style.opacity = String(opacity);
         el.classList.add("gallery-project-label--visible");
 
-        const anchorX =
-          layout.side === "left"
-            ? layout.centerX - layout.cardWidth / 2 - layout.gap
-            : layout.centerX + layout.cardWidth / 2 + layout.gap;
-
         el.style.top = `${layout.centerY}px`;
-        el.style.left = `${anchorX}px`;
-
-        if (el.dataset.side !== layout.side) {
-          el.dataset.side = layout.side;
-        }
       });
 
       frameId = requestAnimationFrame(update);
@@ -92,7 +82,6 @@ export default function GalleryProjectLabels({ scrollEnabled, layoutSyncRef }) {
             labelRefs.current[index] = node;
           }}
           className="gallery-project-label"
-          data-side="left"
         >
           <div className="gallery-project-label__inner">
             <span className="gallery-project-label__text">{project.title}</span>
