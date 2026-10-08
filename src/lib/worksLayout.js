@@ -9,8 +9,8 @@ export const WORKS_CONFIG = {
   introDistanceRatio: 1,
   cameraFov: 75,
   sheet: {
-    desktop: { depth: 0.2, span: 1.15, door: -0.12, curve: 1, velNorm: 550 },
-    mobile: { depth: 0.18, span: 1, door: 0, curve: 0, velNorm: 245 },
+    desktop: { depth: 0.08, span: 1.15, door: -0.05, curve: 1, velNorm: 550 },
+    mobile: { depth: 0.06, span: 1, door: 0, curve: 0, velNorm: 245 },
     velDepth: 1.1,
     shade: 0.55,
     dent: 0.06,

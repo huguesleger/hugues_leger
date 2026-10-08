@@ -11,9 +11,9 @@ const SHEET_CHUNK = `
 
   const float SHEET_BANK   = -0.16;
   const float SHEET_DIAG   = 0.03;
-  const float SHEET_REAR_Y = 0.1;
-  const float SHEET_REAR_Z = 0.2;
-  const float SHEET_VTWIST = 1.8;
+  const float SHEET_REAR_Y = 0.01;
+  const float SHEET_REAR_Z = 0.01;
+  const float SHEET_VTWIST = 0.1;
   const float SHEET_TAIL   = 1.0;
   const float SHEET_SHIFT  = -0.2;
 
