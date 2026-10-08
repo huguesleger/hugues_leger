@@ -347,6 +347,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
     isTransitioning.current = true;
 
     sessionStorage.setItem("galleryScroll", String(getGalleryScroll()));
+    sessionStorage.setItem("transitionOrigin", "/");
     window.dispatchEvent(new CustomEvent("gallery-project-open"));
     materials.forEach((mat, i) => {
       if (i !== index) {

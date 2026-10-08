@@ -1,0 +1,139 @@
+@use "../abstract/variables" as *;
+
+html.is-works,
+html.is-works body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  height: 100%;
+}
+
+html.is-works-dragging,
+html.is-works-dragging * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.works {
+  position: fixed;
+  inset: 0;
+  background: $color-bg;
+  touch-action: none;
+  user-select: none;
+
+  &__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+}
+
+.works-labels {
+  --works-progress: 0;
+
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  color: $foreground;
+  transition: opacity 0.4s ease;
+
+  &__heading-layer {
+    --works-progress: 0;
+
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: difference;
+  }
+
+  &__heading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    gap: 0.25em;
+    margin: 0;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: clamp(3rem, 11vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #fff;
+    opacity: calc(1 - var(--works-progress) * 1.6);
+    transform: translate(-50%, calc(-50% - var(--works-progress) * 12vh));
+
+    span:last-child {
+      font-style: italic;
+      font-weight: 300;
+    }
+  }
+
+  &__titles {
+    position: absolute;
+    left: $page-padding;
+    bottom: $page-padding;
+    width: 70vw;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    height: 1.2em;
+    overflow: hidden;
+  }
+
+  &__title {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    font-family: $font-jost;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    span {
+      display: block;
+      transform: translateY(110%);
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    &--active span {
+      transform: translateY(0%);
+    }
+  }
+
+  &__counter {
+    position: absolute;
+    right: $page-padding;
+    bottom: $page-padding;
+    display: flex;
+    gap: 0.4em;
+    font-family: $font-jost;
+    font-size: clamp(1rem, 1.6vw, 1.4rem);
+    font-variant-numeric: tabular-nums;
+    color: $color-text;
+
+    span:first-child {
+      color: $foreground;
+    }
+  }
+
+  &__hint {
+    position: absolute;
+    left: 50%;
+    bottom: $page-padding;
+    transform: translateX(-50%);
+    font-family: $font-jost;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $color-text;
+  }
+
+  @media (max-width: 767px) {
+    &__hint {
+      bottom: calc(#{$page-padding} + 3.5rem);
+    }
+  }
+}

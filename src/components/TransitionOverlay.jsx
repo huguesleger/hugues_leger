@@ -78,7 +78,8 @@ export default function TransitionOverlay() {
           tl.set(imgRef.current, { autoAlpha: 1 }, 1.0);
         }
       } else {
-        router.push("/", { scroll: false });
+        const origin = sessionStorage.getItem("transitionOrigin") || "/";
+        router.push(origin, { scroll: false });
 
         gsap.set(bgRef.current, {
           autoAlpha: 0,
