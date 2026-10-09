@@ -13,6 +13,10 @@ export const metadata = {
   description: "Portfolio de Hugues Leger",
 };
 
+export const viewport = {
+  themeColor: "#000000",
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="fr" suppressHydrationWarning>
