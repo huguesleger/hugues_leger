@@ -27,8 +27,10 @@
 }
 
 .page-wrapper {
+  // Pas de transform / will-change: transform ici : cela ferait du wrapper
+  // le bloc conteneur des enfants `position: fixed` (canvas de la galerie).
   &.is-leaving {
-    will-change: transform;
+    will-change: top;
   }
 }
 

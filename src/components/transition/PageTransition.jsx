@@ -32,6 +32,37 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/**
+ * Un transform sur le wrapper transformerait ses enfants `position: fixed`
+ * (canvas de la galerie, labels…) en éléments positionnés par rapport au
+ * wrapper : ils sauteraient hors écran dès que la page est scrollée.
+ * On récupère donc les éléments fixed « de premier niveau » pour les
+ * décaler individuellement.
+ */
+function getFixedLayers(wrapper) {
+  const layers = [];
+  wrapper.querySelectorAll("*").forEach((el) => {
+    if (getComputedStyle(el).position !== "fixed") return;
+    let parent = el.parentElement;
+    while (parent && parent !== wrapper) {
+      const cs = getComputedStyle(parent);
+      if (
+        cs.position === "fixed" ||
+        cs.transform !== "none" ||
+        cs.translate !== "none" ||
+        cs.filter !== "none" ||
+        cs.perspective !== "none" ||
+        /transform|translate/.test(cs.willChange)
+      ) {
+        return;
+      }
+      parent = parent.parentElement;
+    }
+    layers.push(el);
+  });
+  return layers;
+}
+
 export default function PageTransition() {
   const router = useRouter();
   const pathname = usePathname();
@@ -43,6 +74,7 @@ export default function PageTransition() {
   const timelineRef = useRef(null);
   const navTimeoutRef = useRef(null);
   const prevPathnameRef = useRef(pathname);
+  const fixedLayersRef = useRef([]);
 
   const getWrapper = () => document.querySelector("[data-page-wrapper]");
 
@@ -71,7 +103,10 @@ export default function PageTransition() {
     const wrapper = getWrapper();
     if (!wrapper) return;
     wrapper.classList.remove("is-leaving");
-    gsap.set(wrapper, { clearProps: "transform,y" });
+    gsap.set(wrapper, { clearProps: "position,top" });
+    const layers = fixedLayersRef.current.filter((el) => el.isConnected);
+    if (layers.length) gsap.set(layers, { clearProps: "translate" });
+    fixedLayersRef.current = [];
   };
 
   const finishLeaving = () => {
@@ -173,7 +208,13 @@ export default function PageTransition() {
       gsap.set(overlay, { autoAlpha: 1, visibility: "visible" });
       gsap.set(back, { opacity: 0, y: 0, yPercent: 0 });
       parkBlock(block);
-      gsap.set(wrapper, { x: 0, y: 0, xPercent: 0, yPercent: 0 });
+
+      const shift =
+        -7 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const fixedLayers = getFixedLayers(wrapper);
+      fixedLayersRef.current = fixedLayers;
+      gsap.set(wrapper, { position: "relative", top: 0 });
+      if (fixedLayers.length) gsap.set(fixedLayers, { translate: "0px 0px" });
 
       const tl = gsap.timeline({
         onComplete: () => {
@@ -198,9 +239,16 @@ export default function PageTransition() {
       tl.to(back, { opacity: 1, duration: DURATION, ease: "power1.inOut" }, 0);
       tl.to(
         wrapper,
-        { y: "-7rem", duration: DURATION, ease: "pageCurtain" },
+        { top: shift, duration: DURATION, ease: "pageCurtain" },
         0,
       );
+      if (fixedLayers.length) {
+        tl.to(
+          fixedLayers,
+          { translate: `0px ${shift}px`, duration: DURATION, ease: "pageCurtain" },
+          0,
+        );
+      }
     };
 
     return () => {

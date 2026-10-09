@@ -8,6 +8,7 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { setCursorCanvasHover } from "@/lib/cursorDom";
+import { getIntroGate } from "@/lib/introGate";
 import {
   WORKS_CONFIG,
   WORKS_TRANSITION_TARGET_HEIGHT,
@@ -116,6 +117,34 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
   }, [cards]);
 
   useEffect(() => () => geometry.dispose(), [geometry]);
+
+  // Entrée du cylindre : fondu + montée depuis le bas.
+  const introRef = useRef(null);
+  if (introRef.current === null) {
+    introRef.current = transitionState.isReturning
+      ? { opacity: 1, lift: 0 }
+      : { opacity: 0, lift: 1 };
+  }
+
+  useEffect(() => {
+    const intro = introRef.current;
+    if (intro.opacity >= 1 && intro.lift <= 0) return;
+
+    let cancelled = false;
+    let tl = null;
+    getIntroGate().then(() => {
+      if (cancelled) return;
+      tl = gsap
+        .timeline({ delay: 0.2 })
+        .to(intro, { opacity: 1, duration: 1.2, ease: "power2.out" }, 0)
+        .to(intro, { lift: 0, duration: 1.8, ease: "expo.out" }, 0);
+    });
+
+    return () => {
+      cancelled = true;
+      tl?.kill();
+    };
+  }, []);
 
   useEffect(() => {
     const state = scrollRef.current;
@@ -242,7 +271,9 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     const offset = getOffset();
 
     const group = groupRef.current;
+    const intro = introRef.current;
     if (group) {
+      group.position.y = -intro.lift * size.height * 0.18;
       group.position.z = -arcAmount * dims.arc.radius * WORKS_CONFIG.arcDepthRatio;
       group.rotation.x = arcAmount * WORKS_CONFIG.arcTilt;
       group.rotation.z = arcAmount * WORKS_CONFIG.arcRoll;
@@ -273,7 +304,7 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       mesh.rotation.y = lerp(arc.rotY, line.rotY, progress);
       mesh.scale.set(cardWidth, cardHeight, 1);
 
-      const visibility = lerp(arc.opacity, line.opacity, progress);
+      const visibility = lerp(arc.opacity, line.opacity, progress) * intro.opacity;
       mesh.visible = visibility * card.fade.value > 0.003;
 
       const isHovered = hoveredRef.current === i && !scrollState.locked;

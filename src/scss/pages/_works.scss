@@ -65,8 +65,31 @@ html.is-works-dragging * {
     opacity: calc(1 - var(--works-progress) * 1.6);
     transform: translate(-50%, calc(-50% - var(--works-progress) * 12vh));
 
-    span:last-child {
+    > span:last-child {
       font-weight: 300;
+    }
+
+    // Masque un peu plus haut que le line-height (0.9) pour ne pas rogner les lettres.
+    .wrapper-word {
+      padding: 0.08em 0;
+      margin: -0.08em 0;
+    }
+
+    .char {
+      transition-duration: 1s;
+    }
+
+    // « Works » enchaîne après « Selected ».
+    > span:last-child .char {
+      @for $i from 1 through 10 {
+        &:nth-child(#{$i}) {
+          transition-delay: #{0.18 + $i * 0.04}s;
+        }
+      }
+    }
+
+    &--visible .wrapper-word .char {
+      transform: translateY(0%);
     }
   }
 

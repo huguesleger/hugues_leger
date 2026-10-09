@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
+import { getIntroGate } from "@/lib/introGate";
+
+// Laisse le rideau de la transition de page se retirer avant l'entrée du titre.
+const HEADING_REVEAL_DELAY_MS = 250;
 
 
 export default function WorksLabels({ projects, syncRef }) {
@@ -9,7 +13,23 @@ export default function WorksLabels({ projects, syncRef }) {
   const headingRef = useRef(null);
   const titleRefs = useRef([]);
   const hintRef = useRef(null);
+  const [headingVisible, setHeadingVisible] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    let timeoutId = 0;
+    getIntroGate().then(() => {
+      if (cancelled) return;
+      timeoutId = window.setTimeout(
+        () => setHeadingVisible(true),
+        HEADING_REVEAL_DELAY_MS,
+      );
+    });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
   useEffect(() => {
     let frameId = 0;
     let lastHoveredIndex = -1;
@@ -46,9 +66,15 @@ export default function WorksLabels({ projects, syncRef }) {
   return (
     <>
       <div ref={headingRef} className="works-labels__heading-layer">
-        <h1 className="works-labels__heading">
-          <span>Selected</span>
-          <span>Works</span>
+        <h1
+          className={`works-labels__heading${headingVisible ? " works-labels__heading--visible" : ""}`}
+        >
+          <span>
+            <SplittingWrapperWord>Selected</SplittingWrapperWord>
+          </span>
+          <span>
+            <SplittingWrapperWord>Works</SplittingWrapperWord>
+          </span>
         </h1>
       </div>
 
