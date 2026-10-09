@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { GALLERY_PROJECTS } from "@/lib/galleryProjects";
 import { getGalleryItemScreenLayout } from "@/lib/galleryLayout";
+import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
 
 function getGalleryScroll() {
   const lenis = window.lenisInstance;
@@ -84,7 +85,9 @@ export default function GalleryProjectLabels({ scrollEnabled, layoutSyncRef }) {
           className="gallery-project-label"
         >
           <div className="gallery-project-label__inner">
-            <span className="gallery-project-label__text">{project.title}</span>
+            <div className="gallery-project-label__text">
+              <SplittingWrapperWord>{project.title}</SplittingWrapperWord>
+            </div>
           </div>
         </div>
       ))}
