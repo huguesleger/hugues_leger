@@ -305,7 +305,8 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       syncRef.current.progress = progress;
       syncRef.current.hidden = scrollState.locked;
       const hoveredCardIndex = hoveredRef.current;
-      syncRef.current.hoveredIndex = hoveredCardIndex !== -1 ? cards[hoveredCardIndex].projectIndex : -1;
+      const isScrolling = Math.abs(scrollState.velocity) > 0.1 || Math.abs(scrollState.target - scrollState.current) > 0.5 || scrollState.dragging;
+      syncRef.current.hoveredIndex = (!isScrolling && hoveredCardIndex !== -1) ? cards[hoveredCardIndex].projectIndex : -1;
     }
   });
 
