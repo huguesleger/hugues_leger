@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { getIntroGate } from "@/lib/introGate";
+import TransitionLink from "@/components/transition/TransitionLink";
 
 const NAV_ITEMS = [
   { href: "/works", label: "Works" },
@@ -42,24 +43,27 @@ export default function Header() {
   return (
     <header ref={headerRef} className="site-header">
       <div className="header-logo">
-        <Link href="/">
+        <TransitionLink href="/">
           <img data-header-reveal src="/logo/logo.png" alt="Hugues Leger Logo" />
           <span className="logo-text">Hugues Leger</span>
-        </Link>
+        </TransitionLink>
       </div>
       <nav className="header-nav">
         <div className="nav-items">
-          {NAV_ITEMS.map(({ href, label }) => (
-            <Link key={href} href={href} className="item-link">
-              <div className="item-mask">
-                <div className="item-wrap" data-header-reveal>
-                  <span className="item">{label}</span>
-                  <span className="item-hover">{label}</span>
-                  <span className="item-circle"></span>
+          {NAV_ITEMS.map(({ href, label }) => {
+            const LinkComponent = href.startsWith("#") ? Link : TransitionLink;
+            return (
+              <LinkComponent key={href} href={href} className="item-link">
+                <div className="item-mask">
+                  <div className="item-wrap" data-header-reveal>
+                    <span className="item">{label}</span>
+                    <span className="item-hover">{label}</span>
+                    <span className="item-circle"></span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </LinkComponent>
+            );
+          })}
         </div>
       </nav>
     </header>

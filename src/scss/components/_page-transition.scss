@@ -1,0 +1,43 @@
+@use "../abstract/variables" as *;
+
+.page-transition {
+  visibility: hidden;
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  pointer-events: none;
+
+  &__back,
+  &__block {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__back {
+    z-index: 0;
+    background: #0000003b;
+  }
+
+  &__block {
+    z-index: 1;
+    background: $color-bg;
+  }
+}
+
+.page-wrapper {
+  &.is-leaving {
+    will-change: transform;
+  }
+}
+
+.page-reveal-mask {
+  overflow: hidden;
+  display: block;
+}
+
+[data-page-reveal] {
+  display: inline-block;
+  will-change: transform;
+}

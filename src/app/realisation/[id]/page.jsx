@@ -16,11 +16,15 @@ export default async function RealisationPage({ params }) {
           <BackButton id={id} src={src} />
 
           <div className="content__group active">
-            <div className="content__title">Projet {id}</div>
-            <div className="content__description">
-              Description détaillée du projet {id}. Cette page utilise
-              désormais le layout DOM standard. L'image de gauche est intégrée
-              avec la transition fluide de l'accueil.
+            <div className="content__title page-reveal-mask">
+              <span data-page-reveal>Projet {id}</span>
+            </div>
+            <div className="content__description page-reveal-mask">
+              <span data-page-reveal>
+                Description détaillée du projet {id}. Cette page utilise
+                désormais le layout DOM standard. L&apos;image de gauche est
+                intégrée avec la transition fluide de l&apos;accueil.
+              </span>
             </div>
           </div>
         </div>

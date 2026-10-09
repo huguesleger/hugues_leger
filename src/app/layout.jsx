@@ -2,6 +2,7 @@ import Script from "next/script";
 import LenisProvider from "@/components/LenisProvider";
 import "../scss/main.scss";
 import TransitionOverlay from "@/components/TransitionOverlay";
+import PageTransition from "@/components/transition/PageTransition";
 
 import Header from "@/components/layout/Header";
 import Cursor from "@/components/layout/Cursor";
@@ -23,7 +24,10 @@ export default function RootLayout({ children }) {
         <LenisProvider>
           <Cursor />
           <Header />
-          {children}
+          <div className="page-wrapper" data-page-wrapper>
+            {children}
+          </div>
+          <PageTransition />
           <TransitionOverlay />
         </LenisProvider>
       </body>
