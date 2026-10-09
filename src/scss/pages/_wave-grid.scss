@@ -51,6 +51,11 @@ html.home-intro-lock body {
   will-change: transform;
   transform-origin: 50% 50%;
   pointer-events: none;
+
+  .liquid-intro-canvas {
+    opacity: 0;
+    will-change: opacity, filter, transform;
+  }
 }
 
 .home-scroll-explore {

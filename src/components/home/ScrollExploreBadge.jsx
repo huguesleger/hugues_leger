@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import gsap from "gsap";
+import { getIntroGate } from "@/lib/introGate";
 import { useScrollExploreRotation } from "./useScrollExploreRotation";
 
 const CIRCLE_LABEL = "Scroll to explore - ";
@@ -15,8 +16,15 @@ export default function ScrollExploreBadge({ phase }) {
     const el = rootRef.current;
     if (!el) return;
 
+    let cancelled = false;
     if (sessionStorage.getItem("returnTransitionFrom") != null) {
       gsap.set(el, { opacity: 0 });
+    } else {
+      gsap.set(el, { opacity: 0 });
+      getIntroGate().then(() => {
+        if (cancelled) return;
+        gsap.to(el, { opacity: 1, duration: 0.8, ease: "power2.out", delay: 0.6 });
+      });
     }
 
     const handleProjectOpen = () => {
@@ -30,6 +38,7 @@ export default function ScrollExploreBadge({ phase }) {
     window.addEventListener("gallery-project-open", handleProjectOpen);
     window.addEventListener("gallery-project-return", handleProjectReturn);
     return () => {
+      cancelled = true;
       gsap.killTweensOf(el);
       window.removeEventListener("gallery-project-open", handleProjectOpen);
       window.removeEventListener("gallery-project-return", handleProjectReturn);

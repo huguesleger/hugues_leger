@@ -1,93 +1,115 @@
 @use "../abstract/variables" as *;
 
+$intro-bg: #161515;
+$intro-logo-height: 60px;
+
+html.intro-loading,
+html.intro-loading body {
+  overflow: hidden;
+}
+
+html.intro-entered .intro-loader {
+  display: none;
+}
+
 .intro-loader {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background-color: #000;
-  color: #fff;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  background-color: $intro-bg;
+  color: #fff;
   font-family: $font-jost;
+  clip-path: inset(0% 0% 0% 0%);
+  will-change: clip-path;
 
-  &__inner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+  &__brand {
+    display: flex;
+    align-items: center;
+    column-gap: 1.1rem;
+    will-change: transform;
   }
 
-  &__image {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    
-    img {
-      height: 60px;
-      width: auto;
-      object-fit: contain;
+  &__logo-mask {
+    overflow: hidden;
+    flex-shrink: 0;
+    line-height: 0;
+  }
+
+  &__logo {
+    display: block;
+    height: $intro-logo-height;
+    width: auto;
+    transform: translateY(115%);
+    will-change: transform, opacity;
+  }
+
+  // Les mots et le nom partagent la même cellule.
+  &__slot {
+    display: grid;
+    align-items: center;
+    justify-items: start;
+
+    > * {
+      grid-area: 1 / 1;
     }
   }
 
-  &__content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-  }
-
-  &__words {
-    position: absolute;
-    top: 50%;
-    left: 20px; /* Offset to the right */
-    transform: translateY(-50%);
-    font-size: clamp(1rem, 3vw, 1.8rem); /* Smaller text */
-    font-weight: 400;
+  &__word-mask {
+    overflow: hidden;
   }
 
   &__word {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
+    display: block;
+    font-size: 1.45rem;
+    font-weight: 300;
+    line-height: 1.1;
     white-space: nowrap;
+    transform: translateY(115%);
+    will-change: transform;
   }
 
-  &__logo-text {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 20px; /* Offset to the right */
-    transform: translateY(-50%);
-    flex-direction: column;
-    align-items: flex-start; /* Align left */
-    justify-content: center;
-    text-transform: uppercase;
-    font-size: clamp(1.2rem, 4vw, 2.5rem); /* Smaller text */
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-
-  &__logo-line {
-    /* overflow: hidden; Removed to ensure text isn't clipped out of bounds */
+  &__name {
     display: flex;
-    justify-content: center;
-    width: 100%;
-    overflow: hidden; /* Added padding to prevent clipping if we keep this */
-    padding-bottom: 0.1em;
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: 0.12em;
+    width: max-content;
+    text-transform: uppercase;
+    font-size: 1.45rem;
+    letter-spacing: 0.02em;
+  }
 
-    span {
-      display: inline-block;
-      will-change: transform;
-      transform: translateY(100%); /* Initialize outside */
-      &.bold {
-        font-weight: 700;
-      }
-      &:not(.bold) {
-        font-weight: 300;
-      }
+  &__name-line {
+    display: flex;
+    line-height: 0.86;
+    font-weight: 300;
+
+    &.bold {
+      font-weight: 600;
     }
+  }
+
+  &__char-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    // Rogné aux capitales pour que le bloc se centre sur le logo.
+    padding-top: 0.08em;
+    margin-top: -0.08em;
+
+    @supports (text-box: trim-both cap alphabetic) {
+      text-box: trim-both cap alphabetic;
+      padding: 0.04em 0;
+      margin: 0;
+    }
+  }
+
+  &__char-rise {
+    display: inline-block;
+    transform: translateY(115%);
+    will-change: transform, opacity;
   }
 }

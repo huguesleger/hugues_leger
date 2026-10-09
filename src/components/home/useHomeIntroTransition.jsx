@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { getIntroGate } from "@/lib/introGate";
 
 export const INTRO_WHEEL_THRESHOLD = 140;
 const PREVIEW_MAX_Y_PERCENT = -12;
@@ -22,6 +23,7 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
   const accumulatedRef = useRef(0);
   const isAnimatingRef = useRef(false);
   const idleResetTimerRef = useRef(null);
+  const gateOpenRef = useRef(false);
 
   const unlockScroll = useCallback((resetScroll = true) => {
     document.documentElement.classList.remove("home-intro-lock");
@@ -254,7 +256,7 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
 
   const handleScrollIntent = useCallback(
     (delta) => {
-      if (isAnimatingRef.current) return;
+      if (isAnimatingRef.current || !gateOpenRef.current) return;
 
       accumulatedRef.current = Math.max(
         0,
@@ -293,6 +295,8 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
           opacity: 0,
           pointerEvents: "none",
         });
+        const visual = intro.querySelector(".liquid-intro-canvas");
+        if (visual) gsap.set(visual, { opacity: 1 });
         window.dispatchEvent(
           new CustomEvent("intro-scroll-snap", { detail: 1.5 }),
         );
@@ -314,7 +318,31 @@ export function useHomeIntroTransition({ skipIntro = false } = {}) {
     const intro = introPanelRef.current;
     if (intro) gsap.set(intro, { pointerEvents: "auto" });
 
+    const visual = intro?.querySelector(".liquid-intro-canvas");
+    let revealTween = null;
+    let cancelled = false;
+    gateOpenRef.current = false;
+    if (visual) {
+      gsap.set(visual, { opacity: 0, filter: "blur(16px)", scale: 1.04 });
+    }
+    getIntroGate().then(() => {
+      if (cancelled) return;
+      gateOpenRef.current = true;
+      if (!visual) return;
+      revealTween = gsap.to(visual, {
+        opacity: 1,
+        filter: "blur(0px)",
+        scale: 1,
+        duration: 1,
+        ease: "power2.out",
+        delay: 0.15,
+        onComplete: () => gsap.set(visual, { clearProps: "filter,transform" }),
+      });
+    });
+
     return () => {
+      cancelled = true;
+      revealTween?.kill();
       clearIdleReset();
       document.documentElement.classList.remove("home-intro-lock");
     };
