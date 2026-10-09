@@ -8,24 +8,24 @@ export default function WorksLabels({ projects, syncRef }) {
   const rootRef = useRef(null);
   const headingRef = useRef(null);
   const titleRefs = useRef([]);
-  const counterRef = useRef(null);
   const hintRef = useRef(null);
 
   useEffect(() => {
     let frameId = 0;
-    let lastIndex = -1;
+    let lastHoveredIndex = -1;
+    let lastProgress = -1;
 
     const update = () => {
-      const { activeIndex, progress, hidden } = syncRef.current;
+      const { progress, hidden, hoveredIndex } = syncRef.current;
 
-      if (activeIndex !== lastIndex) {
+      if (hoveredIndex !== lastHoveredIndex || progress !== lastProgress) {
         titleRefs.current.forEach((el, i) => {
-          el?.classList.toggle("works-labels__title--active", i === activeIndex);
+          // Show title only when hovered and progress > 0.98 (in ribbon mode)
+          const isActive = i === hoveredIndex && progress > 0.98;
+          el?.classList.toggle("works-labels__title--active", isActive);
         });
-        if (counterRef.current) {
-          counterRef.current.textContent = pad(activeIndex + 1);
-        }
-        lastIndex = activeIndex;
+        lastHoveredIndex = hoveredIndex;
+        lastProgress = progress;
       }
 
       if (rootRef.current) {
@@ -34,9 +34,6 @@ export default function WorksLabels({ projects, syncRef }) {
       if (headingRef.current) {
         headingRef.current.style.opacity = hidden ? "0" : "1";
         headingRef.current.style.setProperty("--works-progress", progress.toFixed(3));
-      }
-      if (hintRef.current) {
-        hintRef.current.style.opacity = String(1 - Math.min(1, progress * 2));
       }
 
       frameId = requestAnimationFrame(update);
@@ -68,12 +65,6 @@ export default function WorksLabels({ projects, syncRef }) {
               <span>{project.title}</span>
             </div>
           ))}
-        </div>
-
-        <div className="works-labels__counter">
-          <span ref={counterRef}>01</span>
-          <span className="works-labels__counter-sep">/</span>
-          <span>{pad(projects.length)}</span>
         </div>
 
         <div ref={hintRef} className="works-labels__hint">

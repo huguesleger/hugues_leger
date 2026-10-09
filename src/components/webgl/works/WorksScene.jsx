@@ -209,19 +209,12 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     if (state.locked || state.moved) return;
 
     const progress = smoothstep(0, dims.introDistance, state.current);
-    if (progress >= 0.98) {
-      openProject(index);
-      return;
-    }
+    if (progress < 0.98) return;
 
-    const u = getUnrolledX(index, getOffset(), dims.line.pitch, dims.line.totalWidth);
-    state.target = Math.max(dims.introDistance, state.current + u);
+    openProject(index);
   };
 
-  const getCursorLabel = () =>
-    smoothstep(0, dims.introDistance, scrollRef.current.current) >= 0.98
-      ? "View"
-      : "Open";
+  const getCursorLabel = () => "View";
 
   const currentMouse = useRef(new THREE.Vector2(-9999, -9999));
 
@@ -311,6 +304,8 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       syncRef.current.activeIndex = activeIndex;
       syncRef.current.progress = progress;
       syncRef.current.hidden = scrollState.locked;
+      const hoveredCardIndex = hoveredRef.current;
+      syncRef.current.hoveredIndex = hoveredCardIndex !== -1 ? cards[hoveredCardIndex].projectIndex : -1;
     }
   });
 
@@ -331,6 +326,8 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
           }}
           onPointerOver={(e) => {
             e.stopPropagation();
+            const progress = smoothstep(0, dims.introDistance, scrollRef.current.current);
+            if (progress < 0.98) return;
             hoveredRef.current = i;
             if (!scrollRef.current.locked) {
               setCursorCanvasHover(true, getCursorLabel());

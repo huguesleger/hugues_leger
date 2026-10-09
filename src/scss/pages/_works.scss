@@ -73,17 +73,20 @@ html.is-works-dragging * {
 
   &__titles {
     position: absolute;
-    left: $page-padding;
-    bottom: $page-padding;
-    width: 70vw;
+    left: 50%;
+    bottom: calc(#{$page-padding} + 1.5rem);
+    transform: translateX(-50%);
+    width: 100%;
+    text-align: center;
     font-size: clamp(2.5rem, 6vw, 5rem);
     height: 1.2em;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
   }
 
   &__title {
     position: absolute;
-    left: 0;
     bottom: 0;
     font-family: $font-jost;
     font-weight: 500;
@@ -100,22 +103,6 @@ html.is-works-dragging * {
 
     &--active span {
       transform: translateY(0%);
-    }
-  }
-
-  &__counter {
-    position: absolute;
-    right: $page-padding;
-    bottom: $page-padding;
-    display: flex;
-    gap: 0.4em;
-    font-family: $font-jost;
-    font-size: clamp(1rem, 1.6vw, 1.4rem);
-    font-variant-numeric: tabular-nums;
-    color: $color-text;
-
-    span:first-child {
-      color: $foreground;
     }
   }
 
