@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -62,7 +63,7 @@ export default function WorksLabels({ projects, syncRef }) {
               }}
               className="works-labels__title"
             >
-              <span>{project.title}</span>
+              <SplittingWrapperWord>{project.title}</SplittingWrapperWord>
             </div>
           ))}
         </div>
