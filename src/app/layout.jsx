@@ -4,6 +4,7 @@ import TransitionOverlay from "@/components/TransitionOverlay";
 
 import Header from "@/components/layout/Header";
 import Cursor from "@/components/layout/Cursor";
+import IntroLoader from "@/components/loader/IntroLoader";
 
 export const metadata = {
   title: "Portfolio",
@@ -14,6 +15,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr" suppressHydrationWarning>
       <body>
+        <IntroLoader />
         <LenisProvider>
           <Cursor />
           <Header />
