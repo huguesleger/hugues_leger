@@ -53,10 +53,18 @@
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
       pointer-events: none;
+      display: none;
+
+      @media (min-width: 768px) {
+        display: block;
+      }
     }
-    a:hover .logo-text {
-      opacity: 1;
-      transform: translateY(0);
+    
+    @media (min-width: 768px) {
+      a:hover .logo-text {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   }
 
@@ -64,7 +72,7 @@
     .nav-items {
       display: flex;
       align-items: center;
-      gap: 2rem;
+      gap: 1rem;
       
       .item-link {
         font-family: $font-jost;

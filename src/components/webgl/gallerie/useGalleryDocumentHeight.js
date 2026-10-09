@@ -14,6 +14,12 @@ export function useGalleryDocumentHeight(projectCount, scrollEnabled) {
         window.innerHeight,
       );
       document.body.style.height = `${height}px`;
+      
+      const scrollContent = document.querySelector("[data-scroll-content]");
+      if (scrollContent) {
+        scrollContent.style.height = `${height}px`;
+      }
+      
       window.lenisInstance?.resize();
     };
 
@@ -23,6 +29,11 @@ export function useGalleryDocumentHeight(projectCount, scrollEnabled) {
     return () => {
       window.removeEventListener("resize", apply);
       document.body.style.height = "";
+      
+      const scrollContent = document.querySelector("[data-scroll-content]");
+      if (scrollContent) {
+        scrollContent.style.height = "";
+      }
     };
   }, [projectCount, scrollEnabled]);
 }

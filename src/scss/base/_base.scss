@@ -1,9 +1,17 @@
 @use "../abstract/variables" as *;
 
-html {
+// Le document ne défile jamais : tout le scroll se fait dans `.app-scroll`.
+// Sur mobile, la barre d'URL reste donc visible et le viewport ne change pas
+// de hauteur pendant le scroll (plus d'effet de « saut »).
+html,
+body {
     width: 100%;
     height: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
+html {
     scrollbar-width: none;
     -ms-overflow-style: none;
 
@@ -12,22 +20,51 @@ html {
     }
 }
 
-main {
-    flex: 1;
-}
-
 body {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
     max-width: 100%;
-    min-height: 100%;
-    overflow-x: hidden;
     font-family: $font-jost;
     color: $foreground;
     background: $background;
     line-height: 1.5;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+}
+
+.app-scroll {
+    position: fixed;
+    inset: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
     overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    // Lenis à l'arrêt : on bloque le scroll natif sans empêcher les
+    // positionnements programmatiques (scrollTo immédiat).
+    &.lenis-stopped,
+    html.home-intro-lock & {
+        overflow: hidden;
+    }
+
+    &.lenis-smooth iframe {
+        pointer-events: none;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        min-height: 100%;
+        overflow-x: clip;
+    }
+}
+
+main {
+    flex: 1;
 }
