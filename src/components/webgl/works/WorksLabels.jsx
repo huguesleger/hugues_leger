@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
 
-const pad = (n) => String(n).padStart(2, "0");
 
 export default function WorksLabels({ projects, syncRef }) {
   const rootRef = useRef(null);

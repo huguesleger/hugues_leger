@@ -51,9 +51,12 @@ export default function GalleryProjectLabels({ scrollEnabled, layoutSyncRef }) {
         const shouldShow = inView && opacity >= 0.02;
 
         if (!shouldShow) {
-          el.style.visibility = "hidden";
-          el.style.opacity = "0";
           el.classList.remove("gallery-project-label--visible");
+          // Only hide immediately if not transitioning (hideAll), otherwise let the CSS transition play out
+          if (!hideAll) {
+            el.style.visibility = "hidden";
+            el.style.opacity = "0";
+          }
           return;
         }
 
