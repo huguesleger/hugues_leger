@@ -151,7 +151,7 @@
     max-width: 440px;
     aspect-ratio: 3 / 4;
     overflow: hidden;
-    background: #111111;
+    background: #ffffff;
   }
 
   &__canvas-inner {
@@ -159,6 +159,7 @@
     inset: 0;
     width: 100%;
     height: 100%;
+    background: #ffffff;
 
     canvas {
       display: block;
@@ -170,7 +171,7 @@
   &__canvas-placeholder {
     width: 100%;
     height: 100%;
-    background: #1a1a1a;
+    background: #ffffff;
   }
 
   // Animation déclenchée au montage

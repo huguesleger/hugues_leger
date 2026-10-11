@@ -113,18 +113,6 @@ function AboutImageMesh({ image }) {
     );
     materialRef.current.uniforms.uMouse.value.lerp(mouseTarget.current, delta * 5);
 
-    if (meshRef.current) {
-      meshRef.current.rotation.y = THREE.MathUtils.lerp(
-        meshRef.current.rotation.y,
-        (mouseTarget.current.x - 0.5) * 0.12 * (hovered ? 1 : 0),
-        delta * 3
-      );
-      meshRef.current.rotation.x = THREE.MathUtils.lerp(
-        meshRef.current.rotation.x,
-        -(mouseTarget.current.y - 0.5) * 0.12 * (hovered ? 1 : 0),
-        delta * 3
-      );
-    }
   });
 
   const handlePointerMove = (e) => {
@@ -135,7 +123,7 @@ function AboutImageMesh({ image }) {
   return (
     <mesh
       ref={meshRef}
-      scale={[viewport.width, viewport.height, 1]}
+      scale={[viewport.width * 1.02, viewport.height * 1.02, 1]}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => {
         setHovered(false);
@@ -170,7 +158,9 @@ export default function AboutCanvas({ image = "/assets/4.webp" }) {
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
         dpr={[1, 2]}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: false }}
+        onCreated={({ gl }) => gl.setClearColor("#ffffff", 1)}
+        style={{ background: "#ffffff" }}
       >
         <Suspense fallback={null}>
           <AboutImageMesh image={image} />
