@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/immutability */
 
-import React, { useRef, useMemo, useEffect, useState } from "react";
+import React, { useRef, useMemo, useEffect, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
@@ -419,11 +419,13 @@ export default function UnwovenCanvas({ scrollEnabled = true }) {
         camera={{ position: [0, 0, 10], zoom: 1 }}
         style={{ pointerEvents: "auto" }}
       >
-        <UnwovenScene
-          images={images}
-          scrollEnabled={scrollEnabled}
-          layoutSyncRef={layoutSyncRef}
-        />
+        <Suspense fallback={null}>
+          <UnwovenScene
+            images={images}
+            scrollEnabled={scrollEnabled}
+            layoutSyncRef={layoutSyncRef}
+          />
+        </Suspense>
       </Canvas>
     </div>
   );
