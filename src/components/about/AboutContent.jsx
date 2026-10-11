@@ -18,13 +18,18 @@ export default function AboutContent() {
 
   return (
     <div className={`page-about__wrap${isVisible ? " page-about--visible" : ""}`}>
-      <div className="page-about__inner">
-        <h1 className="page-about__title">
-          <span className="title-about">
-            <SplittingWrapperWord>About</SplittingWrapperWord>
-          </span>
-        </h1>
-      </div>
+      <header className="page-about__header">
+        <div className="page-about__inner">
+          <h1 className="page-about__title">
+            <span className="title-1">
+              <SplittingWrapperWord>Creative developer</SplittingWrapperWord>
+            </span>
+            <span className="title-2">
+              <SplittingWrapperWord>& front developer</SplittingWrapperWord>
+            </span>
+          </h1>
+        </div>
+      </header>
 
       <Footer className="site-footer--page-about" />
     </div>

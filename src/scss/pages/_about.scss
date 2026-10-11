@@ -13,9 +13,20 @@
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     width: 100%;
-    padding: clamp(6rem, 14vh, 9rem) clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem) 1.5rem;
+    box-sizing: border-box;
+  }
+
+  &__header {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    padding: clamp(6rem, 14vh, 9rem) clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem) 2rem;
     box-sizing: border-box;
   }
 
@@ -37,9 +48,20 @@
     letter-spacing: -0.03em;
     font-family: $font-jost;
 
-    .title-about {
+    .title-1,
+    .title-2 {
       display: block;
       overflow: hidden;
+    }
+
+    .title-1 {
+      font-size: clamp(2.5rem, 6.5vw, 6rem);
+      font-weight: 400;
+      color: $foreground;
+      margin-bottom: 0.1em;
+    }
+
+    .title-2 {
       font-size: clamp(3.2rem, 9.5vw, 9.5rem);
       font-weight: 600;
       color: $foreground;
@@ -58,12 +80,16 @@
   // Animation déclenchée au montage
   &--visible {
     .page-about__title {
-      .title-about .wrapper-word .char {
+      .title-1 .wrapper-word .char {
+        transform: translateY(0%);
+      }
+
+      .title-2 .wrapper-word .char {
         transform: translateY(0%);
 
-        @for $i from 1 through 10 {
+        @for $i from 1 through 25 {
           &:nth-child(#{$i}) {
-            transition-delay: #{0.2 + $i * 0.04}s;
+            transition-delay: #{0.25 + $i * 0.03}s;
           }
         }
       }
@@ -71,9 +97,6 @@
   }
 
   .site-footer--page-about {
-    padding-left: 0;
-    padding-right: 0;
-    padding-bottom: 0;
     margin-top: auto;
   }
 }
