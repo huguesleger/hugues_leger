@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { GALLERY_PROJECTS } from "@/lib/galleryProjects";
 import {
@@ -9,6 +9,7 @@ import {
   getGalleryScrollSpan,
 } from "@/lib/galleryLayout";
 import Footer from "@/components/layout/Footer";
+import CopyEmail from "@/components/CopyEmail";
 const STATEMENT =
   "I design interfaces, craft interactive experiences, and build fluid animations.";
 const WORDS = STATEMENT.split(" ");
@@ -41,33 +42,7 @@ export default function GalleryContactSection({ scrollEnabled }) {
   const sectionRef = useRef(null);
   const wordRefs = useRef([]);
   const emailBlockRef = useRef(null);
-  const [copied, setCopied] = useState(false);
-  const copyResetTimerRef = useRef(null);
   const fadeRef = useRef({ value: 1 });
-
-  const copyEmail = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(EMAIL);
-      setCopied(true);
-      if (copyResetTimerRef.current) {
-        window.clearTimeout(copyResetTimerRef.current);
-      }
-      copyResetTimerRef.current = window.setTimeout(() => {
-        setCopied(false);
-        copyResetTimerRef.current = null;
-      }, 2500);
-    } catch {
-      setCopied(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (copyResetTimerRef.current) {
-        window.clearTimeout(copyResetTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const fade = fadeRef.current;
@@ -189,19 +164,11 @@ export default function GalleryContactSection({ scrollEnabled }) {
           ))}
         </p>
 
-        <button
-          type="button"
+        <CopyEmail
           ref={emailBlockRef}
-          className={`gallery-contact__email-block wrap-copy${copied ? " copied" : ""}`}
-          data-cursor-label="Copy"
-          onClick={copyEmail}
-        >
-          <div className="inner-label">
-            <span className="copy-label">copy to clipboard</span>
-            <span className="copied-label">copied</span>
-          </div>
-          <span className="copy-email">{EMAIL}</span>
-        </button>
+          email={EMAIL}
+          className="gallery-contact__email-block"
+        />
 
       </div>
       <Footer className="site-footer--contact" />

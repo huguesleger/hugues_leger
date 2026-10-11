@@ -29,9 +29,12 @@
   .copy-email {
     display: block;
     font-family: $font-jost;
+    font-size: clamp(1.40rem, 5vw, 3.5rem);
+    text-transform: uppercase;
   }
 
   &.copied {
+
     .copy-label,
     .copied-label {
       transform: translateY(-100%) rotate(0.01deg);
