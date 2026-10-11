@@ -48,17 +48,25 @@
     letter-spacing: -0.03em;
     font-family: $font-jost;
 
-    .title-1,
-    .title-2 {
+    &-line {
       display: block;
-      overflow: hidden;
+      line-height: 0.95;
+
+      &--1 {
+        margin-bottom: 0.1em;
+        overflow: hidden;
+      }
+    }
+
+    .title-parallax {
+      display: inline-block;
+      will-change: transform;
     }
 
     .title-1 {
       font-size: clamp(2.5rem, 6.5vw, 6rem);
       font-weight: 400;
       color: $foreground;
-      margin-bottom: 0.1em;
     }
 
     .title-2 {
@@ -117,9 +125,15 @@
       margin: 0 0 clamp(1.5rem, 3vh, 2.5rem);
       color: $foreground;
 
-      .title-bio {
+      &-mask {
         display: block;
         overflow: hidden;
+        line-height: 1;
+      }
+
+      .title-bio {
+        display: inline-block;
+        will-change: transform;
       }
 
       .wrapper-word {
@@ -128,7 +142,7 @@
       }
 
       .char {
-        transition-duration: 0.85s;
+        transform: translateY(0%);
       }
     }
 
@@ -187,18 +201,6 @@
         @for $i from 1 through 25 {
           &:nth-child(#{$i}) {
             transition-delay: #{0.25 + $i * 0.03}s;
-          }
-        }
-      }
-    }
-
-    .page-about__bio-title {
-      .title-bio .wrapper-word .char {
-        transform: translateY(0%);
-
-        @for $i from 1 through 10 {
-          &:nth-child(#{$i}) {
-            transition-delay: #{0.35 + $i * 0.04}s;
           }
         }
       }
