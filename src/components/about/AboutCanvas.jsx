@@ -46,19 +46,36 @@ const ABOUT_FRAGMENT_SHADER = `
       vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
     );
 
-    // Subtle interactive ripple on hover
-    float dist = distance(vUv, uMouse);
-    float ripple = sin(dist * 14.0 - uTime * 3.0) * 0.012 * uHover;
-    vec2 dir = vUv - uMouse;
+    // Aspect ratio correction for perfectly circular spotlight
+    float aspect = planeRes.x / max(planeRes.y, 0.0001);
+    vec2 aspectUv = vec2(vUv.x * aspect, vUv.y);
+    vec2 aspectMouse = vec2(uMouse.x * aspect, uMouse.y);
+    float dist = distance(aspectUv, aspectMouse);
+
+    // Spotlight / B&W reveal factor around cursor (soft feathering)
+    float radius = 0.32;
+    float softness = 0.16;
+    float circle = 1.0 - smoothstep(radius - softness, radius + softness, dist);
+    float bwFactor = clamp(circle * uHover, 0.0, 1.0);
+
+    // Interactive ripple focused around cursor
+    float ripple = sin(dist * 16.0 - uTime * 3.0) * 0.012 * bwFactor;
+    vec2 dir = aspectUv - aspectMouse;
     vec2 distortedUv = uv + normalize(dir + 0.0001) * ripple;
 
-    // Subtle chromatic aberration on hover
-    float shift = 0.006 * uHover;
-    float r = texture2D(uTexture, distortedUv + vec2(shift, 0.0)).r;
-    float g = texture2D(uTexture, distortedUv).g;
-    float b = texture2D(uTexture, distortedUv - vec2(shift, 0.0)).b;
+    // Distorted texture sample under cursor
+    vec4 distortedTex = texture2D(uTexture, distortedUv);
+    float gray = dot(distortedTex.rgb, vec3(0.299, 0.587, 0.114));
+    vec3 bwColor = vec3(gray);
 
-    gl_FragColor = vec4(r, g, b, 1.0);
+    // Base texture (clean color outside cursor)
+    vec4 baseTex = texture2D(uTexture, uv);
+    vec3 colorRgb = baseTex.rgb;
+
+    // Blend: full color by default -> black & white under the cursor
+    vec3 finalColor = mix(colorRgb, bwColor, bwFactor);
+
+    gl_FragColor = vec4(finalColor, 1.0);
   }
 `;
 
