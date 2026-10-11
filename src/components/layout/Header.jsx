@@ -2,17 +2,19 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { getIntroGate } from "@/lib/introGate";
 import TransitionLink from "@/components/transition/TransitionLink";
 
 const NAV_ITEMS = [
   { href: "/works", label: "Works" },
-  { href: "#about", label: "About" },
+  { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
 
 export default function Header() {
+  const pathname = usePathname();
   const headerRef = useRef(null);
 
   useEffect(() => {
@@ -52,8 +54,13 @@ export default function Header() {
         <div className="nav-items">
           {NAV_ITEMS.map(({ href, label }) => {
             const LinkComponent = href.startsWith("#") ? Link : TransitionLink;
+            const isActive = pathname === href;
             return (
-              <LinkComponent key={href} href={href} className="item-link">
+              <LinkComponent
+                key={href}
+                href={href}
+                className={`item-link${isActive ? " item-active" : ""}`}
+              >
                 <div className="item-mask">
                   <div className="item-wrap" data-header-reveal>
                     <span className="item">{label}</span>
