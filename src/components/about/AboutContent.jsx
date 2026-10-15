@@ -6,6 +6,25 @@ import { getScrollY } from "@/lib/scroll";
 import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
 import Footer from "@/components/layout/Footer";
 import AboutCanvas from "./AboutCanvas";
+import AboutCircleSection from "./AboutCircleSection";
+
+const BIO_STATEMENT =
+  "Hugues Leger, basé sur Montpellier. Toujours amoureux du code et du design, j'aime apprendre de nouvelles choses chaque jour et me lancer des défis avec de nouveaux projets, traduire des concepts en design visuel en prêtant une attention particulière aux détails, et les convertir en expériences hautement interactives.";
+const BIO_WORDS = BIO_STATEMENT.split(" ");
+const COLOR_DIM = { r: 180, g: 180, b: 180 };
+const COLOR_BRIGHT = { r: 23, g: 23, b: 23 };
+const DIM_COLOR = "rgb(180, 180, 180)";
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function lerpColor(t) {
+  const r = Math.round(COLOR_DIM.r + (COLOR_BRIGHT.r - COLOR_DIM.r) * t);
+  const g = Math.round(COLOR_DIM.g + (COLOR_BRIGHT.g - COLOR_DIM.g) * t);
+  const b = Math.round(COLOR_DIM.b + (COLOR_BRIGHT.b - COLOR_DIM.b) * t);
+  return `rgb(${r}, ${g}, ${b})`;
+}
 
 export default function AboutContent() {
   const [isVisible, setIsVisible] = useState(false);
@@ -14,6 +33,7 @@ export default function AboutContent() {
   const line2Ref = useRef(null);
   const bioRef = useRef(null);
   const bioTitleRef = useRef(null);
+  const bioWordRefs = useRef([]);
 
   useEffect(() => {
     // Petit délai pour laisser la transition de page / le montage se terminer
@@ -30,6 +50,7 @@ export default function AboutContent() {
     const header = headerRef.current;
     const bio = bioRef.current;
     const bioTitle = bioTitleRef.current;
+    const bioWordElements = bioWordRefs.current;
     if (!line1 || !line2) return;
 
     const setY1 = gsap.quickSetter(line1, "y", "px");
@@ -40,6 +61,11 @@ export default function AboutContent() {
       setBioY(115);
     }
 
+    BIO_WORDS.forEach((_, index) => {
+      const el = bioWordElements[index];
+      if (el) el.style.color = DIM_COLOR;
+    });
+
     const onUpdate = () => {
       const scrollY = getScrollY();
       const clamped = Math.max(0, scrollY);
@@ -47,29 +73,46 @@ export default function AboutContent() {
 
       // Parallax du titre principal dans le header
       if (clamped <= maxDist) {
-        // Le premier texte monte beaucoup plus vite que l'autre
         setY1(-clamped * 0.85);
-        // Le second texte monte plus lentement
         setY2(-clamped * 0.25);
       }
 
-      // Parallax du titre Hello : se déclenche une fois la section bien visible à l'écran
-      if (setBioY && bio) {
+      // Parallax du titre Hello et illumination progressive du texte
+      if (bio) {
         const bioRect = bio.getBoundingClientRect();
         const windowH = window.innerHeight;
-        // On doit déjà voir la section (plus de 40% entrée dans l'écran) avant de déclencher la montée
-        const start = windowH * 0.60;
-        const end = windowH * 0.15;
 
-        if (bioRect.top >= start) {
-          setBioY(115);
-        } else if (bioRect.top <= end) {
-          setBioY(0);
-        } else {
-          const p = (start - bioRect.top) / (start - end);
-          const pEased = p * (2 - p);
-          setBioY((1 - pEased) * 115);
+        // 1. Parallax du titre Hello
+        if (setBioY) {
+          const start = windowH * 0.60;
+          const end = windowH * 0.15;
+
+          if (bioRect.top >= start) {
+            setBioY(115);
+          } else if (bioRect.top <= end) {
+            setBioY(0);
+          } else {
+            const p = (start - bioRect.top) / (start - end);
+            const pEased = p * (2 - p);
+            setBioY((1 - pEased) * 115);
+          }
         }
+
+        // 2. Illumination mot par mot du texte bio (comme sur GalleryContactSection)
+        const textStart = windowH * 0.40;
+        const textEnd = windowH * -0.15;
+        const textProgress = clamp((textStart - bioRect.top) / (textStart - textEnd), 0, 1);
+
+        BIO_WORDS.forEach((_, index) => {
+          const el = bioWordElements[index];
+          if (!el) return;
+          if (textProgress <= 0) {
+            el.style.color = DIM_COLOR;
+            return;
+          }
+          const wordProgress = clamp(textProgress * BIO_WORDS.length - index, 0, 1);
+          el.style.color = lerpColor(wordProgress);
+        });
       }
     };
 
@@ -117,16 +160,25 @@ export default function AboutContent() {
                 </div>
               </h2>
               <p className="page-about__bio-text">
-                Hugues Leger, basé sur Montpellier. Toujours amoureux du code et
-                du design, j&apos;aime apprendre de nouvelles choses chaque jour et me
-                lancer des défis avec de nouveaux projets, traduire des concepts
-                en design visuel en prêtant une attention particulière aux
-                détails, et les convertir en expériences hautement interactives.
+                {BIO_WORDS.map((word, index) => (
+                  <span
+                    key={`${word}-${index}`}
+                    ref={(node) => {
+                      bioWordRefs.current[index] = node;
+                    }}
+                    className="page-about__bio-word"
+                  >
+                    {word}
+                    {index < BIO_WORDS.length - 1 ? " " : ""}
+                  </span>
+                ))}
               </p>
             </div>
           </div>
         </div>
       </section>
+
+      <AboutCircleSection />
 
       <Footer className="site-footer--page-about" />
     </div>

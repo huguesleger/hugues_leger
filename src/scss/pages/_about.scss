@@ -88,7 +88,7 @@
   // Section Hello / Bio
   &__bio {
     width: 100%;
-    padding: clamp(4rem, 10vh, 8rem) clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem);
+    padding: clamp(4rem, 10vh, 8rem) clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem) clamp(8rem, 16vh, 14rem);
     box-sizing: border-box;
 
     &-grid {
@@ -151,11 +151,15 @@
       font-size: clamp(1.15rem, 1.8vw, 1.65rem);
       line-height: 1.5;
       font-weight: 400;
-      color: $foreground;
+      color: rgb(180, 180, 180);
       letter-spacing: -0.01em;
       max-width: 46ch;
       margin: 0;
-      opacity: 0.9;
+    }
+
+    &-word {
+      display: inline;
+      white-space: normal;
     }
   }
 
@@ -204,6 +208,123 @@
           }
         }
       }
+    }
+  }
+
+  // Section CircleText à scroll horizontal épinglé (effet rideau Kalinsky)
+  &__circle-track {
+    position: relative;
+    height: 260vh;
+    width: 100%;
+  }
+
+  &__circle-sticky {
+    position: sticky;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    height: 100dvh;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  &__circle-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+
+    &--dark {
+      background-color: $dark-grey;
+      color: #ffffff;
+      z-index: 1;
+    }
+
+    &--light {
+      background-color: #ffffff;
+      color: #171717;
+      z-index: 2;
+    }
+  }
+
+  &__circle-curtain {
+    overflow: hidden;
+    will-change: transform;
+    box-shadow: -15px 0 35px rgba(0, 0, 0, 0.15);
+
+    &-inner {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      will-change: transform;
+    }
+  }
+
+  &__circle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(92vw, 92vh);
+    height: min(92vw, 92vh);
+    max-width: 950px;
+    max-height: 950px;
+    margin: auto;
+  }
+
+  .circles {
+    max-width: 950px;
+    width: 100%;
+    height: 100%;
+    display: block;
+    margin: 0 auto;
+    overflow: visible;
+
+    .circles-text {
+      text-transform: uppercase;
+      fill: #ffffff;
+      transform-origin: 50% 50%;
+    }
+
+    &--dark .circles-text {
+      fill: #ffffff;
+    }
+
+    &--light .circles-text {
+      fill: #171717;
+    }
+
+    .circles-text-1 {
+      font-size: 5.6rem;
+      font-family: $font-renogare;
+      letter-spacing: 0.02em;
+    }
+
+    .circles-text-2 {
+      font-size: 3.8rem;
+      font-family: $font-jost;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .circles-text-3 {
+      font-size: 2.8rem;
+      font-family: $font-renogare;
+      letter-spacing: 0.03em;
+    }
+
+    .circles-text-4 {
+      font-size: 1.85rem;
+      font-family: $font-jost;
+      font-weight: 500;
+      letter-spacing: 0.06em;
     }
   }
 
