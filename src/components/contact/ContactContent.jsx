@@ -35,6 +35,7 @@ export default function ContactContent() {
           <CopyEmail
             email={EMAIL}
             className="page-contact__email-block"
+            cursorColor={true}
           />
         </div>
       </div>

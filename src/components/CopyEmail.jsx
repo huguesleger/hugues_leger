@@ -12,6 +12,7 @@ const CopyEmail = forwardRef(function CopyEmail(
     labelCopy = "copy to clipboard",
     labelCopied = "copied",
     cursorLabel = "Copy",
+    cursorColor = "",
     onCopy,
     ...props
   },
@@ -58,6 +59,7 @@ const CopyEmail = forwardRef(function CopyEmail(
       type="button"
       className={buttonClasses}
       data-cursor-label={cursorLabel}
+      data-cursor-dark={cursorColor}
       onClick={handleCopy}
       style={style}
       {...props}

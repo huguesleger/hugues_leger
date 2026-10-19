@@ -7,6 +7,7 @@ import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
 import Footer from "@/components/layout/Footer";
 import AboutCanvas from "./AboutCanvas";
 import AboutCircleSection from "./AboutCircleSection";
+import AboutToolkit from "./AboutToolkit";
 
 const BIO_STATEMENT =
   "Hugues Leger, basé sur Montpellier. Toujours amoureux du code et du design, j'aime apprendre de nouvelles choses chaque jour et me lancer des défis avec de nouveaux projets, traduire des concepts en design visuel en prêtant une attention particulière aux détails, et les convertir en expériences hautement interactives.";
@@ -179,6 +180,8 @@ export default function AboutContent() {
       </section>
 
       <AboutCircleSection />
+
+      <AboutToolkit />
 
       <Footer className="site-footer--page-about" />
     </div>
