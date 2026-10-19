@@ -47,7 +47,22 @@ export default function LenisProvider({ children }) {
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
+    // Recalcule les ScrollTriggers (Parallax, RoundedTransition…) quand la
+    // hauteur du contenu change : images, canvas, changement de page.
+    let refreshTimer = 0;
+    let lastHeight = content.offsetHeight;
+    const resizeObserver = new ResizeObserver(() => {
+      const height = content.offsetHeight;
+      if (height === lastHeight) return;
+      lastHeight = height;
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 150);
+    });
+    resizeObserver.observe(content);
+
     return () => {
+      clearTimeout(refreshTimer);
+      resizeObserver.disconnect();
       gsap.ticker.remove(raf);
       lenis.destroy();
       if (window.lenisInstance === lenis) window.lenisInstance = null;

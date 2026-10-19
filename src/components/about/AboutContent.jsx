@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { getScrollY } from "@/lib/scroll";
 import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
 import Footer from "@/components/layout/Footer";
 import CopyEmail from "@/components/CopyEmail";
+import Parallax from "@/components/Parallax";
+import RoundedTransition from "@/components/RoundedTransition";
 import AboutCanvas from "./AboutCanvas";
 import AboutCircleSection from "./AboutCircleSection";
 import AboutToolkit from "./AboutToolkit";
@@ -31,15 +32,11 @@ function lerpColor(t) {
 export default function AboutContent() {
   const [isVisible, setIsVisible] = useState(false);
   const headerRef = useRef(null);
-  const line1Ref = useRef(null);
-  const line2Ref = useRef(null);
   const bioRef = useRef(null);
-  const bioTitleRef = useRef(null);
   const bioWordRefs = useRef([]);
-  const roundedRef = useRef(null);
   const contactRef = useRef(null);
-  const contactContentRef = useRef(null);
-  const contactTitleRef = useRef(null);
+
+  const headerHeight = () => headerRef.current?.offsetHeight ?? window.innerHeight;
 
   useEffect(() => {
     // Petit délai pour laisser la transition de page / le montage se terminer
@@ -51,127 +48,33 @@ export default function AboutContent() {
   }, []);
 
   useEffect(() => {
-    const line1 = line1Ref.current;
-    const line2 = line2Ref.current;
-    const header = headerRef.current;
     const bio = bioRef.current;
-    const bioTitle = bioTitleRef.current;
     const bioWordElements = bioWordRefs.current;
-    const rounded = roundedRef.current;
-    const contact = contactRef.current;
-    const contactContent = contactContentRef.current;
-    const contactTitle = contactTitleRef.current;
-    if (!line1 || !line2) return;
-
-    const setY1 = gsap.quickSetter(line1, "y", "px");
-    const setY2 = gsap.quickSetter(line2, "y", "px");
-    const setBioY = bioTitle ? gsap.quickSetter(bioTitle, "yPercent") : null;
-    const setRoundedHeight = rounded ? gsap.quickSetter(rounded, "height", "px") : null;
-    const setContactContentY = contactContent ? gsap.quickSetter(contactContent, "y", "px") : null;
-    const setContactTitleY = contactTitle ? gsap.quickSetter(contactTitle, "yPercent") : null;
-
-    const getRoundTargetHeight = () => (window.innerWidth >= 1200 ? 94 : 35);
-
-    if (setRoundedHeight) {
-      setRoundedHeight(getRoundTargetHeight());
-    }
-
-    if (setContactTitleY) {
-      setContactTitleY(115);
-    }
-
-    if (setBioY) {
-      setBioY(115);
-    }
+    if (!bio) return;
 
     BIO_WORDS.forEach((_, index) => {
       const el = bioWordElements[index];
       if (el) el.style.color = DIM_COLOR;
     });
 
+    // Illumination mot par mot du texte bio (comme sur GalleryContactSection)
     const onUpdate = () => {
-      const scrollY = getScrollY();
-      const clamped = Math.max(0, scrollY);
-      const maxDist = header ? header.offsetHeight * 1.5 : window.innerHeight * 1.5;
+      const bioRect = bio.getBoundingClientRect();
+      const windowH = window.innerHeight;
+      const textStart = windowH * 0.40;
+      const textEnd = windowH * -0.15;
+      const textProgress = clamp((textStart - bioRect.top) / (textStart - textEnd), 0, 1);
 
-      // Parallax du titre principal dans le header
-      if (clamped <= maxDist) {
-        setY1(-clamped * 0.85);
-        setY2(-clamped * 0.25);
-      }
-
-      // Parallax du titre Hello et illumination progressive du texte
-      if (bio) {
-        const bioRect = bio.getBoundingClientRect();
-        const windowH = window.innerHeight;
-
-        // 1. Parallax du titre Hello
-        if (setBioY) {
-          const start = windowH * 0.60;
-          const end = windowH * 0.15;
-
-          if (bioRect.top >= start) {
-            setBioY(115);
-          } else if (bioRect.top <= end) {
-            setBioY(0);
-          } else {
-            const p = (start - bioRect.top) / (start - end);
-            const pEased = p * (2 - p);
-            setBioY((1 - pEased) * 115);
-          }
+      BIO_WORDS.forEach((_, index) => {
+        const el = bioWordElements[index];
+        if (!el) return;
+        if (textProgress <= 0) {
+          el.style.color = DIM_COLOR;
+          return;
         }
-
-        // 2. Illumination mot par mot du texte bio (comme sur GalleryContactSection)
-        const textStart = windowH * 0.40;
-        const textEnd = windowH * -0.15;
-        const textProgress = clamp((textStart - bioRect.top) / (textStart - textEnd), 0, 1);
-
-        BIO_WORDS.forEach((_, index) => {
-          const el = bioWordElements[index];
-          if (!el) return;
-          if (textProgress <= 0) {
-            el.style.color = DIM_COLOR;
-            return;
-          }
-          const wordProgress = clamp(textProgress * BIO_WORDS.length - index, 0, 1);
-          el.style.color = lerpColor(wordProgress);
-        });
-      }
-
-      // Effet d'arrondi dynamique au scroll (folionextv2)
-      if (contact && setRoundedHeight) {
-        const contactRect = contact.getBoundingClientRect();
-        const windowH = window.innerHeight;
-        const heightRound = getRoundTargetHeight();
-
-        // Quand contactRect.top >= windowH : contact n'est pas encore entré -> progress = 0 -> height = heightRound
-        // Quand contactRect.top <= 0 : contact remplit l'écran -> progress = 1 -> height = 0
-        const contactProgress = clamp((windowH - contactRect.top) / windowH, 0, 1);
-        setRoundedHeight(heightRound * (1 - contactProgress));
-
-        if (setContactContentY) {
-          // Effet subtil de parallaxe sur le contenu du contact
-          setContactContentY((1 - contactProgress) * 40);
-        }
-
-        // Effet de parallaxe sur le texte Connectons-nous (comme data-scroll-speed="3" de folionextv2)
-        if (setContactTitleY) {
-          const start = windowH * 0.75;
-          const end = windowH * 0.15;
-
-          if (contactRect.top >= start) {
-            setContactTitleY(115);
-          } else if (contactRect.top <= end) {
-            // Continuité du parallax fluide une fois révélé
-            const extraP = clamp((end - contactRect.top) / windowH, 0, 1);
-            setContactTitleY(-extraP * 30);
-          } else {
-            const p = (start - contactRect.top) / (start - end);
-            const pEased = p * (2 - p);
-            setContactTitleY((1 - pEased) * 115);
-          }
-        }
-      }
+        const wordProgress = clamp(textProgress * BIO_WORDS.length - index, 0, 1);
+        el.style.color = lerpColor(wordProgress);
+      });
     };
 
     gsap.ticker.add(onUpdate);
@@ -187,14 +90,32 @@ export default function AboutContent() {
         <div className="page-about__inner">
           <h1 className="page-about__title">
             <div className="page-about__title-line page-about__title-line--1">
-              <span className="title-1 title-parallax" ref={line1Ref}>
+              <Parallax
+                as="span"
+                className="title-1"
+                trigger={headerRef}
+                unit="px"
+                from={0}
+                to={() => -headerHeight() * 0.85}
+                start="top top"
+                end="bottom top"
+              >
                 <SplittingWrapperWord>Creative developer</SplittingWrapperWord>
-              </span>
+              </Parallax>
             </div>
             <div className="page-about__title-line page-about__title-line--2">
-              <span className="title-2 title-parallax" ref={line2Ref}>
-                <SplittingWrapperWord>& front developer</SplittingWrapperWord>
-              </span>
+              <Parallax
+                as="span"
+                className="title-2"
+                trigger={headerRef}
+                unit="px"
+                from={0}
+                to={() => -headerHeight() * 0.25}
+                start="top top"
+                end="bottom top"
+              >
+                <SplittingWrapperWord>&amp; front developer</SplittingWrapperWord>
+              </Parallax>
             </div>
           </h1>
         </div>
@@ -212,9 +133,18 @@ export default function AboutContent() {
             <div className="page-about__bio-content">
               <h2 className="page-about__bio-title">
                 <div className="page-about__bio-title-mask">
-                  <span className="title-bio title-parallax" ref={bioTitleRef}>
+                  <Parallax
+                    as="span"
+                    className="title-bio"
+                    trigger={bioRef}
+                    from={115}
+                    to={0}
+                    start="top 60%"
+                    end="top 15%"
+                    ease="power1.out"
+                  >
                     <SplittingWrapperWord>Hello</SplittingWrapperWord>
-                  </span>
+                  </Parallax>
                 </div>
               </h2>
               <p className="page-about__bio-text">
@@ -241,21 +171,35 @@ export default function AboutContent() {
       <AboutToolkit />
 
       {/* Transition arrondie dynamique au scroll (folionextv2) */}
-      <div className="wrap-rounded">
-        <div className="inner-rounded" ref={roundedRef}>
-          <div className="rounded" />
-        </div>
-      </div>
+      <RoundedTransition trigger={contactRef} />
 
       {/* Section Contact (folionextv2) */}
       <section className="section-contact" ref={contactRef}>
         <div className="inner-contact">
-          <div className="wrap-content" ref={contactContentRef}>
+          <Parallax
+            className="wrap-content"
+            trigger={contactRef}
+            unit="px"
+            from={40}
+            to={0}
+            start="top bottom"
+            end="top top"
+          >
             <div className="inner-title">
               <h2 className="title-contact">
-                <span className="title-contact__inner title-parallax" ref={contactTitleRef}>
+                <Parallax
+                  as="span"
+                  trigger={contactRef}
+                  from={115}
+                  to={0}
+                  start="top 75%"
+                  end="top 15%"
+                  ease="power1.out"
+                  exit={-30}
+                  exitEnd="top -85%"
+                >
                   Connectons-nous
-                </span>
+                </Parallax>
               </h2>
             </div>
             <div className="wrap-email">
@@ -265,7 +209,7 @@ export default function AboutContent() {
                 cursorLabel="Copy"
               />
             </div>
-          </div>
+          </Parallax>
           <div className="inner-footer">
             <Footer className="site-footer--contact" />
           </div>

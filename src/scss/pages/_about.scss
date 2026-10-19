@@ -58,11 +58,6 @@
       }
     }
 
-    .title-parallax {
-      display: inline-block;
-      will-change: transform;
-    }
-
     .title-1 {
       font-size: clamp(2.5rem, 6.5vw, 6rem);
       font-weight: 400;
@@ -129,11 +124,6 @@
         display: block;
         overflow: hidden;
         line-height: 1;
-      }
-
-      .title-bio {
-        display: inline-block;
-        will-change: transform;
       }
 
       .wrapper-word {
@@ -468,39 +458,6 @@
     margin-top: auto;
   }
 
-  // Transition arrondie dynamique au scroll (folionextv2)
-  .wrap-rounded {
-    background: $background;
-    width: 100%;
-    position: relative;
-    height: 0;
-    display: block;
-    z-index: 2;
-
-    .inner-rounded {
-      top: 0;
-      position: relative;
-      transform: translateY(-1px);
-      z-index: 2;
-      height: 94px;
-      will-change: height;
-      width: 100%;
-      overflow: hidden;
-
-      .rounded {
-        width: 150%;
-        display: block;
-        position: absolute;
-        background: $background;
-        height: 750%;
-        left: 50%;
-        border-radius: 50%;
-        transform: translate(-50%, -86.666%);
-        z-index: 1;
-      }
-    }
-  }
-
   // Section Contact (folionextv2)
   .section-contact {
     min-height: 100vh;
@@ -542,11 +499,6 @@
             margin: 0 0 clamp(1.5rem, 3vh, 2.5rem);
             line-height: 1.15;
             overflow: hidden;
-
-            &__inner {
-              display: inline-block;
-              will-change: transform;
-            }
           }
         }
 
