@@ -12,7 +12,7 @@ const CopyEmail = forwardRef(function CopyEmail(
     labelCopy = "copy to clipboard",
     labelCopied = "copied",
     cursorLabel = "Copy",
-    cursorColor = "",
+    cursorColor,
     onCopy,
     ...props
   },

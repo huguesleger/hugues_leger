@@ -467,4 +467,123 @@
   .site-footer--page-about {
     margin-top: auto;
   }
+
+  // Transition arrondie dynamique au scroll (folionextv2)
+  .wrap-rounded {
+    background: $background;
+    width: 100%;
+    position: relative;
+    height: 0;
+    display: block;
+    z-index: 2;
+
+    .inner-rounded {
+      top: 0;
+      position: relative;
+      transform: translateY(-1px);
+      z-index: 2;
+      height: 94px;
+      will-change: height;
+      width: 100%;
+      overflow: hidden;
+
+      .rounded {
+        width: 150%;
+        display: block;
+        position: absolute;
+        background: $background;
+        height: 750%;
+        left: 50%;
+        border-radius: 50%;
+        transform: translate(-50%, -86.666%);
+        z-index: 1;
+      }
+    }
+  }
+
+  // Section Contact (folionextv2)
+  .section-contact {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: $dark-grey;
+    color: #ffffff;
+    position: relative;
+    z-index: 1;
+
+    .inner-contact {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100vh;
+      min-height: 100dvh;
+      max-width: min(85rem, 100%);
+      margin: 0 auto;
+      width: 100%;
+      padding: clamp(6rem, 14vh, 9rem) clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem) 1.5rem;
+      box-sizing: border-box;
+
+      .wrap-content {
+        padding-top: clamp(2rem, 6vh, 4rem);
+        margin: auto 0;
+        will-change: transform;
+
+        .inner-title {
+          overflow: hidden;
+          padding-top: 0.25em;
+          padding-bottom: 0.25em;
+          margin-top: -0.25em;
+
+          .title-contact {
+            font-family: $font-jost;
+            font-size: clamp(1.5rem, 3.5vw, 2.75rem);
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+            margin: 0 0 clamp(1.5rem, 3vh, 2.5rem);
+            line-height: 1.15;
+            overflow: hidden;
+
+            &__inner {
+              display: inline-block;
+              will-change: transform;
+            }
+          }
+        }
+
+        .wrap-email {
+          overflow: hidden;
+
+          .wrap-copy {
+            color: #ffffff;
+
+            .copy-label,
+            .copied-label {
+              color: #9b9b9b;
+            }
+
+            .copy-email {
+              color: #ffffff;
+              font-size: clamp(1.8rem, 5.5vw, 4.5rem);
+              font-weight: 500;
+            }
+          }
+        }
+      }
+
+      .inner-footer {
+        margin-top: auto;
+        width: 100%;
+
+        .site-footer {
+          padding-left: 0;
+          padding-right: 0;
+          padding-bottom: 0;
+
+          &__copy {
+            color: #ffffff;
+          }
+        }
+      }
+    }
+  }
 }

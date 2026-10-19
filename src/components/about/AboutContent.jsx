@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { getScrollY } from "@/lib/scroll";
 import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
 import Footer from "@/components/layout/Footer";
+import CopyEmail from "@/components/CopyEmail";
 import AboutCanvas from "./AboutCanvas";
 import AboutCircleSection from "./AboutCircleSection";
 import AboutToolkit from "./AboutToolkit";
@@ -35,6 +36,10 @@ export default function AboutContent() {
   const bioRef = useRef(null);
   const bioTitleRef = useRef(null);
   const bioWordRefs = useRef([]);
+  const roundedRef = useRef(null);
+  const contactRef = useRef(null);
+  const contactContentRef = useRef(null);
+  const contactTitleRef = useRef(null);
 
   useEffect(() => {
     // Petit délai pour laisser la transition de page / le montage se terminer
@@ -52,11 +57,28 @@ export default function AboutContent() {
     const bio = bioRef.current;
     const bioTitle = bioTitleRef.current;
     const bioWordElements = bioWordRefs.current;
+    const rounded = roundedRef.current;
+    const contact = contactRef.current;
+    const contactContent = contactContentRef.current;
+    const contactTitle = contactTitleRef.current;
     if (!line1 || !line2) return;
 
     const setY1 = gsap.quickSetter(line1, "y", "px");
     const setY2 = gsap.quickSetter(line2, "y", "px");
     const setBioY = bioTitle ? gsap.quickSetter(bioTitle, "yPercent") : null;
+    const setRoundedHeight = rounded ? gsap.quickSetter(rounded, "height", "px") : null;
+    const setContactContentY = contactContent ? gsap.quickSetter(contactContent, "y", "px") : null;
+    const setContactTitleY = contactTitle ? gsap.quickSetter(contactTitle, "yPercent") : null;
+
+    const getRoundTargetHeight = () => (window.innerWidth >= 1200 ? 94 : 35);
+
+    if (setRoundedHeight) {
+      setRoundedHeight(getRoundTargetHeight());
+    }
+
+    if (setContactTitleY) {
+      setContactTitleY(115);
+    }
 
     if (setBioY) {
       setBioY(115);
@@ -114,6 +136,41 @@ export default function AboutContent() {
           const wordProgress = clamp(textProgress * BIO_WORDS.length - index, 0, 1);
           el.style.color = lerpColor(wordProgress);
         });
+      }
+
+      // Effet d'arrondi dynamique au scroll (folionextv2)
+      if (contact && setRoundedHeight) {
+        const contactRect = contact.getBoundingClientRect();
+        const windowH = window.innerHeight;
+        const heightRound = getRoundTargetHeight();
+
+        // Quand contactRect.top >= windowH : contact n'est pas encore entré -> progress = 0 -> height = heightRound
+        // Quand contactRect.top <= 0 : contact remplit l'écran -> progress = 1 -> height = 0
+        const contactProgress = clamp((windowH - contactRect.top) / windowH, 0, 1);
+        setRoundedHeight(heightRound * (1 - contactProgress));
+
+        if (setContactContentY) {
+          // Effet subtil de parallaxe sur le contenu du contact
+          setContactContentY((1 - contactProgress) * 40);
+        }
+
+        // Effet de parallaxe sur le texte Connectons-nous (comme data-scroll-speed="3" de folionextv2)
+        if (setContactTitleY) {
+          const start = windowH * 0.75;
+          const end = windowH * 0.15;
+
+          if (contactRect.top >= start) {
+            setContactTitleY(115);
+          } else if (contactRect.top <= end) {
+            // Continuité du parallax fluide une fois révélé
+            const extraP = clamp((end - contactRect.top) / windowH, 0, 1);
+            setContactTitleY(-extraP * 30);
+          } else {
+            const p = (start - contactRect.top) / (start - end);
+            const pEased = p * (2 - p);
+            setContactTitleY((1 - pEased) * 115);
+          }
+        }
       }
     };
 
@@ -183,7 +240,37 @@ export default function AboutContent() {
 
       <AboutToolkit />
 
-      <Footer className="site-footer--page-about" />
+      {/* Transition arrondie dynamique au scroll (folionextv2) */}
+      <div className="wrap-rounded">
+        <div className="inner-rounded" ref={roundedRef}>
+          <div className="rounded" />
+        </div>
+      </div>
+
+      {/* Section Contact (folionextv2) */}
+      <section className="section-contact" ref={contactRef}>
+        <div className="inner-contact">
+          <div className="wrap-content" ref={contactContentRef}>
+            <div className="inner-title">
+              <h2 className="title-contact">
+                <span className="title-contact__inner title-parallax" ref={contactTitleRef}>
+                  Connectons-nous
+                </span>
+              </h2>
+            </div>
+            <div className="wrap-email">
+              <CopyEmail
+                email="contactme@huguesleger.fr"
+                className="section-contact__email-block"
+                cursorLabel="Copy"
+              />
+            </div>
+          </div>
+          <div className="inner-footer">
+            <Footer className="site-footer--contact" />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
