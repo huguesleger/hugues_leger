@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import useCursorTarget from "@/hooks/useCursorTarget";
 
 const DEFAULT_EMAIL = "contactme@huguesleger.fr";
 
@@ -14,12 +15,22 @@ const CopyEmail = forwardRef(function CopyEmail(
     cursorLabel = "Copy",
     cursorColor,
     onCopy,
+    onPointerEnter,
+    onPointerLeave,
     ...props
   },
   ref,
 ) {
   const [copied, setCopied] = useState(false);
   const copyResetTimerRef = useRef(null);
+
+  const activeCursorLabel = copied ? labelCopied : cursorLabel;
+  const cursorHandlers = useCursorTarget({
+    label: activeCursorLabel,
+    dark: Boolean(cursorColor),
+    onPointerEnter,
+    onPointerLeave,
+  });
 
   const handleCopy = useCallback(
     async (e) => {
@@ -58,10 +69,9 @@ const CopyEmail = forwardRef(function CopyEmail(
       ref={ref}
       type="button"
       className={buttonClasses}
-      data-cursor-label={cursorLabel}
-      data-cursor-dark={cursorColor}
       onClick={handleCopy}
       style={style}
+      {...cursorHandlers}
       {...props}
     >
       <div className="inner-label">

@@ -4,17 +4,37 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { usePathname } from "next/navigation";
 import { getMousePos } from "@/lib/getMousePos";
-import { isCursorCanvasHover, setCursorCanvasHover } from "@/lib/cursorDom";
+import { cursorStore } from "@/lib/cursorStore";
 
 const DESKTOP_MIN_WIDTH = 1100;
-const CURSOR_HOVER_SELECTOR =
+const FALLBACK_HOVER_SELECTOR =
   "a, button, .btn-main, [data-cursor], [data-cursor-label], [data-cursor-big], [data-cursor-dark]";
 
-function resetCursorState(cursorEl, wrapperEl, labelEl) {
-  setCursorCanvasHover(false);
+function applyStateToElements(state, cursorEl, wrapperEl, labelEl) {
+  if (!cursorEl) return;
+
+  const { isHover, label, big, dark, drag } = state;
+
+  if (isHover) {
+    wrapperEl?.classList.add("is-hover");
+  } else {
+    wrapperEl?.classList.remove("is-hover");
+  }
+
+  cursorEl.classList.toggle("has-label", Boolean(label));
+  cursorEl.classList.toggle("has-big", Boolean(big));
+  cursorEl.classList.toggle("has-dark", Boolean(dark));
+  cursorEl.classList.toggle("has-drag", Boolean(drag));
+
+  if (labelEl) {
+    labelEl.textContent = label || "";
+  }
+}
+
+function resetCursorDOM(cursorEl, wrapperEl, labelEl) {
   wrapperEl?.classList.remove("is-hover");
   if (!cursorEl) return;
-  cursorEl.classList.remove("has-label", "has-big", "has-dark");
+  cursorEl.classList.remove("has-label", "has-big", "has-dark", "has-drag");
   if (labelEl) labelEl.textContent = "";
 }
 
@@ -22,7 +42,6 @@ export default function Cursor() {
   const cursorRef = useRef(null);
   const cursorWrapperRef = useRef(null);
   const labelRef = useRef(null);
-  const mouseIsHoverRef = useRef(false);
   const reducedMotionRef = useRef(false);
 
   const pathname = usePathname();
@@ -42,7 +61,8 @@ export default function Cursor() {
     const wrapper = cursorWrapperRef.current;
     const label = labelRef.current;
 
-    resetCursorState(cursor, wrapper, label);
+    cursorStore.reset();
+    resetCursorDOM(cursor, wrapper, label);
 
     if (window.innerWidth < DESKTOP_MIN_WIDTH || !cursor) {
       document.documentElement.classList.remove("has-custom-cursor");
@@ -51,6 +71,12 @@ export default function Cursor() {
 
     document.documentElement.classList.add("has-custom-cursor");
 
+    // 1. Souscription réactive au cursorStore (CursorTarget, useCursorTarget, WebGL)
+    const unsubscribe = cursorStore.subscribe((state) => {
+      applyStateToElements(state, cursor, wrapper, label);
+    });
+
+    // 2. Déplacement du curseur + détection automatique des liens/boutons standards
     const onPointerMove = (e) => {
       const target = e.target;
       if (!(target instanceof Element)) return;
@@ -70,46 +96,44 @@ export default function Cursor() {
         });
       }
 
-      const hoverTarget = target.closest(CURSOR_HOVER_SELECTOR);
-      if (hoverTarget) {
-        mouseIsHoverRef.current = true;
-        cursor.classList.remove("has-label", "has-big", "has-dark");
-
-        const labelText = hoverTarget.getAttribute("data-cursor-label");
-        if (labelText) {
-          cursor.classList.add("has-label");
-          if (label) label.textContent = labelText;
-        } else if (label) {
-          label.textContent = "";
-        }
-
-        if (hoverTarget.hasAttribute("data-cursor-big")) {
-          cursor.classList.add("has-big");
-        }
-        if (hoverTarget.hasAttribute("data-cursor-dark")) {
-          cursor.classList.add("has-dark");
-        }
-      } else if (isCursorCanvasHover()) {
-        mouseIsHoverRef.current = true;
-      } else {
-        mouseIsHoverRef.current = false;
-        cursor.classList.remove("has-label", "has-big", "has-dark");
-        if (label) label.textContent = "";
+      // Si le store est actuellement piloté par un CursorTarget / WebGL, il a la priorité
+      const storeState = cursorStore.getState();
+      if (storeState.isHover) {
+        return;
       }
 
-      if (mouseIsHoverRef.current) {
-        wrapper?.classList.add("is-hover");
+      // Fallback automatique pour les éléments HTML natifs (liens <a>, boutons simples, rétrocompat data-*)
+      const hoverTarget = target.closest(FALLBACK_HOVER_SELECTOR);
+      if (hoverTarget) {
+        const legacyLabel = hoverTarget.getAttribute("data-cursor-label") || "";
+        const legacyBig = hoverTarget.hasAttribute("data-cursor-big");
+        const legacyDark = hoverTarget.hasAttribute("data-cursor-dark");
+
+        applyStateToElements(
+          {
+            isHover: true,
+            label: legacyLabel,
+            big: legacyBig,
+            dark: legacyDark,
+            drag: false,
+          },
+          cursor,
+          wrapper,
+          label,
+        );
       } else {
-        wrapper?.classList.remove("is-hover");
+        resetCursorDOM(cursor, wrapper, label);
       }
     };
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
 
     return () => {
+      unsubscribe();
       window.removeEventListener("pointermove", onPointerMove);
       document.documentElement.classList.remove("has-custom-cursor");
-      resetCursorState(cursor, wrapper, label);
+      cursorStore.reset();
+      resetCursorDOM(cursor, wrapper, label);
     };
   }, [pathname]);
 
