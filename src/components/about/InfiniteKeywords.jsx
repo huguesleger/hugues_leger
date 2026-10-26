@@ -10,29 +10,25 @@ const DEFAULT_KEYWORDS = [
 ];
 
 export default function InfiniteKeywords({ items = DEFAULT_KEYWORDS }) {
-  // Duplication pour assurer une continuité parfaite sur tout format d'écran
+
   const list = [...items, ...items];
 
   return (
     <div className="infinite-keywords" aria-hidden="true">
-      <h3 className="keywords">
-        {list.map((el, i) => (
-          <CompetenceTitle
-            key={`kw-h3-${el.id || i}-${i}`}
-            title={el.title || el.titre}
-            icon={el.icon}
-          />
+      <div className="infinite-keywords__track">
+        {["a", "b"].map((group) => (
+          <div className="keywords" key={group}>
+            {list.map((el, i) => (
+              <CompetenceTitle
+                key={`${group}-${el.id || i}-${i}`}
+                title={el.title || el.titre}
+                icon={el.icon}
+                bold={el.bold}
+              />
+            ))}
+          </div>
         ))}
-      </h3>
-      <span className="keywords">
-        {list.map((el, i) => (
-          <CompetenceTitle
-            key={`kw-span-${el.id || i}-${i}`}
-            title={el.title || el.titre}
-            icon={el.icon}
-          />
-        ))}
-      </span>
+      </div>
     </div>
   );
 }

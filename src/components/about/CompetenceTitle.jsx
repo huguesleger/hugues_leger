@@ -16,11 +16,11 @@ function resolveIcon(icon) {
   return Circle;
 }
 
-export default function CompetenceTitle({ title, icon = "Circle" }) {
+export default function CompetenceTitle({ title, icon = "Circle", bold = false }) {
   const IconComponent = resolveIcon(icon);
 
   return (
-    <span className="wrap-keyword">
+    <span className={`wrap-keyword${bold ? " keyword-bold" : ""}`}>
       {title}
       <span className="separate-keyword">
         <IconComponent className="keyword-icon" aria-hidden="true" />

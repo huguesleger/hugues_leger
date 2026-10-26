@@ -7,6 +7,7 @@ import {
   openIntroGate,
   shouldPlayIntroLoader,
 } from "@/lib/introGate";
+import WordSwitcher, { appendWordsTimeline } from "@/components/ui/WordSwitcher";
 
 const WORDS = ["Hello", "Salut", "Patience ça arrive..."];
 const NAME_LINES = [
@@ -57,7 +58,6 @@ export default function IntroLoader() {
     const slotWidth = slot.getBoundingClientRect().width;
     const nameWidth = name.getBoundingClientRect().width;
     const gap = parseFloat(getComputedStyle(brand).columnGap) || 0;
-    // Le logo seul au centre, puis logo + nom centrés ensemble.
     const startX = (gap + slotWidth) / 2;
     const endX = (slotWidth - nameWidth) / 2;
 
@@ -70,22 +70,7 @@ export default function IntroLoader() {
       .to(logo, { yPercent: 0, duration: 0.75, ease: "expo.out" })
       .to(brand, { x: endX, duration: 0.8, ease: "power3.inOut" }, "+=0.1");
 
-    words.forEach((word, i) => {
-      const hold = i === words.length - 1 ? 0.55 : 0.4;
-      introTl
-        .fromTo(
-          word,
-          { yPercent: 115 },
-          { yPercent: 0, duration: 0.55, ease: "expo.out" },
-          i === 0 ? "-=0.25" : ">",
-        )
-        .to(word, {
-          yPercent: -115,
-          duration: 0.4,
-          ease: "power3.in",
-          delay: hold,
-        });
-    });
+    appendWordsTimeline(introTl, words);
 
     introTl.to(
       chars,
@@ -160,18 +145,7 @@ export default function IntroLoader() {
         </div>
 
         <div className="intro-loader__slot" ref={slotRef}>
-          {WORDS.map((word, i) => (
-            <div key={word} className="intro-loader__word-mask">
-              <span
-                ref={(node) => {
-                  wordRefs.current[i] = node;
-                }}
-                className="intro-loader__word"
-              >
-                {word}
-              </span>
-            </div>
-          ))}
+          <WordSwitcher variant="loader" words={WORDS} wordRefs={wordRefs} />
 
           <div className="intro-loader__name" ref={nameRef}>
             {NAME_LINES.map((line) => (

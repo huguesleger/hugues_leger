@@ -2,11 +2,19 @@
 
 @keyframes infiniteKeyword {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(-100%);
+    transform: translate3d(-50%, 0, 0);
   }
+}
+
+.infinite-keywords__track {
+  display: flex;
+  flex-shrink: 0;
+  width: max-content;
+  animation: infiniteKeyword 14s linear infinite;
+  will-change: transform;
 }
 
 .infinite-keywords {
@@ -20,12 +28,10 @@
   .keywords {
     display: flex;
     flex-shrink: 0;
-    min-width: 100%;
+    min-width: 100vw;
     font-size: clamp(3.5rem, 8vw, 8rem);
-    animation: infiniteKeyword 14s linear infinite;
-    animation-play-state: running;
-    perspective: 8000px;
-    perspective-origin: -100% 50%;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
     margin: 0;
     padding: 0;
     list-style: none;
