@@ -1,6 +1,6 @@
 "use client";
 
-import "../scss/main.scss";
+import "@/styles/main.scss";
 import ErrorPage from "@/components/error/ErrorPage";
 
 function PlainLink({ href, className, children }) {

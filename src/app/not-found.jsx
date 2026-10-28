@@ -1,4 +1,4 @@
-import NotFoundExperience from "@/components/webgl/notFound/NotFoundExperience";
+import NotFoundExperience from "@/components/not-found/NotFoundExperience";
 
 export const metadata = {
   title: "404 — Hugues Leger",

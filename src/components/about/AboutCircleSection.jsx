@@ -39,7 +39,6 @@ export default function AboutCircleSection() {
 
     if (!track || !curtain || !curtainInner) return;
 
-    // QuickSetters pour le rideau de fond et la contre-translation du contenu
     const setCurtainX = gsap.quickSetter(curtain, "xPercent");
     const setCurtainInnerX = gsap.quickSetter(curtainInner, "xPercent");
 
@@ -53,15 +52,12 @@ export default function AboutCircleSection() {
 
       if (totalScrollable <= 0) return;
 
-      // Progression du scroll dans la section (0 à 1)
       const progress = clamp(-rect.top / totalScrollable, 0, 1);
 
-      // Le fond blanc (curtain) glisse de la droite (100%) vers la gauche (0%)
       const offsetPercent = (1 - progress) * 100;
       setCurtainX(offsetPercent);
 
-      // Le contenu intérieur est contre-translaté de la même valeur exacte (-offsetPercent),
-      // garantissant que le cercle reste ABSOLUMENT FIXE au centre de l'écran pendant que le fond se déplace !
+      // Contre-translation identique : le cercle reste fixe au centre pendant que le fond glisse.
       setCurtainInnerX(-offsetPercent);
 
       // Rotation continue au scroll (autour du centre absolu 700.5, 700.5)
@@ -86,7 +82,6 @@ export default function AboutCircleSection() {
   return (
     <section className="page-about__circle-track" ref={trackRef}>
       <div className="page-about__circle-sticky">
-        {/* Calque 1 de base : Fond sombre (CircleText Design & Graphisme) */}
         <div className="page-about__circle-layer page-about__circle-layer--dark">
           <div className="page-about__circle-container">
             <CircleText
@@ -98,7 +93,6 @@ export default function AboutCircleSection() {
           </div>
         </div>
 
-        {/* Calque 2 (Curtain) : Fond blanc qui glisse au scroll avec contre-translation du cercle */}
         <div
           className="page-about__circle-layer page-about__circle-layer--light page-about__circle-curtain"
           ref={curtainRef}

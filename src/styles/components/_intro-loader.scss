@@ -1,0 +1,115 @@
+@use "../abstracts/variables" as *;
+
+$intro-bg: #161515;
+$intro-logo-height: 60px;
+
+html.intro-loading,
+html.intro-loading body {
+  overflow: hidden;
+}
+
+html.intro-entered .intro-loader {
+  display: none;
+}
+
+.intro-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $intro-bg;
+  color: #fff;
+  font-family: $font-jost;
+  clip-path: inset(0% 0% 0% 0%);
+  will-change: clip-path;
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    column-gap: 1.1rem;
+    will-change: transform;
+  }
+
+  &__logo-mask {
+    overflow: hidden;
+    flex-shrink: 0;
+    line-height: 0;
+  }
+
+  &__logo {
+    display: block;
+    height: $intro-logo-height;
+    width: auto;
+    transform: translateY(115%);
+    will-change: transform, opacity;
+  }
+
+  // Les mots et le nom partagent la même cellule.
+  &__slot {
+    display: grid;
+    align-items: center;
+    justify-items: start;
+
+    > * {
+      grid-area: 1 / 1;
+    }
+  }
+
+  &__word-mask {
+    overflow: hidden;
+  }
+
+  &__word {
+    display: block;
+    font-size: 1.45rem;
+    font-weight: 300;
+    line-height: 1.1;
+    white-space: nowrap;
+    transform: translateY(115%);
+    will-change: transform;
+  }
+
+  &__name {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: 0.12em;
+    width: max-content;
+    text-transform: uppercase;
+    font-size: 1.45rem;
+    letter-spacing: 0.02em;
+  }
+
+  &__name-line {
+    display: flex;
+    line-height: 0.86;
+    font-weight: 300;
+
+    &.bold {
+      font-weight: 600;
+    }
+  }
+
+  &__char-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    // Rogné aux capitales pour que le bloc se centre sur le logo.
+    padding-top: 0.08em;
+    margin-top: -0.08em;
+
+    @supports (text-box: trim-both cap alphabetic) {
+      text-box: trim-both cap alphabetic;
+      padding: 0.04em 0;
+      margin: 0;
+    }
+  }
+
+  &__char-rise {
+    display: inline-block;
+    transform: translateY(115%);
+    will-change: transform, opacity;
+  }
+}

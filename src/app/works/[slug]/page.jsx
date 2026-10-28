@@ -1,16 +1,16 @@
 import { notFound } from "next/navigation";
-import BackButton from "@/components/BackButton";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
-import RealisationDetail from "@/components/realisation/RealisationDetail";
-import { REALISATIONS, getRealisation } from "@/lib/realisations";
+import WorkDetail from "@/components/work-detail/WorkDetail";
+import { WORKS, getWork } from "@/lib/works";
 
 export function generateStaticParams() {
-  return REALISATIONS.map((project) => ({ slug: project.slug }));
+  return WORKS.map((project) => ({ slug: project.slug }));
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const data = getRealisation(slug);
+  const data = getWork(slug);
   if (!data) return {};
   return {
     title: `${data.project.title} — Hugues Leger`,
@@ -18,24 +18,26 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function RealisationPage({ params }) {
+export default async function WorkPage({ params }) {
   const { slug } = await params;
-  const data = getRealisation(slug);
+  const data = getWork(slug);
   if (!data) notFound();
 
   const { project } = data;
 
   return (
     <>
-      <main className="page-realisation">
-        <figure className="content__preview-img">
+      <main className="page-work">
+        <figure className="work-preview">
+          {/* Même URL que l'image de transition, sinon elle saute à l'arrivée. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={project.image} alt={project.title} />
         </figure>
-        <RealisationDetail {...data}>
+        <WorkDetail {...data}>
           <BackButton id={project.id} src={project.image} />
-        </RealisationDetail>
+        </WorkDetail>
       </main>
-      <Footer className="site-footer--realisation" />
+      <Footer className="site-footer--work" />
     </>
   );
 }

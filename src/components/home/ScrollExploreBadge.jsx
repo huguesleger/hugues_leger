@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import gsap from "gsap";
 import { getIntroGate } from "@/lib/introGate";
-import { useScrollExploreRotation } from "./useScrollExploreRotation";
+import { useScrollExploreRotation } from "@/hooks/useScrollExploreRotation";
 
 const CIRCLE_LABEL = "Scroll to explore - ";
 

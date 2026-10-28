@@ -1,7 +1,7 @@
 "use client";
 
 import WordSwitcher from "@/components/ui/WordSwitcher";
-import InfiniteKeywords from "@/components/about/InfiniteKeywords";
+import InfiniteKeywords from "@/components/ui/InfiniteKeywords";
 import Footer from "@/components/layout/Footer";
 import TransitionLink from "@/components/transition/TransitionLink";
 

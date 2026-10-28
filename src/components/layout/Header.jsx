@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { getIntroGate } from "@/lib/introGate";
@@ -46,7 +47,14 @@ export default function Header() {
     <header ref={headerRef} className="site-header">
       <div className="header-logo">
         <TransitionLink href="/">
-          <img data-header-reveal src="/logo/logo.png" alt="Hugues Leger Logo" />
+          <Image
+            data-header-reveal
+            src="/logo/logo.png"
+            alt="Hugues Leger Logo"
+            width={35}
+            height={35}
+            loading="eager"
+          />
           <span className="logo-text">Hugues Leger</span>
         </TransitionLink>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import {
   INTRO_ENTERED_KEY,
@@ -136,11 +137,14 @@ export default function IntroLoader() {
     <div className="intro-loader" ref={loaderRef} aria-hidden="true">
       <div className="intro-loader__brand" ref={brandRef}>
         <div className="intro-loader__logo-mask">
-          <img
+          <Image
             ref={logoRef}
             className="intro-loader__logo"
             src="/logo/logo.png"
             alt=""
+            width={60}
+            height={60}
+            loading="eager"
           />
         </div>
 

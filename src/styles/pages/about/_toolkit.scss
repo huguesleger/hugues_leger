@@ -1,0 +1,128 @@
+@use "../../abstracts/variables" as *;
+
+.page-about {
+  &__toolkit {
+    width: 100%;
+    padding: clamp(5rem, 10vh, 8rem) 0;
+    box-sizing: border-box;
+    background: $background;
+    position: relative;
+    z-index: 3;
+
+    .infinite-keywords {
+      margin-bottom: clamp(3rem, 6vh, 5.5rem);
+    }
+
+    .page-about__inner {
+      padding: 0 clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem);
+    }
+
+    &-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    &-row {
+      width: 100%;
+      border-bottom: 1px solid rgba(23, 23, 23, 0.14);
+
+      &:first-child {
+        border-top: 1px solid rgba(23, 23, 23, 0.14);
+      }
+    }
+
+    &-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      padding: clamp(1.6rem, 3.2vh, 2.6rem) 0;
+      cursor: pointer;
+      transition: padding-left 0.35s cubic-bezier(0.2, 0, 0.2, 1);
+
+      &:hover {
+        padding-left: 0.75rem;
+      }
+    }
+
+    &-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      overflow: hidden;
+    }
+
+    &-item-title {
+      font-family: $font-jost;
+      font-size: clamp(1.4rem, 2.8vw, 2.35rem);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      margin: 0;
+      color: $color-white;
+      mix-blend-mode: difference;
+    }
+
+    &-item-tag {
+      font-family: $font-jost;
+      font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+      font-weight: 400;
+      color: #8c8c8c;
+      letter-spacing: 0.02em;
+      margin: 0;
+      mix-blend-mode: difference;
+    }
+
+    &-meta-block {
+      text-align: right;
+      flex-shrink: 0;
+      margin-left: 1.5rem;
+    }
+
+    &-item-meta {
+      font-family: $font-jost;
+      font-size: clamp(1.1rem, 1.8vw, 1.6rem);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: $color-white;
+      margin: 0;
+      mix-blend-mode: difference;
+    }
+
+    &-reveal {
+      position: absolute;
+      z-index: -1;
+      width: 170px;
+      height: 230px;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      transform-origin: 0 0;
+      opacity: 0;
+      will-change: transform;
+      filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.25));
+
+      @media (max-width: 1099px) {
+        display: none !important;
+      }
+    }
+
+    &-reveal-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+      background-color: #f0f0f0;
+    }
+
+    &-reveal-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+}

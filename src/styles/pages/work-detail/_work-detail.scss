@@ -1,0 +1,88 @@
+@use "../../abstracts/variables" as *;
+
+.page-work {
+  position: relative;
+  min-height: 100vh;
+  background-color: $background;
+  color: $foreground;
+}
+
+.work-detail {
+  position: relative;
+  width: 100%;
+}
+
+.work-preview {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  height: 620px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.work-section-label {
+  position: relative;
+  z-index: 2;
+  display: block;
+  font-family: $font-jost;
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gl-image {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+  }
+
+  &.is-gl img {
+    opacity: 0;
+  }
+}
+
+// Les blocs sticky créent leur propre contexte d'empilement : on les place
+// au-dessus du canvas et on les fusionne avec lui pour que les textes en
+// `difference` réagissent aux images WebGL.
+.work-stage__sticky,
+.work-sequence__sticky {
+  z-index: 2;
+
+  &:has(.gl-image.is-gl) {
+    mix-blend-mode: difference;
+  }
+}
+
+.work-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  // R3F pose `pointer-events: auto` en inline sur ses wrappers.
+  * {
+    pointer-events: none !important;
+  }
+}
+
+.site-footer--work {
+  background: $dark-grey;
+
+  .site-footer__copy {
+    color: $color-white;
+  }
+}

@@ -3,10 +3,6 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 
-/**
- * Ajoute à `tl` la séquence « montée en masque » des mots du loader
- * (entrée, pause, sortie vers le haut). Utilisée par IntroLoader.
- */
 export function appendWordsTimeline(tl, words) {
   words.forEach((word, i) => {
     const hold = i === words.length - 1 ? 0.55 : 0.4;
@@ -26,7 +22,6 @@ export function appendWordsTimeline(tl, words) {
 }
 
 /**
- * Liste de mots animés.
  * - variant "loader" : rend les mots masqués de l'intro ; l'animation est pilotée
  *   par le parent via `wordRefs` + `appendWordsTimeline`.
  * - variant "loop"   : boucle infinie fondu + glissement (page d'erreur).

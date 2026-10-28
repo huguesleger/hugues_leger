@@ -1,0 +1,78 @@
+@use "../../abstracts/variables" as *;
+
+.work-grid {
+  padding: 0 $work-gutter clamp(6rem, 18vh, 12rem);
+
+  &__layout {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2vw, 2rem);
+    align-items: start;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+
+    .gl-image {
+      width: 100%;
+    }
+
+    &--tall {
+      grid-column: 1 / 8;
+
+      .gl-image {
+        aspect-ratio: 4 / 5;
+      }
+    }
+
+    &--small {
+      grid-column: 9 / 13;
+      margin-top: 32vh;
+
+      .gl-image {
+        aspect-ratio: 1;
+      }
+    }
+
+    &--wide {
+      grid-column: 3 / 12;
+      margin-top: 14vh;
+
+      .gl-image {
+        aspect-ratio: 16 / 9;
+      }
+    }
+
+    @media (max-width: 767px) {
+      &--tall {
+        grid-column: 1 / 13;
+      }
+
+      &--small {
+        grid-column: 5 / 13;
+        margin-top: 8vh;
+      }
+
+      &--wide {
+        grid-column: 1 / 13;
+        margin-top: 8vh;
+      }
+    }
+  }
+
+  &__caption {
+    display: flex;
+    gap: 0.9rem;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    &-num {
+      opacity: 0.45;
+    }
+  }
+}

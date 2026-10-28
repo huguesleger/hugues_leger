@@ -1,0 +1,85 @@
+@use "../../abstracts/variables" as *;
+
+.work-intro {
+  --work-color: #{$dark-grey};
+  --work-text: #{$color-white};
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 2rem $work-gutter;
+  background: var(--work-color);
+  color: var(--work-text);
+  box-sizing: border-box;
+
+  &--dark {
+    --work-text: #{$foreground};
+  }
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    .back-button {
+      color: inherit;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+    }
+  }
+
+  &__heading {
+    margin: auto 0;
+    padding: 12vh 0 10vh;
+  }
+
+  &__category,
+  &__title {
+    margin: 0;
+    font-family: $font-jost;
+    text-transform: uppercase;
+
+    .wrapper-word {
+      padding: 0.08em 0;
+      margin: -0.08em 0;
+    }
+
+    .char {
+      transition-duration: 1s;
+    }
+  }
+
+  &__category {
+    font-weight: 300;
+    font-size: clamp(1.25rem, 3.2vw, 2.75rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.4em;
+  }
+
+  &__title {
+    font-weight: 600;
+    font-size: clamp(3.5rem, 17vw, 16rem);
+    line-height: 0.85;
+    overflow-wrap: anywhere;
+
+    .char {
+      @for $i from 1 through 20 {
+        &:nth-child(#{$i}) {
+          transition-delay: #{0.18 + $i * 0.04}s;
+        }
+      }
+    }
+  }
+
+  &__heading.is-visible .wrapper-word .char {
+    transform: translateY(0%);
+  }
+}

@@ -1,0 +1,29 @@
+@use "../../abstracts/variables" as *;
+
+.work-statement {
+  padding: clamp(6rem, 22vh, 14rem) $work-gutter;
+
+  .work-section-label {
+    margin-bottom: 2.5rem;
+  }
+
+  &__text {
+    position: relative;
+    z-index: 2;
+    max-width: 85rem;
+    margin: 0;
+    font-family: $font-jost;
+    font-weight: 300;
+    font-size: clamp(2rem, 5.4vw, 5.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    text-indent: clamp(3rem, 16vw, 16rem);
+    color: $foreground;
+  }
+
+  strong {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+  }
+}

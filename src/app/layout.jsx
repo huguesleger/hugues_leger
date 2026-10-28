@@ -1,7 +1,7 @@
 import Script from "next/script";
-import LenisProvider from "@/components/LenisProvider";
-import "../scss/main.scss";
-import TransitionOverlay from "@/components/TransitionOverlay";
+import LenisProvider from "@/components/layout/LenisProvider";
+import "@/styles/main.scss";
+import TransitionOverlay from "@/components/transition/TransitionOverlay";
 import PageTransition from "@/components/transition/PageTransition";
 
 import Header from "@/components/layout/Header";

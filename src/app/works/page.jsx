@@ -1,4 +1,4 @@
-import WorksExperience from "@/components/webgl/works/WorksExperience";
+import WorksExperience from "@/components/works/WorksExperience";
 
 export const metadata = {
   title: "Works — Hugues Leger",

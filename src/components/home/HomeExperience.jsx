@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Gallery from "@/components/webgl/gallerie/Gallery";
-import LiquidIntroCanvas from "@/components/webgl/liquidIntro/LiquidIntroCanvas";
-import { useHomeIntroTransition } from "./useHomeIntroTransition";
+import Gallery from "@/components/home/gallery/Gallery";
+import LiquidIntroCanvas from "@/components/home/liquid-intro/LiquidIntroCanvas";
+import { useHomeIntroTransition } from "@/hooks/useHomeIntroTransition";
 import ScrollExploreBadge from "./ScrollExploreBadge";
 
 export default function HomeExperience() {

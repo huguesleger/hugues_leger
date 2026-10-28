@@ -1,0 +1,150 @@
+@use "../../abstracts/variables" as *;
+
+.work-infos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "year list";
+  align-items: end;
+  gap: 2.5rem clamp(2rem, 6vw, 6rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+
+  &--site {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-areas: "year list site";
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: 1rem;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  &__year {
+    grid-area: year;
+
+    &-value {
+      display: block;
+      font-family: $font-renogare;
+      font-size: clamp(3.5rem, 10vw, 9rem);
+      line-height: 0.85;
+      letter-spacing: -0.02em;
+
+      .wrapper-word {
+        padding: 0.06em 0;
+        margin: -0.06em 0;
+      }
+
+      .char {
+        transition-duration: 1s;
+        transition-delay: 0.5s;
+      }
+    }
+  }
+
+  &__intervention {
+    grid-area: list;
+  }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    overflow: hidden;
+    font-family: $font-jost;
+    font-weight: 400;
+    font-size: clamp(1.05rem, 1.5vw, 1.4rem);
+    line-height: 1.35;
+
+    &-inner {
+      display: flex;
+      align-items: baseline;
+      gap: 0.9rem;
+      transform: translateY(110%);
+      transition: transform 0.9s $work-ease;
+      transition-delay: calc(0.55s + var(--i) * 0.08s);
+    }
+
+    &-num {
+      font-weight: 500;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      opacity: 0.5;
+    }
+  }
+
+  &.is-visible .wrapper-word .char {
+    transform: translateY(0%);
+  }
+
+  &.is-visible &__item-inner {
+    transform: translateY(0);
+  }
+
+  &__site {
+    grid-area: site;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.25rem 0.25rem 1rem;
+    border-radius: 2rem;
+    background: var(--work-text);
+    color: var(--work-color);
+    text-decoration: none;
+    font-family: $font-jost;
+
+    &-text {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+
+    &-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      margin-left: 1rem;
+      border-radius: 50%;
+      background: var(--work-color);
+      color: var(--work-text);
+      transform: scale(0.2);
+      transition: transform 0.2s ease-in-out;
+
+      svg {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+    }
+
+    &:hover &-arrow {
+      transform: scale(1);
+
+      svg {
+        opacity: 1;
+      }
+    }
+  }
+
+  @media (max-width: 767px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "year"
+      "list";
+
+    &--site {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        "year site"
+        "list list";
+    }
+  }
+}

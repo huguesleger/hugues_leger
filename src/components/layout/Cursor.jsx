@@ -71,12 +71,10 @@ export default function Cursor() {
 
     document.documentElement.classList.add("has-custom-cursor");
 
-    // 1. Souscription réactive au cursorStore (CursorTarget, useCursorTarget, WebGL)
     const unsubscribe = cursorStore.subscribe((state) => {
       applyStateToElements(state, cursor, wrapper, label);
     });
 
-    // 2. Déplacement du curseur + détection automatique des liens/boutons standards
     const onPointerMove = (e) => {
       const target = e.target;
       if (!(target instanceof Element)) return;

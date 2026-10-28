@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
+import SplittingWrapperWord from "@/components/ui/splitting/SplittingWrapperWord";
 import Footer from "@/components/layout/Footer";
-import CopyEmail from "@/components/CopyEmail";
-import Parallax from "@/components/Parallax";
-import RoundedTransition from "@/components/RoundedTransition";
+import CopyEmail from "@/components/ui/CopyEmail";
+import Parallax from "@/components/ui/Parallax";
+import RoundedTransition from "@/components/ui/RoundedTransition";
 import AboutCanvas from "./AboutCanvas";
 import AboutCircleSection from "./AboutCircleSection";
 import AboutToolkit from "./AboutToolkit";
@@ -57,7 +57,6 @@ export default function AboutContent() {
       if (el) el.style.color = DIM_COLOR;
     });
 
-    // Illumination mot par mot du texte bio (comme sur GalleryContactSection)
     const onUpdate = () => {
       const bioRect = bio.getBoundingClientRect();
       const windowH = window.innerHeight;
@@ -170,10 +169,8 @@ export default function AboutContent() {
 
       <AboutToolkit />
 
-      {/* Transition arrondie dynamique au scroll (folionextv2) */}
       <RoundedTransition trigger={contactRef} />
 
-      {/* Section Contact (folionextv2) */}
       <section className="section-contact" ref={contactRef}>
         <div className="inner-contact">
           <Parallax

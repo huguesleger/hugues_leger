@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
-import InfiniteKeywords from "./InfiniteKeywords";
+import InfiniteKeywords from "@/components/ui/InfiniteKeywords";
 
-// Fonctions mathématiques identiques à celles de folionextv2 (components/utils.tsx)
 const map = (x, a, b, c, d) => ((x - a) * (d - c)) / (b - a) + c;
 const lerp = (a, b, n) => (1 - n) * a + n * b;
 const clamp = (num, min, max) => (num <= min ? min : num >= max ? max : num);
@@ -202,11 +202,12 @@ function ToolkitItem({ titre, tag, annee, image }) {
 
       <div className="page-about__toolkit-reveal" ref={refHover}>
         <div className="page-about__toolkit-reveal-inner" ref={refInner}>
-          <img
+          <Image
             src={image}
             alt={titre}
             className="page-about__toolkit-reveal-img"
-            loading="lazy"
+            fill
+            sizes="170px"
           />
         </div>
       </div>

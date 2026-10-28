@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import SplittingWrapperWord from "@/components/splitting/SplittingWrapperWord";
+import SplittingWrapperWord from "@/components/ui/splitting/SplittingWrapperWord";
 import Footer from "@/components/layout/Footer";
-import CopyEmail from "@/components/CopyEmail";
+import CopyEmail from "@/components/ui/CopyEmail";
 
 const EMAIL = "contactme@huguesleger.fr";
 

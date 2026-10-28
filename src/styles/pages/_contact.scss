@@ -1,0 +1,116 @@
+@use "../abstracts/variables" as *;
+
+.page-contact {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: $background;
+  color: $foreground;
+
+  &__wrap {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    padding: clamp(6rem, 14vh, 9rem) clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem) 1.5rem;
+    box-sizing: border-box;
+  }
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    max-width: min(85rem, 100%);
+    margin: 0 auto;
+  }
+
+  &__title {
+    margin: auto 0 0;
+    text-align: left;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    font-family: $font-jost;
+
+    .title-1,
+    .title-2 {
+      display: block;
+      overflow: hidden;
+    }
+
+    .title-1 {
+      font-size: clamp(2.5rem, 6.5vw, 6rem);
+      font-weight: 400;
+      color: $foreground;
+      margin-bottom: 0.1em;
+    }
+
+    .title-2 {
+      font-size: clamp(3.2rem, 9.5vw, 9.5rem);
+      font-weight: 600;
+      color: $foreground;
+    }
+
+    .wrapper-word {
+      padding: 0.05em 0;
+      margin: -0.05em 0;
+    }
+
+    .char {
+      transition-duration: 0.85s;
+    }
+  }
+
+  &__email-container {
+    margin-top: clamp(2.5rem, 6vh, 4.5rem);
+    margin-bottom: auto;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease 0.5s, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s;
+  }
+
+  &__email-block {
+    align-self: flex-start;
+    color: $foreground;
+
+    .copy-email {
+      color: $foreground;
+      font-weight: 500;
+    }
+  }
+
+  &--visible {
+    .page-contact__title {
+      .title-1 .wrapper-word .char {
+        transform: translateY(0%);
+      }
+
+      .title-2 .wrapper-word .char {
+        transform: translateY(0%);
+
+        @for $i from 1 through 20 {
+          &:nth-child(#{$i}) {
+            transition-delay: #{0.25 + $i * 0.03}s;
+          }
+        }
+      }
+    }
+
+    .page-contact__email-container {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .site-footer--page-contact {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    margin-top: auto;
+  }
+}
