@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
+import { MoveLeft } from "lucide-react";
 import { triggerReverseTransition } from "./TransitionOverlay";
 
 const MIN_SCROLL_DURATION = 0.6;
@@ -60,7 +61,16 @@ export default function BackButton({ id, src }) {
       }}
       className="content__back back-button"
     >
-      &larr; retour à la galerie
+      <MoveLeft className="back-button__arrow" size={18} aria-hidden="true" />
+      {/* Même bascule au survol que les liens du header (.item / .item-hover). */}
+      <span className="back-button__mask">
+        <span className="back-button__wrap">
+          <span className="back-button__label">retour à la galerie</span>
+          <span className="back-button__label back-button__label--hover" aria-hidden="true">
+            retour à la galerie
+          </span>
+        </span>
+      </span>
     </button>
   );
 }

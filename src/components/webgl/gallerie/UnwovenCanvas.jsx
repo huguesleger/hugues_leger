@@ -362,7 +362,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
     });
 
     const targetMaterial = materials[index];
-    const id = (index % 6) + 1;
+    const { id, slug } = GALLERY_PROJECTS[index % GALLERY_PROJECTS.length];
     const src = images[index];
     import("@/components/TransitionOverlay").then((m) =>
       m.triggerTransition(null, src, id),
@@ -372,7 +372,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
       duration: 1.0,
       ease: "power3.inOut",
       onComplete: () => {
-        router.push(`/realisation/${id}`);
+        router.push(`/works/${slug}`);
       },
     });
   };

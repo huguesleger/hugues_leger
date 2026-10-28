@@ -229,7 +229,7 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       value: 1,
       duration: 1,
       ease: "power3.inOut",
-      onComplete: () => router.push(`/realisation/${project.id}`),
+      onComplete: () => router.push(`/works/${project.slug}`),
     });
   };
 

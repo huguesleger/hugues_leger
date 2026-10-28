@@ -2,7 +2,9 @@
 
 
 .back-button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   padding: 1rem 0;
   background: none;
   border: none;
@@ -12,6 +14,46 @@
   font-size: inherit;
   color: #111;
   line-height: inherit;
+
+  &__arrow {
+    flex-shrink: 0;
+    transition: transform 0.45s cubic-bezier(0.1, 0.76, 0.4, 0.94);
+  }
+
+  &__mask {
+    overflow: hidden;
+  }
+
+  &__wrap {
+    position: relative;
+    display: block;
+  }
+
+  &__label {
+    display: block;
+    line-height: 1.2rem;
+    transition: transform 0.45s cubic-bezier(0.1, 0.76, 0.4, 0.94);
+
+    &--hover {
+      position: absolute;
+      transform-origin: 50% 50%;
+      transform: translate3d(0, 0, 0) rotateX(-90deg);
+    }
+  }
+
+  &:hover {
+    .back-button__arrow {
+      transform: translateX(-4px);
+    }
+
+    .back-button__label {
+      transform: translate3d(0, -50%, 0) rotateX(-90deg);
+
+      &--hover {
+        transform: translate3d(0, -100%, 0);
+      }
+    }
+  }
 }
 
 .btn {

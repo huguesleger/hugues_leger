@@ -1,13 +1,624 @@
 @use "../abstract/variables" as *;
 
-.page-realisation {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+$rea-gutter: clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem);
+$rea-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  background-color: $bg-realisation;
-  min-height: 100vh;
+.page-realisation {
   position: relative;
+  min-height: 100vh;
+  background-color: $background;
+  color: $foreground;
+}
+
+.rea-detail {
+  position: relative;
+  width: 100%;
+}
+
+// Libellé de section : « Intention »
+.rea-section-label {
+  position: relative;
+  z-index: 2;
+  display: block;
+  font-family: $font-jost;
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+// ---------------------------------------------------------------------------
+// Images WebGL : le <img> sert de fallback, masqué quand le plan est prêt.
+// ---------------------------------------------------------------------------
+.gl-image {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+  }
+
+  &.is-gl img {
+    opacity: 0;
+  }
+}
+
+// Les blocs sticky créent leur propre contexte d'empilement : on les place
+// au-dessus du canvas et on les fusionne avec lui pour que les textes en
+// `difference` réagissent aux images WebGL.
+.rea-stage__sticky,
+.rea-sequence__sticky {
+  z-index: 2;
+
+  &:has(.gl-image.is-gl) {
+    mix-blend-mode: difference;
+  }
+}
+
+.rea-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  // R3F pose `pointer-events: auto` en inline sur ses wrappers.
+  * {
+    pointer-events: none !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Intro : bloc couleur, nom du projet (ancien portfolio), infos
+// ---------------------------------------------------------------------------
+.rea-intro {
+  --rea-color: #{$dark-grey};
+  --rea-text: #{$color-white};
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 2rem $rea-gutter;
+  background: var(--rea-color);
+  color: var(--rea-text);
+  box-sizing: border-box;
+
+  &--dark {
+    --rea-text: #{$foreground};
+  }
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    .back-button {
+      color: inherit;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+    }
+  }
+
+  &__heading {
+    margin: auto 0;
+    padding: 12vh 0 10vh;
+  }
+
+  &__category,
+  &__title {
+    margin: 0;
+    font-family: $font-jost;
+    text-transform: uppercase;
+
+    .wrapper-word {
+      padding: 0.08em 0;
+      margin: -0.08em 0;
+    }
+
+    .char {
+      transition-duration: 1s;
+    }
+  }
+
+  &__category {
+    font-weight: 300;
+    font-size: clamp(1.25rem, 3.2vw, 2.75rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.4em;
+  }
+
+  &__title {
+    font-weight: 600;
+    font-size: clamp(3.5rem, 17vw, 16rem);
+    line-height: 0.85;
+    overflow-wrap: anywhere;
+
+    // Le titre enchaîne après la catégorie, comme « Works » après « Selected ».
+    .char {
+      @for $i from 1 through 20 {
+        &:nth-child(#{$i}) {
+          transition-delay: #{0.18 + $i * 0.04}s;
+        }
+      }
+    }
+  }
+
+  &__heading.is-visible .wrapper-word .char {
+    transform: translateY(0%);
+  }
+}
+
+// Infos : année géante, interventions numérotées, lien rond optionnel.
+.rea-infos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "year list";
+  align-items: end;
+  gap: 2.5rem clamp(2rem, 6vw, 6rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+
+  &--site {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-areas: "year list site";
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: 1rem;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  &__year {
+    grid-area: year;
+
+    &-value {
+      display: block;
+      font-family: $font-renogare;
+      font-size: clamp(3.5rem, 10vw, 9rem);
+      line-height: 0.85;
+      letter-spacing: -0.02em;
+
+      .wrapper-word {
+        padding: 0.06em 0;
+        margin: -0.06em 0;
+      }
+
+      .char {
+        transition-duration: 1s;
+        transition-delay: 0.5s;
+      }
+    }
+  }
+
+  &__intervention {
+    grid-area: list;
+  }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    overflow: hidden;
+    font-family: $font-jost;
+    font-weight: 400;
+    font-size: clamp(1.05rem, 1.5vw, 1.4rem);
+    line-height: 1.35;
+
+    &-inner {
+      display: flex;
+      align-items: baseline;
+      gap: 0.9rem;
+      transform: translateY(110%);
+      transition: transform 0.9s $rea-ease;
+      transition-delay: calc(0.55s + var(--i) * 0.08s);
+    }
+
+    &-num {
+      font-weight: 500;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      opacity: 0.5;
+    }
+  }
+
+  &.is-visible .wrapper-word .char {
+    transform: translateY(0%);
+  }
+
+  &.is-visible &__item-inner {
+    transform: translateY(0);
+  }
+
+  // Bouton repris de l'ancien portfolio (.link-website), couleurs du projet.
+  &__site {
+    grid-area: site;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.25rem 0.25rem 1rem;
+    border-radius: 2rem;
+    background: var(--rea-text);
+    color: var(--rea-color);
+    text-decoration: none;
+    font-family: $font-jost;
+
+    &-text {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+
+    &-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      margin-left: 1rem;
+      border-radius: 50%;
+      background: var(--rea-color);
+      color: var(--rea-text);
+      transform: scale(0.2);
+      transition: transform 0.2s ease-in-out;
+
+      svg {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+    }
+
+    &:hover &-arrow {
+      transform: scale(1);
+
+      svg {
+        opacity: 1;
+      }
+    }
+  }
+
+  @media (max-width: 767px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "year"
+      "list";
+
+    &--site {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        "year site"
+        "list list";
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Scène : l'image s'ouvre jusqu'au plein écran
+// ---------------------------------------------------------------------------
+.rea-stage {
+  --stage-p: 0;
+
+  position: relative;
+  height: 260vh;
+
+  &__sticky {
+    position: sticky;
+    top: 0;
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  &__media {
+    width: calc(34vw + 66vw * var(--stage-p));
+    height: calc(48vh + 52vh * var(--stage-p));
+    height: calc(48dvh + 52dvh * var(--stage-p));
+
+    @media (max-width: 767px) {
+      width: calc(72vw + 28vw * var(--stage-p));
+      height: calc(42dvh + 58dvh * var(--stage-p));
+    }
+  }
+
+  &__captions {
+    position: absolute;
+    left: $rea-gutter;
+    right: $rea-gutter;
+    bottom: 2rem;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 1rem;
+    color: #fff;
+    pointer-events: none;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &__caption-title {
+    font-weight: 600;
+    font-size: clamp(2rem, 7vw, 6rem);
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Intention : une phrase, jeu léger / gras
+// ---------------------------------------------------------------------------
+.rea-statement {
+  padding: clamp(6rem, 22vh, 14rem) $rea-gutter;
+
+  .rea-section-label {
+    margin-bottom: 2.5rem;
+  }
+
+  &__text {
+    position: relative;
+    z-index: 2;
+    max-width: 85rem;
+    margin: 0;
+    font-family: $font-jost;
+    font-weight: 300;
+    font-size: clamp(2rem, 5.4vw, 5.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    text-indent: clamp(3rem, 16vw, 16rem);
+    color: $foreground;
+  }
+
+  strong {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Grille éditoriale
+// ---------------------------------------------------------------------------
+.rea-grid {
+  padding: 0 $rea-gutter clamp(6rem, 18vh, 12rem);
+
+  &__layout {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2vw, 2rem);
+    align-items: start;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+
+    .gl-image {
+      width: 100%;
+    }
+
+    &--tall {
+      grid-column: 1 / 8;
+
+      .gl-image {
+        aspect-ratio: 4 / 5;
+      }
+    }
+
+    &--small {
+      grid-column: 9 / 13;
+      margin-top: 32vh;
+
+      .gl-image {
+        aspect-ratio: 1;
+      }
+    }
+
+    &--wide {
+      grid-column: 3 / 12;
+      margin-top: 14vh;
+
+      .gl-image {
+        aspect-ratio: 16 / 9;
+      }
+    }
+
+    @media (max-width: 767px) {
+      &--tall {
+        grid-column: 1 / 13;
+      }
+
+      &--small {
+        grid-column: 5 / 13;
+        margin-top: 8vh;
+      }
+
+      &--wide {
+        grid-column: 1 / 13;
+        margin-top: 8vh;
+      }
+    }
+  }
+
+  &__caption {
+    display: flex;
+    gap: 0.9rem;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    &-num {
+      opacity: 0.45;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Séquence horizontale
+// ---------------------------------------------------------------------------
+.rea-sequence {
+  --count: 6;
+
+  position: relative;
+  height: calc(100vh + var(--count) * 45vh);
+  // Marge plutôt que padding : le sticky resterait bloqué dans le padding
+  // pendant que la bande continue de défiler.
+  margin-bottom: clamp(6rem, 18vh, 12rem);
+
+  &__sticky {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  &__track {
+    display: flex;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 4rem);
+    padding: 0 $rea-gutter 0 clamp(6rem, 30vw, 30rem);
+    will-change: transform;
+  }
+
+  &__item {
+    flex-shrink: 0;
+    width: clamp(15rem, 28vw, 30rem);
+    aspect-ratio: 3 / 4;
+
+    &:nth-child(even) {
+      margin-top: 18vh;
+    }
+
+    &:nth-child(odd) {
+      margin-bottom: 12vh;
+    }
+
+    @media (max-width: 767px) {
+      width: 68vw;
+
+      &:nth-child(even) {
+        margin-top: 10vh;
+      }
+
+      &:nth-child(odd) {
+        margin-bottom: 6vh;
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Projet suivant
+// ---------------------------------------------------------------------------
+.rea-next {
+  background: $dark-grey;
+  color: $color-white;
+
+  &__link {
+    position: relative;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 6rem $rea-gutter;
+    color: inherit;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  &__label,
+  &__category {
+    position: relative;
+    z-index: 2;
+    font-family: $font-jost;
+    text-transform: uppercase;
+  }
+
+  &__label {
+    position: absolute;
+    top: 8rem;
+    left: $rea-gutter;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  &__media {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: clamp(13rem, 26vw, 24rem);
+    aspect-ratio: 3 / 4;
+    transform: translate(-50%, -50%);
+  }
+
+  &__title {
+    position: relative;
+    z-index: 2;
+    font-family: $font-jost;
+    font-weight: 600;
+    font-size: clamp(3.5rem, 16vw, 15rem);
+    line-height: 0.85;
+    text-transform: uppercase;
+    color: #fff;
+    mix-blend-mode: difference;
+
+    .wrapper-word {
+      padding: 0.08em 0;
+      margin: -0.08em 0;
+    }
+
+    .char {
+      transition-duration: 1s;
+    }
+  }
+
+  &__category {
+    margin-top: 1.25rem;
+    font-weight: 300;
+    font-size: clamp(1rem, 2vw, 1.75rem);
+    letter-spacing: -0.01em;
+  }
+
+  &.is-visible .wrapper-word .char {
+    transform: translateY(0%);
+  }
+}
+
+.site-footer--realisation {
+  background: $dark-grey;
+
+  .site-footer__copy {
+    color: $color-white;
+  }
 }
