@@ -40,6 +40,10 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
   const meshRefs = useRef([]);
   const driftRef = useRef(0);
   const hoveredRef = useRef(-1);
+  // Pas de survol au doigt : on affiche le titre de la carte centrée.
+  const isTouchRef = useRef(
+    typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches,
+  );
 
   const textures = useTexture(projects.map((p) => p.image));
 
@@ -362,7 +366,12 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       syncRef.current.hidden = scrollState.locked;
       const hoveredCardIndex = hoveredRef.current;
       const isScrolling = Math.abs(scrollState.velocity) > 0.1 || Math.abs(scrollState.target - scrollState.current) > 0.5 || scrollState.dragging;
-      syncRef.current.hoveredIndex = (!isScrolling && hoveredCardIndex !== -1) ? cards[hoveredCardIndex].projectIndex : -1;
+      const focusIndex = isTouchRef.current
+        ? activeIndex
+        : hoveredCardIndex !== -1
+          ? cards[hoveredCardIndex].projectIndex
+          : -1;
+      syncRef.current.hoveredIndex = isScrolling ? -1 : focusIndex;
     }
   });
 

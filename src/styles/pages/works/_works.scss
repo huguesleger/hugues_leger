@@ -189,8 +189,9 @@ html.is-works-dragging * {
       bottom: calc(#{$page-padding} + 3.5rem);
     }
 
+    // Au-dessus de « Scroll / Drag » et de la pagination, comme sur desktop.
     &__titles {
-      bottom: calc(#{$page-padding} + 1.5rem);
+      bottom: calc(#{$page-padding} + 6.5rem);
     }
   }
 }
