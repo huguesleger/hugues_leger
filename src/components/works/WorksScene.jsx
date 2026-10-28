@@ -19,6 +19,7 @@ import {
   lerp,
   normalizeSheetVelocity,
   smoothstep,
+  wrap,
 } from "@/lib/worksLayout";
 import { stepWorksScroll } from "@/hooks/useWorksScroll";
 import { WORKS_FRAGMENT_SHADER, WORKS_VERTEX_SHADER } from "./worksShaders";
@@ -200,7 +201,21 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     return () => cancelAnimationFrame(frame);
   }, [cards, projects, scrollRef]);
 
-  const getOffset = () => scrollRef.current.current + driftRef.current;
+  /**
+   * Pendant l'intro, l'arc défile librement (scroll + drift). On recale
+   * progressivement l'offset pour qu'à la fin de l'intro le projet 1 soit centré.
+   * Décaler d'une période (projects.length cartes) affiche les mêmes images
+   * au même endroit, donc le choix de la période la plus proche est invisible.
+   */
+  const getOffset = () => {
+    const scroll = scrollRef.current.current;
+    const progress = smoothstep(0, dims.introDistance, scroll);
+    const arcOffset = scroll + driftRef.current;
+    const lineOffset = scroll - dims.introDistance;
+    const period = projects.length * dims.line.pitch;
+    const delta = wrap(arcOffset - lineOffset + period / 2, period) - period / 2;
+    return arcOffset - delta * progress;
+  };
 
   const openProject = (index) => {
     const state = scrollRef.current;

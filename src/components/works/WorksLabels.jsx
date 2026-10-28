@@ -13,6 +13,9 @@ export default function WorksLabels({ projects, syncRef }) {
   const headingRef = useRef(null);
   const titleRefs = useRef([]);
   const hintRef = useRef(null);
+  const barRef = useRef(null);
+  const currentRef = useRef(null);
+  const paginationRef = useRef(null);
   const [headingVisible, setHeadingVisible] = useState(false);
 
   useEffect(() => {
@@ -34,9 +37,25 @@ export default function WorksLabels({ projects, syncRef }) {
     let frameId = 0;
     let lastHoveredIndex = -1;
     let lastProgress = -1;
+    let lastActiveIndex = -1;
 
     const update = () => {
-      const { progress, hidden, hoveredIndex } = syncRef.current;
+      const { progress, hidden, hoveredIndex, activeIndex } = syncRef.current;
+
+      paginationRef.current?.classList.toggle(
+        "works-labels__pagination--visible",
+        progress > 0.98,
+      );
+
+      if (activeIndex !== lastActiveIndex) {
+        if (barRef.current) {
+          barRef.current.style.transform = `scaleX(${(activeIndex + 1) / projects.length})`;
+        }
+        if (currentRef.current) {
+          currentRef.current.textContent = String(activeIndex + 1).padStart(2, "0");
+        }
+        lastActiveIndex = activeIndex;
+      }
 
       if (hoveredIndex !== lastHoveredIndex || progress !== lastProgress) {
         titleRefs.current.forEach((el, i) => {
@@ -61,7 +80,7 @@ export default function WorksLabels({ projects, syncRef }) {
 
     frameId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(frameId);
-  }, [syncRef]);
+  }, [syncRef, projects.length]);
 
   return (
     <>
@@ -93,8 +112,21 @@ export default function WorksLabels({ projects, syncRef }) {
           ))}
         </div>
 
-        <div ref={hintRef} className="works-labels__hint">
-          Scroll / Drag
+        <div className="works-labels__footer">
+          <div ref={hintRef} className="works-labels__hint">
+            Scroll / Drag
+          </div>
+          <div ref={paginationRef} className="works-labels__pagination">
+            <span ref={currentRef} className="works-labels__pagination-number">
+              01
+            </span>
+            <div className="works-labels__pagination-bar">
+              <div ref={barRef} className="works-labels__pagination-line" />
+            </div>
+            <span className="works-labels__pagination-number">
+              {String(projects.length).padStart(2, "0")}
+            </span>
+          </div>
         </div>
       </div>
     </>
