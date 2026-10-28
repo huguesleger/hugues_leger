@@ -24,6 +24,13 @@ export const WORKS_CONFIG = {
   lerp: 0.08,
 };
 
+/**
+ * Progression de l'intro à partir de laquelle les cartes sont cliquables :
+ * le titre « Selected Works » est alors totalement effacé
+ * (opacité `1 - progress * 1.6` dans _works.scss).
+ */
+export const WORKS_INTERACTIVE_PROGRESS = 1 / 1.6;
+
 export const WORKS_TRANSITION_TARGET_HEIGHT = 600;
 
 function fitCard(maxHeight, aspect, maxWidth) {

@@ -11,6 +11,7 @@ import { setCursorCanvasHover } from "@/lib/cursorDom";
 import { getIntroGate } from "@/lib/introGate";
 import {
   WORKS_CONFIG,
+  WORKS_INTERACTIVE_PROGRESS,
   WORKS_TRANSITION_TARGET_HEIGHT,
   getArcTransform,
   getLineTransform,
@@ -252,12 +253,22 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     if (state.locked || state.moved) return;
 
     const progress = smoothstep(0, dims.introDistance, state.current);
-    if (progress < 0.98) return;
+    if (progress < WORKS_INTERACTIVE_PROGRESS) return;
 
     openProject(index);
   };
 
   const getCursorLabel = () => "View";
+
+  const handlePointerHover = (index) => {
+    if (hoveredRef.current === index) return;
+    const progress = smoothstep(0, dims.introDistance, scrollRef.current.current);
+    if (progress < WORKS_INTERACTIVE_PROGRESS) return;
+    hoveredRef.current = index;
+    if (!scrollRef.current.locked) {
+      setCursorCanvasHover(true, getCursorLabel());
+    }
+  };
 
   const currentMouse = useRef(new THREE.Vector2(-9999, -9999));
 
@@ -372,12 +383,12 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
           }}
           onPointerOver={(e) => {
             e.stopPropagation();
-            const progress = smoothstep(0, dims.introDistance, scrollRef.current.current);
-            if (progress < 0.98) return;
-            hoveredRef.current = i;
-            if (!scrollRef.current.locked) {
-              setCursorCanvasHover(true, getCursorLabel());
-            }
+            handlePointerHover(i);
+          }}
+          // Le seuil peut être franchi alors que le pointeur est déjà sur la carte.
+          onPointerMove={(e) => {
+            e.stopPropagation();
+            handlePointerHover(i);
           }}
           onPointerOut={() => {
             if (hoveredRef.current === i) hoveredRef.current = -1;

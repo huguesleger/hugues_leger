@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import SplittingWrapperWord from "@/components/ui/splitting/SplittingWrapperWord";
 import { getIntroGate } from "@/lib/introGate";
+import { WORKS_INTERACTIVE_PROGRESS } from "@/lib/worksLayout";
 
 // Laisse le rideau de la transition de page se retirer avant l'entrée du titre.
 const HEADING_REVEAL_DELAY_MS = 250;
@@ -59,8 +60,7 @@ export default function WorksLabels({ projects, syncRef }) {
 
       if (hoveredIndex !== lastHoveredIndex || progress !== lastProgress) {
         titleRefs.current.forEach((el, i) => {
-          // Show title only when hovered and progress > 0.98 (in ribbon mode)
-          const isActive = i === hoveredIndex && progress > 0.98;
+          const isActive = i === hoveredIndex && progress >= WORKS_INTERACTIVE_PROGRESS;
           el?.classList.toggle("works-labels__title--active", isActive);
         });
         lastHoveredIndex = hoveredIndex;
