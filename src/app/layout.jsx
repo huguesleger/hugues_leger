@@ -1,0 +1,51 @@
+import Script from "next/script";
+import LenisProvider from "@/components/layout/LenisProvider";
+import "@/styles/main.scss";
+import TransitionOverlay from "@/components/transition/TransitionOverlay";
+import PageTransition from "@/components/transition/PageTransition";
+
+import Header from "@/components/layout/Header";
+import Cursor from "@/components/layout/Cursor";
+import IntroLoader from "@/components/loader/IntroLoader";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://huguesleger.fr";
+
+export const metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    template: "%s — Hugues Leger",
+    default: "Hugues Leger — Creative Developer",
+  },
+  description: "Portfolio de Hugues Leger, développeur créatif et designer d'interfaces.",
+  openGraph: {
+    siteName: "Hugues Leger",
+    locale: "fr_FR",
+    type: "website",
+  },
+};
+
+export const viewport = {
+  themeColor: "#000000",
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="fr" suppressHydrationWarning>
+      <body>
+        <Script id="intro-entered" strategy="beforeInteractive">
+          {`try{if(sessionStorage.getItem("isEntered")||matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("intro-entered")}}catch(e){}`}
+        </Script>
+        <IntroLoader />
+        <LenisProvider>
+          <Cursor />
+          <Header />
+          <div className="page-wrapper" data-page-wrapper>
+            {children}
+          </div>
+          <PageTransition />
+          <TransitionOverlay />
+        </LenisProvider>
+      </body>
+    </html>
+  );
+}

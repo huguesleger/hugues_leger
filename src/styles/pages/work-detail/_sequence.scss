@@ -1,0 +1,55 @@
+@use "../../abstracts/variables" as *;
+
+.work-sequence {
+  --count: 6;
+
+  position: relative;
+  height: calc(100vh + var(--count) * 45vh);
+  // Marge plutôt que padding : le sticky resterait bloqué dans le padding
+  // pendant que la bande continue de défiler.
+  margin-bottom: clamp(6rem, 18vh, 12rem);
+
+  &__sticky {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  &__track {
+    display: flex;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 4rem);
+    padding: 0 $work-gutter 0 clamp(6rem, 30vw, 30rem);
+    will-change: transform;
+  }
+
+  &__item {
+    flex-shrink: 0;
+    width: clamp(15rem, 28vw, 30rem);
+    aspect-ratio: 3 / 4;
+
+    &:nth-child(even) {
+      margin-top: 18vh;
+    }
+
+    &:nth-child(odd) {
+      margin-bottom: 12vh;
+    }
+
+    @media (max-width: 767px) {
+      width: 68vw;
+
+      &:nth-child(even) {
+        margin-top: 10vh;
+      }
+
+      &:nth-child(odd) {
+        margin-bottom: 6vh;
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+.parallax {
+  display: inline-block;
+  will-change: transform;
+}
+
+div.parallax {
+  display: block;
+}
+
+.parallax-mask {
+  display: block;
+  overflow: hidden;
+}

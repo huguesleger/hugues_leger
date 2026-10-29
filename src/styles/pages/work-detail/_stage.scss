@@ -1,0 +1,55 @@
+@use "../../abstracts/variables" as *;
+
+.work-stage {
+  --stage-p: 0;
+
+  position: relative;
+  height: 260vh;
+
+  &__sticky {
+    position: sticky;
+    top: 0;
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  &__media {
+    width: calc(34vw + 66vw * var(--stage-p));
+    height: calc(48vh + 52vh * var(--stage-p));
+    height: calc(48dvh + 52dvh * var(--stage-p));
+
+    @media (max-width: 767px) {
+      width: calc(72vw + 28vw * var(--stage-p));
+      height: calc(42dvh + 58dvh * var(--stage-p));
+    }
+  }
+
+  &__captions {
+    position: absolute;
+    left: $work-gutter;
+    right: $work-gutter;
+    bottom: 2rem;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 1rem;
+    color: #fff;
+    pointer-events: none;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &__caption-title {
+    font-weight: 600;
+    font-size: clamp(2rem, 7vw, 6rem);
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+  }
+}

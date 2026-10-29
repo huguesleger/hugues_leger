@@ -1,0 +1,144 @@
+@use "../abstracts/variables" as *;
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem);
+  z-index: 100;
+  mix-blend-mode: difference;
+  color: #ffffff;
+  pointer-events: none;
+
+  [data-header-reveal] {
+    transform: translateY(170%);
+  }
+
+  .header-nav {
+    pointer-events: auto;
+  }
+
+  .header-logo {
+    pointer-events: none;
+    
+    a {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    img {
+      height: 35px;
+      width: auto;
+      display: block;
+      pointer-events: auto;
+    }
+
+    .logo-text {
+      font-family: $font-jost;
+      text-transform: uppercase;
+      font-weight: 500;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      pointer-events: none;
+      display: none;
+
+      @media (min-width: 768px) {
+        display: block;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      a:hover .logo-text {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .header-nav {
+    .nav-items {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      
+      .item-link {
+        font-family: $font-jost;
+        text-transform: uppercase;
+        font-weight: 500;
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        color: inherit;
+
+        // Masque d'apparition, agrandi vers le bas pour garder le point actif visible.
+        .item-mask {
+          overflow: hidden;
+          padding-bottom: 10px;
+          margin-bottom: -10px;
+        }
+        
+        .item-wrap {
+          position: relative;
+          
+          span {
+            transition: transform 0.45s cubic-bezier(0.1, 0.76, 0.4, 0.94);
+            display: block;
+            line-height: 1.2rem;
+          }
+          
+          .item-hover {
+            transform-origin: 50% 50%;
+            transform: translate3d(0, 0, 0) rotateX(-90deg);
+            position: absolute;
+          }
+          
+          .item-circle {
+            width: 4px;
+            height: 4px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            bottom: -8px;
+            transform: translate(-50%, 0);
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+          }
+        }
+        
+        &:hover,
+        &.item-active {
+          .item-wrap {
+            .item {
+              transform: translate3d(0, -50%, 0) rotateX(-90deg);
+            }
+            .item-hover {
+              transform: translate3d(0, -100%, 0);
+            }
+          }
+        }
+        
+        &.item-active {
+          .item-wrap {
+            .item-circle {
+              opacity: 1;
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,197 @@
+@use "../../abstracts/variables" as *;
+
+html.is-works,
+html.is-works body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  height: 100%;
+}
+
+html.is-works-dragging,
+html.is-works-dragging * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.works {
+  position: fixed;
+  inset: 0;
+  background: $color-bg;
+  touch-action: none;
+  user-select: none;
+
+  &__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+}
+
+.works-labels {
+  --works-progress: 0;
+
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  color: $foreground;
+  transition: opacity 0.4s ease;
+
+  &__heading-layer {
+    --works-progress: 0;
+
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: difference;
+  }
+
+  &__heading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    gap: 0.25em;
+    margin: 0;
+    font-family: $font-jost;
+    font-weight: 500;
+    font-size: clamp(3rem, 11vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #fff;
+    opacity: calc(1 - var(--works-progress) * 1.6);
+    transform: translate(-50%, calc(-50% - var(--works-progress) * 12vh));
+
+    > span:last-child {
+      font-weight: 300;
+    }
+
+    // Masque un peu plus haut que le line-height (0.9) pour ne pas rogner les lettres.
+    .wrapper-word {
+      padding: 0.08em 0;
+      margin: -0.08em 0;
+    }
+
+    .char {
+      transition-duration: 1s;
+    }
+
+    // « Works » enchaîne après « Selected ».
+    > span:last-child .char {
+      @for $i from 1 through 10 {
+        &:nth-child(#{$i}) {
+          transition-delay: #{0.18 + $i * 0.04}s;
+        }
+      }
+    }
+
+    &--visible .wrapper-word .char {
+      transform: translateY(0%);
+    }
+  }
+
+  &__titles {
+    position: absolute;
+    left: 50%;
+    bottom: calc(#{$page-padding} + 3rem);
+    transform: translateX(-50%);
+    width: 100%;
+    text-align: center;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    height: 1.2em;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__title {
+    position: absolute;
+    bottom: 0;
+    font-family: $font-jost;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    &--active .wrapper-word .char {
+      transform: translateY(0%);
+    }
+  }
+
+  &__footer {
+    position: absolute;
+    left: 50%;
+    bottom: $page-padding;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  &__hint {
+    font-family: $font-jost;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $color-text;
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: $font-jost;
+    font-size: 0.75rem;
+    color: $color-text;
+    opacity: 0;
+    transform: translateY(0.5rem);
+    transition:
+      opacity 0.5s ease,
+      transform 0.6s $work-ease;
+
+    &--visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  &__pagination-number {
+    font-variant-numeric: tabular-nums;
+
+    &:first-child {
+      color: $foreground;
+    }
+  }
+
+  &__pagination-bar {
+    position: relative;
+    width: 120px;
+    height: 1px;
+    background: rgba($color-text, 0.35);
+  }
+
+  &__pagination-line {
+    position: absolute;
+    inset: 0;
+    background: $dark-grey;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.6s $work-ease;
+  }
+
+  @media (max-width: 767px) {
+    &__footer {
+      bottom: calc(#{$page-padding} + 3.5rem);
+    }
+
+    // Au-dessus de « Scroll / Drag » et de la pagination, comme sur desktop.
+    &__titles {
+      bottom: calc(#{$page-padding} + 6.5rem);
+    }
+  }
+}

@@ -1,0 +1,77 @@
+@use "../../abstracts/variables" as *;
+
+.work-next {
+  background: $dark-grey;
+  color: $color-white;
+
+  &__link {
+    position: relative;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 6rem $work-gutter;
+    color: inherit;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  &__label,
+  &__category {
+    position: relative;
+    z-index: 2;
+    font-family: $font-jost;
+    text-transform: uppercase;
+  }
+
+  &__label {
+    position: absolute;
+    top: 8rem;
+    left: $work-gutter;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  &__media {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: clamp(13rem, 26vw, 24rem);
+    aspect-ratio: 3 / 4;
+    transform: translate(-50%, -50%);
+  }
+
+  &__title {
+    position: relative;
+    z-index: 2;
+    font-family: $font-jost;
+    font-weight: 600;
+    font-size: clamp(3.5rem, 16vw, 15rem);
+    line-height: 0.85;
+    text-transform: uppercase;
+    color: #fff;
+    mix-blend-mode: difference;
+
+    .wrapper-word {
+      padding: 0.08em 0;
+      margin: -0.08em 0;
+    }
+
+    .char {
+      transition-duration: 1s;
+    }
+  }
+
+  &__category {
+    margin-top: 1.25rem;
+    font-weight: 300;
+    font-size: clamp(1rem, 2vw, 1.75rem);
+    letter-spacing: -0.01em;
+  }
+
+  &.is-visible .wrapper-word .char {
+    transform: translateY(0%);
+  }
+}

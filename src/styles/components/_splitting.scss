@@ -1,0 +1,17 @@
+.wrapper-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  .char {
+    display: inline-block;
+    white-space: pre;
+    transform: translateY(110%);
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        transition-delay: #{$i * 0.03}s;
+      }
+    }
+  }
+}

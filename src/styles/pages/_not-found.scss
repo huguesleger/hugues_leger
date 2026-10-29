@@ -1,0 +1,82 @@
+@use "../abstracts/variables" as *;
+
+.page-not-found {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #141a33 0%, #070812 55%, #020205 100%);
+  color: $color-white;
+}
+
+.not-found {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  &__code {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: $font-jost;
+    font-weight: 700;
+    font-size: clamp(10rem, 38vw, 34rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.14);
+    user-select: none;
+    pointer-events: none;
+  }
+
+  &__canvas {
+    position: absolute;
+    inset: 0;
+    touch-action: none;
+  }
+
+  &__content {
+    position: absolute;
+    left: clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem);
+    right: clamp(1rem, -0.2536rem + 5.1429vw, 4.375rem);
+    bottom: 2rem;
+    max-width: 28rem;
+    pointer-events: none;
+  }
+
+  &__title {
+    margin: 0 0 0.75rem;
+    font-family: $font-jost;
+    font-weight: 600;
+    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  &__text {
+    margin: 0 0 1.25rem;
+    font-family: $font-jost;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  &__link {
+    display: inline-block;
+    padding: 0.5rem 0;
+    font-family: $font-jost;
+    color: $color-white;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    pointer-events: auto;
+    transition: border-color 0.3s ease;
+
+    &:hover {
+      border-color: $color-white;
+    }
+  }
+}

@@ -1,0 +1,68 @@
+@use "../abstracts/variables" as *;
+
+@keyframes infiniteKeyword {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.infinite-keywords__track {
+  display: flex;
+  flex-shrink: 0;
+  width: max-content;
+  animation: infiniteKeyword 14s linear infinite;
+  will-change: transform;
+}
+
+.infinite-keywords {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
+  user-select: none;
+  pointer-events: none;
+
+  .keywords {
+    display: flex;
+    flex-shrink: 0;
+    min-width: 100vw;
+    font-size: clamp(3.5rem, 8vw, 8rem);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    line-height: 1;
+    font-family: $font-jost;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: $foreground;
+
+    .wrap-keyword {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+
+      .separate-keyword {
+        display: flex;
+        align-items: center;
+        padding: 0 clamp(1.2rem, 2.5vw, 2.5rem);
+
+        .keyword-icon {
+          display: block;
+          width: clamp(1rem, 1.8vw, 1.8rem);
+          height: clamp(1rem, 1.8vw, 1.8rem);
+          stroke-width: 2.5;
+          color: currentColor;
+        }
+      }
+    }
+
+    .keyword-bold {
+      font-weight: 700;
+    }
+  }
+}
