@@ -38,8 +38,12 @@ export default function HomeExperience() {
       <section
         ref={introPanelRef}
         className="home-intro"
-        aria-label="Introduction"
+        aria-labelledby="home-title"
       >
+        {/* Le titre visible est dessiné dans le canvas. */}
+        <h1 id="home-title" className="visually-hidden">
+          Creative Developer
+        </h1>
         <LiquidIntroCanvas active={isWaveActive} />
       </section>
 

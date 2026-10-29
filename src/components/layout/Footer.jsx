@@ -3,7 +3,9 @@ export default function Footer({ className = "" }) {
 
   return (
     <footer className={rootClass}>
-      <p className="site-footer__copy">&copy; HL 2026. Tous droits réservés</p>
+      <p className="site-footer__copy">
+        &copy; HL {new Date().getFullYear()}. Tous droits réservés
+      </p>
     </footer>
   );
 }

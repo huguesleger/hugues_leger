@@ -1,7 +1,7 @@
 import WorksExperience from "@/components/works/WorksExperience";
 
 export const metadata = {
-  title: "Works — Hugues Leger",
+  title: "Works",
   description: "Tous les projets de Hugues Leger",
 };
 

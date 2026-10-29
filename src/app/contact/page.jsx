@@ -1,7 +1,7 @@
 import ContactContent from "@/components/contact/ContactContent";
 
 export const metadata = {
-  title: "Contact — Hugues Leger",
+  title: "Contact",
   description: "Contactez Hugues Leger, développeur créatif et designer d'interfaces.",
 };
 

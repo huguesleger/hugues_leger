@@ -8,9 +8,20 @@ import Header from "@/components/layout/Header";
 import Cursor from "@/components/layout/Cursor";
 import IntroLoader from "@/components/loader/IntroLoader";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://huguesleger.fr";
+
 export const metadata = {
-  title: "Portfolio",
-  description: "Portfolio de Hugues Leger",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    template: "%s — Hugues Leger",
+    default: "Hugues Leger — Creative Developer",
+  },
+  description: "Portfolio de Hugues Leger, développeur créatif et designer d'interfaces.",
+  openGraph: {
+    siteName: "Hugues Leger",
+    locale: "fr_FR",
+    type: "website",
+  },
 };
 
 export const viewport = {

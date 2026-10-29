@@ -88,9 +88,9 @@ export default function GalleryProjectLabels({ scrollEnabled, layoutSyncRef }) {
           className="gallery-project-label"
         >
           <div className="gallery-project-label__inner">
-            <div className="gallery-project-label__text">
+            <h2 className="gallery-project-label__text">
               <SplittingWrapperWord>{project.title}</SplittingWrapperWord>
-            </div>
+            </h2>
           </div>
         </div>
       ))}

@@ -13,7 +13,7 @@ export async function generateMetadata({ params }) {
   const data = getWork(slug);
   if (!data) return {};
   return {
-    title: `${data.project.title} — Hugues Leger`,
+    title: data.project.title,
     description: `${data.project.title}, ${data.project.category.toLowerCase()} (${data.project.annee}).`,
   };
 }
