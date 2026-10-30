@@ -34,7 +34,7 @@ export default async function WorkPage({ params }) {
           <img src={project.image} alt={project.title} />
         </figure>
         <WorkDetail {...data}>
-          <BackButton id={project.id} src={project.image} />
+          <BackButton slug={project.slug} src={project.image} />
         </WorkDetail>
       </main>
       <Footer className="site-footer--work" />

@@ -6,7 +6,7 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  background: #000000;
+  background: $foreground;
   visibility: hidden;
   pointer-events: none;
   transform: translate3d(0, 100%, 0);

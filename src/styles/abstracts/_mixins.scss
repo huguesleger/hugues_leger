@@ -1,0 +1,46 @@
+@use "variables" as *;
+
+// Bouton pilule avec flèche qui grossit au survol (« Voir le site », « Voir + »).
+@mixin pill-link($bg, $fg) {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  border-radius: 2rem;
+  background: $bg;
+  color: $fg;
+  text-decoration: none;
+  font-family: $font-jost;
+
+  &-text {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+  }
+
+  &-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-left: 1rem;
+    border-radius: 50%;
+    background: $fg;
+    color: $bg;
+    transform: scale(0.2);
+    transition: transform 0.2s ease-in-out;
+
+    svg {
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+  }
+
+  &:hover &-arrow {
+    transform: scale(1);
+
+    svg {
+      opacity: 1;
+    }
+  }
+}

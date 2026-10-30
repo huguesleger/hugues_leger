@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { GALLERY_PROJECTS } from "@/lib/galleryProjects";
 import UnwovenCanvas from "./UnwovenCanvas";
 import GalleryContactSection from "./GalleryContactSection";
 import { useGalleryDocumentHeight } from "@/hooks/useGalleryDocumentHeight";
 
-export default function Gallery({ scrollEnabled = true }) {
+export default function Gallery({ projects, contact, scrollEnabled = true }) {
   const containerRef = useRef(null);
 
-  useGalleryDocumentHeight(GALLERY_PROJECTS.length, scrollEnabled);
+  useGalleryDocumentHeight(projects.length, scrollEnabled);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -26,8 +25,13 @@ export default function Gallery({ scrollEnabled = true }) {
 
   return (
     <div ref={containerRef}>
-      <UnwovenCanvas scrollEnabled={scrollEnabled} />
-      <GalleryContactSection scrollEnabled={scrollEnabled} />
+      <UnwovenCanvas projects={projects} scrollEnabled={scrollEnabled} />
+      <GalleryContactSection
+        projectCount={projects.length}
+        statement={contact.statement}
+        email={contact.email}
+        scrollEnabled={scrollEnabled}
+      />
     </div>
   );
 }

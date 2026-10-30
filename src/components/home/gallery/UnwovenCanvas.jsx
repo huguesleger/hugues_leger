@@ -8,12 +8,12 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { setCursorCanvasHover } from "@/lib/cursorDom";
-import { GALLERY_PROJECTS } from "@/lib/galleryProjects";
 import {
   GALLERY_CONFIG,
   syncMeshScrollPositions,
 } from "@/lib/galleryLayout";
 import GalleryProjectLabels from "./GalleryProjectLabels";
+import GalleryWorksLink from "./GalleryWorksLink";
 
 import {
   VERTEX_SHADER,
@@ -82,7 +82,8 @@ function buildVerticalRibbonGeometry(width, height, threads, segments) {
   return geometry;
 }
 
-const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
+const UnwovenScene = ({ projects, scrollEnabled = true, layoutSyncRef }) => {
+  const images = useMemo(() => projects.map((project) => project.image), [projects]);
   const groupRef = useRef();
   const { size } = useThree();
   const textures = useTexture(images);
@@ -158,11 +159,13 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
     [size.height, size.width, cardWidth, cardHeight],
   );
   const [materials] = useState(() => {
-    const returnId =
+    const returnSlug =
       typeof window !== "undefined"
         ? sessionStorage.getItem("returnTransitionFrom")
         : null;
-    const targetIndex = returnId ? (parseInt(returnId) - 1) % 6 : -1;
+    const targetIndex = returnSlug
+      ? projects.findIndex((project) => project.slug === returnSlug)
+      : -1;
 
     return textures.map((tex, i) => {
       tex.generateMipmaps = false;
@@ -214,10 +217,10 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
   useEffect(() => {
     if (!scrollEnabled) return;
 
-    const returnId = sessionStorage.getItem("returnTransitionFrom");
-    if (!returnId) return;
+    const returnSlug = sessionStorage.getItem("returnTransitionFrom");
+    if (!returnSlug) return;
 
-    const index = (parseInt(returnId, 10) - 1) % images.length;
+    const index = projects.findIndex((project) => project.slug === returnSlug);
     if (!materials[index]) return;
 
     syncMeshScrollPositions(
@@ -269,7 +272,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(runReverse);
     });
-  }, [materials, pitch, images.length, scrollEnabled]);
+  }, [materials, pitch, projects, scrollEnabled]);
   useEffect(() => {
     const handlePrepare = () => {
       if (groupRef.current) {
@@ -362,7 +365,7 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
     });
 
     const targetMaterial = materials[index];
-    const { id, slug } = GALLERY_PROJECTS[index % GALLERY_PROJECTS.length];
+    const { id, slug } = projects[index];
     const src = images[index];
     import("@/components/transition/TransitionOverlay").then((m) =>
       m.triggerTransition(null, src, id),
@@ -401,16 +404,16 @@ const UnwovenScene = ({ images, scrollEnabled = true, layoutSyncRef }) => {
   );
 };
 
-export default function UnwovenCanvas({ scrollEnabled = true }) {
+export default function UnwovenCanvas({ projects, scrollEnabled = true }) {
   const layoutSyncRef = useRef({
-    opacities: GALLERY_PROJECTS.map(() => 1),
+    opacities: projects.map(() => 1),
     hideAll: typeof window !== "undefined" && !!sessionStorage.getItem("returnTransitionFrom"),
   });
-  const images = GALLERY_PROJECTS.map((project) => project.image);
 
   return (
     <div className="unwoven-canvas">
       <GalleryProjectLabels
+        projects={projects}
         scrollEnabled={scrollEnabled}
         layoutSyncRef={layoutSyncRef}
       />
@@ -421,12 +424,17 @@ export default function UnwovenCanvas({ scrollEnabled = true }) {
       >
         <Suspense fallback={null}>
           <UnwovenScene
-            images={images}
+            projects={projects}
             scrollEnabled={scrollEnabled}
             layoutSyncRef={layoutSyncRef}
           />
         </Suspense>
       </Canvas>
+      <GalleryWorksLink
+        projectCount={projects.length}
+        scrollEnabled={scrollEnabled}
+        layoutSyncRef={layoutSyncRef}
+      />
     </div>
   );
 }

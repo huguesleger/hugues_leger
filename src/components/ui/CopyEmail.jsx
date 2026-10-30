@@ -3,11 +3,9 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import useCursorTarget from "@/hooks/useCursorTarget";
 
-const DEFAULT_EMAIL = "contactme@huguesleger.fr";
-
 const CopyEmail = forwardRef(function CopyEmail(
   {
-    email = DEFAULT_EMAIL,
+    email,
     className = "",
     style,
     labelCopy = "copy to clipboard",

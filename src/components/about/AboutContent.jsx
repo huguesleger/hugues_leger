@@ -29,7 +29,7 @@ function lerpColor(t) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-export default function AboutContent() {
+export default function AboutContent({ email }) {
   const [isVisible, setIsVisible] = useState(false);
   const headerRef = useRef(null);
   const bioRef = useRef(null);
@@ -201,7 +201,7 @@ export default function AboutContent() {
             </div>
             <div className="wrap-email">
               <CopyEmail
-                email="contactme@huguesleger.fr"
+                email={email}
                 className="section-contact__email-block"
                 cursorLabel="Copy"
               />

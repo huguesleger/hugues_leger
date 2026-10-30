@@ -7,6 +7,7 @@ import PageTransition from "@/components/transition/PageTransition";
 import Header from "@/components/layout/Header";
 import Cursor from "@/components/layout/Cursor";
 import IntroLoader from "@/components/loader/IntroLoader";
+import { getLoaderWords } from "@/lib/home";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://huguesleger.fr";
 
@@ -28,14 +29,16 @@ export const viewport = {
   themeColor: "#000000",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const loaderWords = await getLoaderWords();
+
   return (
     <html lang="fr" suppressHydrationWarning>
       <body>
         <Script id="intro-entered" strategy="beforeInteractive">
           {`try{if(sessionStorage.getItem("isEntered")||matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("intro-entered")}}catch(e){}`}
         </Script>
-        <IntroLoader />
+        <IntroLoader words={loaderWords} />
         <LenisProvider>
           <Cursor />
           <Header />

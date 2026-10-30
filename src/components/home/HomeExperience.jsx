@@ -6,7 +6,7 @@ import LiquidIntroCanvas from "@/components/home/liquid-intro/LiquidIntroCanvas"
 import { useHomeIntroTransition } from "@/hooks/useHomeIntroTransition";
 import ScrollExploreBadge from "./ScrollExploreBadge";
 
-export default function HomeExperience() {
+export default function HomeExperience({ projects, contact }) {
   const [skipIntro] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -30,7 +30,11 @@ export default function HomeExperience() {
         ref={galleryRef}
         className={`home-gallery${phase === "intro" ? " home-gallery--hidden" : ""}`}
       >
-        <Gallery scrollEnabled={galleryScrollEnabled} />
+        <Gallery
+          projects={projects}
+          contact={contact}
+          scrollEnabled={galleryScrollEnabled}
+        />
       </div>
 
       <div ref={coverRef} className="home-intro-cover" aria-hidden="true" />

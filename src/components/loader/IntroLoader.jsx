@@ -10,7 +10,6 @@ import {
 } from "@/lib/introGate";
 import WordSwitcher, { appendWordsTimeline } from "@/components/ui/WordSwitcher";
 
-const WORDS = ["Hello", "Salut", "Patience ça arrive..."];
 const NAME_LINES = [
   { text: "hugues", className: "bold" },
   { text: "leger", className: "" },
@@ -26,7 +25,7 @@ function waitForPageReady() {
   return Promise.all([document.fonts.ready, Promise.race([load, cap])]);
 }
 
-export default function IntroLoader() {
+export default function IntroLoader({ words }) {
   const [shouldRender, setShouldRender] = useState(true);
 
   const loaderRef = useRef(null);
@@ -149,7 +148,7 @@ export default function IntroLoader() {
         </div>
 
         <div className="intro-loader__slot" ref={slotRef}>
-          <WordSwitcher variant="loader" words={WORDS} wordRefs={wordRefs} />
+          <WordSwitcher variant="loader" words={words} wordRefs={wordRefs} />
 
           <div className="intro-loader__name" ref={nameRef}>
             {NAME_LINES.map((line) => (

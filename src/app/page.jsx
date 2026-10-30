@@ -1,4 +1,6 @@
 import HomeExperience from "@/components/home/HomeExperience";
+import { getGalleryProjects, getHomeContactStatement } from "@/lib/home";
+import { getSiteSettings } from "@/lib/site";
 
 // Même segment que le layout : le template ne s'applique pas, d'où `absolute`.
 export const metadata = {
@@ -8,10 +10,16 @@ export const metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function Home() {
+export default async function Home() {
+  const [projects, statement, { email }] = await Promise.all([
+    getGalleryProjects(),
+    getHomeContactStatement(),
+    getSiteSettings(),
+  ]);
+
   return (
     <main>
-      <HomeExperience />
+      <HomeExperience projects={projects} contact={{ statement, email }} />
     </main>
   );
 }

@@ -45,7 +45,7 @@ function smoothScrollToTop(onComplete) {
   });
 }
 
-export default function BackButton({ id, src }) {
+export default function BackButton({ slug, src }) {
   const isLeavingRef = useRef(false);
 
   return (
@@ -55,7 +55,7 @@ export default function BackButton({ id, src }) {
         isLeavingRef.current = true;
 
         smoothScrollToTop(() => {
-          sessionStorage.setItem("returnTransitionFrom", id);
+          sessionStorage.setItem("returnTransitionFrom", slug);
           triggerReverseTransition(src);
         });
       }}

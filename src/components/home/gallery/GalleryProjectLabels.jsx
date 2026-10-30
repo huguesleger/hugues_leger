@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { GALLERY_PROJECTS } from "@/lib/galleryProjects";
 import { getGalleryItemScreenLayout } from "@/lib/galleryLayout";
 import SplittingWrapperWord from "@/components/ui/splitting/SplittingWrapperWord";
 
@@ -13,7 +12,11 @@ function getGalleryScroll() {
   return window.scrollY;
 }
 
-export default function GalleryProjectLabels({ scrollEnabled, layoutSyncRef }) {
+export default function GalleryProjectLabels({
+  projects,
+  scrollEnabled,
+  layoutSyncRef,
+}) {
   const labelRefs = useRef([]);
 
   useEffect(() => {
@@ -29,7 +32,7 @@ export default function GalleryProjectLabels({ scrollEnabled, layoutSyncRef }) {
       const opacities = sync.opacities;
       const hideAll = sync.hideAll === true;
 
-      GALLERY_PROJECTS.forEach((project, index) => {
+      projects.forEach((project, index) => {
         const el = labelRefs.current[index];
         if (!el) return;
 
@@ -73,13 +76,13 @@ export default function GalleryProjectLabels({ scrollEnabled, layoutSyncRef }) {
     frameId = requestAnimationFrame(update);
 
     return () => cancelAnimationFrame(frameId);
-  }, [scrollEnabled, layoutSyncRef]);
+  }, [projects, scrollEnabled, layoutSyncRef]);
 
   if (!scrollEnabled) return null;
 
   return (
     <div className="gallery-project-labels" aria-hidden={false}>
-      {GALLERY_PROJECTS.map((project, index) => (
+      {projects.map((project, index) => (
         <div
           key={project.id}
           ref={(node) => {

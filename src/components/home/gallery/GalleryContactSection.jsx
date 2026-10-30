@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
-import { GALLERY_PROJECTS } from "@/lib/galleryProjects";
 import {
   getContactSlideDistance,
   getContactTextScrollDistance,
@@ -10,11 +9,6 @@ import {
 } from "@/lib/galleryLayout";
 import Footer from "@/components/layout/Footer";
 import CopyEmail from "@/components/ui/CopyEmail";
-const STATEMENT =
-  "I design interfaces, craft interactive experiences, and build fluid animations.";
-const WORDS = STATEMENT.split(" ");
-const NO_BREAK_AFTER = new Set(["fluid", "interactive", "build"]);
-const EMAIL = "contactme@huguesleger.fr";
 const COLOR_DIM = { r: 58, g: 58, b: 58 };
 const COLOR_BRIGHT = { r: 255, g: 255, b: 255 };
 const DIM_COLOR = "rgb(58, 58, 58)";
@@ -38,7 +32,13 @@ function getGalleryScroll() {
   return window.scrollY;
 }
 
-export default function GalleryContactSection({ scrollEnabled }) {
+export default function GalleryContactSection({
+  projectCount,
+  statement,
+  email,
+  scrollEnabled,
+}) {
+  const words = useMemo(() => statement.split(/\s+/).filter(Boolean), [statement]);
   const sectionRef = useRef(null);
   const wordRefs = useRef([]);
   const emailBlockRef = useRef(null);
@@ -68,7 +68,6 @@ export default function GalleryContactSection({ scrollEnabled }) {
     if (!scrollEnabled) return;
 
     let frameId = 0;
-    const projectCount = GALLERY_PROJECTS.length;
 
     if (sessionStorage.getItem("returnTransitionFrom") != null) {
       fadeRef.current.value = 0;
@@ -111,14 +110,14 @@ export default function GalleryContactSection({ scrollEnabled }) {
           ? 0
           : clamp((scrollY - textStart) / textScrollDistance, 0, 1);
 
-      WORDS.forEach((_, index) => {
+      words.forEach((_, index) => {
         const el = wordRefs.current[index];
         if (!el) return;
         if (textProgress <= 0) {
           el.style.color = DIM_COLOR;
           return;
         }
-        const wordProgress = clamp(textProgress * WORDS.length - index, 0, 1);
+        const wordProgress = clamp(textProgress * words.length - index, 0, 1);
         el.style.color = lerpColor(wordProgress);
       });
 
@@ -134,7 +133,7 @@ export default function GalleryContactSection({ scrollEnabled }) {
 
     frameId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(frameId);
-  }, [scrollEnabled]);
+  }, [projectCount, scrollEnabled, words]);
 
   if (!scrollEnabled) return null;
 
@@ -146,7 +145,7 @@ export default function GalleryContactSection({ scrollEnabled }) {
     >
       <div className="gallery-contact__inner">
         <p className="gallery-contact__statement">
-          {WORDS.map((word, index) => (
+          {words.map((word, index) => (
             <span
               key={`${word}-${index}`}
               ref={(node) => {
@@ -155,18 +154,14 @@ export default function GalleryContactSection({ scrollEnabled }) {
               className="gallery-contact__word"
             >
               {word}
-              {index < WORDS.length - 1
-                ? NO_BREAK_AFTER.has(word)
-                  ? "\u00A0"
-                  : " "
-                : ""}
+              {index < words.length - 1 ? " " : ""}
             </span>
           ))}
         </p>
 
         <CopyEmail
           ref={emailBlockRef}
-          email={EMAIL}
+          email={email}
           className="gallery-contact__email-block"
         />
 

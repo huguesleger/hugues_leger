@@ -5,9 +5,7 @@ import SplittingWrapperWord from "@/components/ui/splitting/SplittingWrapperWord
 import Footer from "@/components/layout/Footer";
 import CopyEmail from "@/components/ui/CopyEmail";
 
-const EMAIL = "contactme@huguesleger.fr";
-
-export default function ContactContent() {
+export default function ContactContent({ email }) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -33,7 +31,7 @@ export default function ContactContent() {
 
         <div className="page-contact__email-container">
           <CopyEmail
-            email={EMAIL}
+            email={email}
             className="page-contact__email-block"
             cursorColor={true}
           />

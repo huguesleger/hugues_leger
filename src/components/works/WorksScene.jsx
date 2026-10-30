@@ -66,7 +66,7 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     
     let index = Number(sessionStorage.getItem(WORKS_STORAGE.card) ?? -1);
     if (index < 0 || index >= dims.count) {
-      const pIndex = projects.findIndex((p) => String(p.id) === returnId);
+      const pIndex = projects.findIndex((p) => p.slug === returnId);
       index = pIndex >= 0 ? pIndex : -1;
     }
     return { isReturning: true, targetIndex: index };
@@ -167,7 +167,7 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
     let index = savedCard >= 0 && savedCard < cards.length ? savedCard : -1;
     if (index < 0) {
       index = cards.findIndex(
-        (card) => String(projects[card.projectIndex].id) === returnId,
+        (card) => projects[card.projectIndex].slug === returnId,
       );
     }
 
