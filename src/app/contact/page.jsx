@@ -1,4 +1,5 @@
 import ContactContent from "@/components/contact/ContactContent";
+import { getContact } from "@/lib/contact";
 import { getSiteSettings } from "@/lib/site";
 
 export const metadata = {
@@ -7,11 +8,11 @@ export const metadata = {
 };
 
 export default async function ContactPage() {
-  const { email } = await getSiteSettings();
+  const [contact, { email }] = await Promise.all([getContact(), getSiteSettings()]);
 
   return (
     <main className="page-contact">
-      <ContactContent email={email} />
+      <ContactContent title={contact.title} email={email} />
     </main>
   );
 }

@@ -5,7 +5,7 @@ import SplittingWrapperWord from "@/components/ui/splitting/SplittingWrapperWord
 import Footer from "@/components/layout/Footer";
 import CopyEmail from "@/components/ui/CopyEmail";
 
-export default function ContactContent({ email }) {
+export default function ContactContent({ title, email }) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -22,10 +22,10 @@ export default function ContactContent({ email }) {
       <div className="page-contact__inner">
         <h1 className="page-contact__title">
           <span className="title-1">
-            <SplittingWrapperWord>Envoyez-moi</SplittingWrapperWord>
+            <SplittingWrapperWord>{title.firstLine}</SplittingWrapperWord>
           </span>
           <span className="title-2">
-            <SplittingWrapperWord>un message</SplittingWrapperWord>
+            <SplittingWrapperWord>{title.secondLine}</SplittingWrapperWord>
           </span>
         </h1>
 
