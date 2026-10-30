@@ -9,7 +9,7 @@ import { WORKS_INTERACTIVE_PROGRESS } from "@/lib/worksLayout";
 const HEADING_REVEAL_DELAY_MS = 250;
 
 
-export default function WorksLabels({ projects, syncRef }) {
+export default function WorksLabels({ title, projects, syncRef }) {
   const rootRef = useRef(null);
   const headingRef = useRef(null);
   const titleRefs = useRef([]);
@@ -89,10 +89,10 @@ export default function WorksLabels({ projects, syncRef }) {
           className={`works-labels__heading${headingVisible ? " works-labels__heading--visible" : ""}`}
         >
           <span>
-            <SplittingWrapperWord>Selected</SplittingWrapperWord>
+            <SplittingWrapperWord>{title.firstLine}</SplittingWrapperWord>
           </span>
           <span>
-            <SplittingWrapperWord>Works</SplittingWrapperWord>
+            <SplittingWrapperWord>{title.secondLine}</SplittingWrapperWord>
           </span>
         </h1>
       </div>
