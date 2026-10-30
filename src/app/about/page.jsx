@@ -1,4 +1,5 @@
 import AboutContent from "@/components/about/AboutContent";
+import { getAbout } from "@/lib/about";
 import { getSiteSettings } from "@/lib/site";
 
 export const metadata = {
@@ -7,11 +8,18 @@ export const metadata = {
 };
 
 export default async function AboutPage() {
-  const { email } = await getSiteSettings();
+  const [about, { email }] = await Promise.all([getAbout(), getSiteSettings()]);
 
   return (
     <main className="page-about">
-      <AboutContent email={email} />
+      <AboutContent
+        title={about.title}
+        bio={about.bio}
+        circles={about.circles}
+        toolkit={about.toolkit}
+        contactTitle={about.contactTitle}
+        email={email}
+      />
     </main>
   );
 }

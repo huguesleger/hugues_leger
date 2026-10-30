@@ -159,7 +159,7 @@ function AboutImageMesh({ image }) {
   );
 }
 
-export default function AboutCanvas({ image = "/assets/4.webp" }) {
+export default function AboutCanvas({ image }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

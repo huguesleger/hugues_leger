@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import SplittingWrapperWord from "@/components/ui/splitting/SplittingWrapperWord";
 import Footer from "@/components/layout/Footer";
@@ -11,9 +11,6 @@ import AboutCanvas from "./AboutCanvas";
 import AboutCircleSection from "./AboutCircleSection";
 import AboutToolkit from "./AboutToolkit";
 
-const BIO_STATEMENT =
-  "Hugues Leger, basé sur Montpellier. Toujours amoureux du code et du design, j'aime apprendre de nouvelles choses chaque jour et me lancer des défis avec de nouveaux projets, traduire des concepts en design visuel en prêtant une attention particulière aux détails, et les convertir en expériences hautement interactives.";
-const BIO_WORDS = BIO_STATEMENT.split(" ");
 const COLOR_DIM = { r: 180, g: 180, b: 180 };
 const COLOR_BRIGHT = { r: 23, g: 23, b: 23 };
 const DIM_COLOR = "rgb(180, 180, 180)";
@@ -29,7 +26,15 @@ function lerpColor(t) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-export default function AboutContent({ email }) {
+export default function AboutContent({
+  title,
+  bio,
+  circles,
+  toolkit,
+  contactTitle,
+  email,
+}) {
+  const bioWords = useMemo(() => bio.text.split(/\s+/).filter(Boolean), [bio.text]);
   const [isVisible, setIsVisible] = useState(false);
   const headerRef = useRef(null);
   const bioRef = useRef(null);
@@ -52,7 +57,7 @@ export default function AboutContent({ email }) {
     const bioWordElements = bioWordRefs.current;
     if (!bio) return;
 
-    BIO_WORDS.forEach((_, index) => {
+    bioWords.forEach((_, index) => {
       const el = bioWordElements[index];
       if (el) el.style.color = DIM_COLOR;
     });
@@ -64,14 +69,14 @@ export default function AboutContent({ email }) {
       const textEnd = windowH * -0.15;
       const textProgress = clamp((textStart - bioRect.top) / (textStart - textEnd), 0, 1);
 
-      BIO_WORDS.forEach((_, index) => {
+      bioWords.forEach((_, index) => {
         const el = bioWordElements[index];
         if (!el) return;
         if (textProgress <= 0) {
           el.style.color = DIM_COLOR;
           return;
         }
-        const wordProgress = clamp(textProgress * BIO_WORDS.length - index, 0, 1);
+        const wordProgress = clamp(textProgress * bioWords.length - index, 0, 1);
         el.style.color = lerpColor(wordProgress);
       });
     };
@@ -81,7 +86,7 @@ export default function AboutContent({ email }) {
     return () => {
       gsap.ticker.remove(onUpdate);
     };
-  }, []);
+  }, [bioWords]);
 
   return (
     <div className={`page-about__wrap${isVisible ? " page-about--visible" : ""}`}>
@@ -99,7 +104,7 @@ export default function AboutContent({ email }) {
                 start="top top"
                 end="bottom top"
               >
-                <SplittingWrapperWord>Creative developer</SplittingWrapperWord>
+                <SplittingWrapperWord>{title.firstLine}</SplittingWrapperWord>
               </Parallax>
             </div>
             <div className="page-about__title-line page-about__title-line--2">
@@ -113,7 +118,7 @@ export default function AboutContent({ email }) {
                 start="top top"
                 end="bottom top"
               >
-                <SplittingWrapperWord>&amp; front developer</SplittingWrapperWord>
+                <SplittingWrapperWord>{title.secondLine}</SplittingWrapperWord>
               </Parallax>
             </div>
           </h1>
@@ -125,7 +130,7 @@ export default function AboutContent({ email }) {
           <div className="page-about__bio-grid">
             <div className="page-about__bio-media">
               <div className="page-about__canvas-container">
-                <AboutCanvas image="/assets/4.webp" />
+                <AboutCanvas image={bio.image} />
               </div>
             </div>
 
@@ -142,12 +147,12 @@ export default function AboutContent({ email }) {
                     end="top 15%"
                     ease="power1.out"
                   >
-                    <SplittingWrapperWord>Hello</SplittingWrapperWord>
+                    <SplittingWrapperWord>{bio.title}</SplittingWrapperWord>
                   </Parallax>
                 </div>
               </h2>
               <p className="page-about__bio-text">
-                {BIO_WORDS.map((word, index) => (
+                {bioWords.map((word, index) => (
                   <span
                     key={`${word}-${index}`}
                     ref={(node) => {
@@ -156,7 +161,7 @@ export default function AboutContent({ email }) {
                     className="page-about__bio-word"
                   >
                     {word}
-                    {index < BIO_WORDS.length - 1 ? " " : ""}
+                    {index < bioWords.length - 1 ? " " : ""}
                   </span>
                 ))}
               </p>
@@ -165,9 +170,9 @@ export default function AboutContent({ email }) {
         </div>
       </section>
 
-      <AboutCircleSection />
+      <AboutCircleSection circles={circles} />
 
-      <AboutToolkit />
+      <AboutToolkit keywords={toolkit.keywords} items={toolkit.items} />
 
       <RoundedTransition trigger={contactRef} />
 
@@ -195,7 +200,7 @@ export default function AboutContent({ email }) {
                   exit={-30}
                   exitEnd="top -85%"
                 >
-                  Connectons-nous
+                  {contactTitle}
                 </Parallax>
               </h2>
             </div>

@@ -3,13 +3,7 @@
 import React from "react";
 import CompetenceTitle from "./CompetenceTitle";
 
-const DEFAULT_KEYWORDS = [
-  { id: "1", title: "Compétences", icon: "Circle" },
-  { id: "2", title: "Savoir-faire", icon: "Circle" },
-  { id: "3", title: "Techniques", icon: "Circle" },
-];
-
-export default function InfiniteKeywords({ items = DEFAULT_KEYWORDS }) {
+export default function InfiniteKeywords({ items }) {
 
   const list = [...items, ...items];
 

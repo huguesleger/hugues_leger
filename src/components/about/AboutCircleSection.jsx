@@ -5,25 +5,11 @@ import gsap from "gsap";
 import { getScrollY } from "@/lib/scroll";
 import CircleText from "./CircleText";
 
-const DESIGN_TEXTS = [
-  "Dessins Maquettes Typographies Webdesign Visuels",
-  "Illustrations Vectorielle Tablette Graphique Couleurs",
-  "Graphisme Design Conception Retouches",
-  "Logos Chartes graphiques Identitees",
-];
-
-const DEV_TEXTS = [
-  "Interface Structure Interaction Responsive Accessibilite",
-  "Animations Creativite Exploration Innovation Immersion",
-  "Typographie Concept Motion Prototypage Esthetique",
-  "WebGL Three.js Shader Interactivite Emotion",
-];
-
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-export default function AboutCircleSection() {
+export default function AboutCircleSection({ circles }) {
   const trackRef = useRef(null);
   const curtainRef = useRef(null);
   const curtainInnerRef = useRef(null);
@@ -87,7 +73,7 @@ export default function AboutCircleSection() {
             <CircleText
               ref={circle1Ref}
               idPrefix="design-circle"
-              texts={DESIGN_TEXTS}
+              texts={circles.design}
               theme="dark"
             />
           </div>
@@ -105,7 +91,7 @@ export default function AboutCircleSection() {
               <CircleText
                 ref={circle2Ref}
                 idPrefix="dev-circle"
-                texts={DEV_TEXTS}
+                texts={circles.dev}
                 theme="light"
               />
             </div>

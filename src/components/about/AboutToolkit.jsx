@@ -13,52 +13,7 @@ const getMousePos = (ev) => ({
   y: ev.clientY,
 });
 
-const TOOLKIT_ITEMS = [
-  {
-    id: "next-react",
-    titre: "Next js & React",
-    tag: "#Architecture #SSR #AppRouter",
-    annee: "Daily Driver",
-    image: "/assets/1.webp",
-  },
-  {
-    id: "three-r3f",
-    titre: "Three.js / React three fiber",
-    tag: "#WebGL #3D #ShadersGLSL",
-    annee: "Creative Lab",
-    image: "/assets/2.webp",
-  },
-  {
-    id: "gsap",
-    titre: "GSAP",
-    tag: "#Motion #MicroInteractions #Smooth",
-    annee: "60 FPS",
-    image: "/assets/3.webp",
-  },
-  {
-    id: "scss-sass",
-    titre: "Scss / Sass",
-    tag: "#DesignSystem #Responsive #Modular",
-    annee: "Craft",
-    image: "/assets/4.webp",
-  },
-  {
-    id: "wordpress",
-    titre: "Wordpress / DatoCMS",
-    tag: "#Headless #CustomTheme #PHP",
-    annee: "CMS",
-    image: "/assets/5.webp",
-  },
-  {
-    id: "design-suite",
-    titre: "Figma / Photoshop / Illustrator",
-    tag: "#ArtDirection #UI/UX #Vector",
-    annee: "Design",
-    image: "/assets/6.webp",
-  },
-];
-
-function ToolkitItem({ titre, tag, annee, image }) {
+function ToolkitItem({ title, hashtags, sideLabel, image }) {
   const refHover = useRef(null);
   const refListItem = useRef(null);
   const refInner = useRef(null);
@@ -192,19 +147,19 @@ function ToolkitItem({ titre, tag, annee, image }) {
       onMouseLeave={mouseLeave}
     >
       <div className="page-about__toolkit-title-block">
-        <h3 className="page-about__toolkit-item-title">{titre}</h3>
-        <p className="page-about__toolkit-item-tag">{tag}</p>
+        <h3 className="page-about__toolkit-item-title">{title}</h3>
+        <p className="page-about__toolkit-item-tag">{hashtags}</p>
       </div>
 
       <div className="page-about__toolkit-meta-block">
-        <p className="page-about__toolkit-item-meta">{annee}</p>
+        <p className="page-about__toolkit-item-meta">{sideLabel}</p>
       </div>
 
       <div className="page-about__toolkit-reveal" ref={refHover}>
         <div className="page-about__toolkit-reveal-inner" ref={refInner}>
           <Image
             src={image}
-            alt={titre}
+            alt={title}
             className="page-about__toolkit-reveal-img"
             fill
             sizes="170px"
@@ -215,19 +170,19 @@ function ToolkitItem({ titre, tag, annee, image }) {
   );
 }
 
-export default function AboutToolkit() {
+export default function AboutToolkit({ keywords, items }) {
   return (
     <section className="page-about__section page-about__toolkit" id="toolkit">
-      <InfiniteKeywords />
+      <InfiniteKeywords items={keywords} />
       <div className="page-about__inner">
 
         <div className="page-about__toolkit-list">
-          {TOOLKIT_ITEMS.map((item) => (
+          {items.map((item) => (
             <div className="page-about__toolkit-row" key={item.id}>
               <ToolkitItem
-                titre={item.titre}
-                tag={item.tag}
-                annee={item.annee}
+                title={item.title}
+                hashtags={item.hashtags}
+                sideLabel={item.sideLabel}
                 image={item.image}
               />
             </div>
