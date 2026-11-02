@@ -126,7 +126,8 @@ export const WORKS_VERTEX_SHADER = `
     vec2 scale = mix(vec2(1.0), targetScale + cos(uTransition * SHEET_PI * 0.5) * ripple * 0.15, uTransition);
     vec2 expanded = mix(origin.xy, uTargetPosition, uTransition) + local * scale;
     world.xy = mix(world.xy, expanded, uTransition);
-    world.z = mix(world.z, 2.0, uTransition);
+    // z = 0 : sans grossissement de perspective, la carte finit pile sur l'en-tête.
+    world.z = mix(world.z, 0.0, uTransition);
 
     gl_Position = projectionMatrix * viewMatrix * world;
   }

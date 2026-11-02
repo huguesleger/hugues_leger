@@ -1,5 +1,5 @@
 import { request } from "@/lib/datocms";
-import { GALLERY_ITEM_FRAGMENT, toGalleryProjects } from "@/lib/galleryItem";
+import { PROJECT_CARD_FRAGMENT, toProjectCards } from "@/lib/projects";
 
 // Tout le contenu de la home vient de DatoCMS : si l'API est injoignable,
 // `request` lève une erreur plutôt que d'afficher un contenu périmé.
@@ -25,11 +25,11 @@ export async function getLoaderWords() {
 }
 
 const GALLERY_QUERY = /* GraphQL */ `
-  ${GALLERY_ITEM_FRAGMENT}
+  ${PROJECT_CARD_FRAGMENT}
   query HomeGallery {
     home {
       gallery {
-        ...GalleryItem
+        ...ProjectCard
       }
     }
   }
@@ -38,7 +38,7 @@ const GALLERY_QUERY = /* GraphQL */ `
 /** Visuels du canvas de la home. */
 export async function getGalleryProjects() {
   const { home } = await request({ query: GALLERY_QUERY });
-  return toGalleryProjects(home?.gallery);
+  return toProjectCards(home?.gallery);
 }
 
 const CONTACT_QUERY = /* GraphQL */ `

@@ -14,10 +14,7 @@ export default function Intro({ project, children }) {
   // en arrivant sur la page, l'image d'aperçu les garde sous le pli.
   const headingVisible = useRevealOnView(headingRef, { threshold: 0.5 });
   const infosVisible = useRevealOnView(infosRef, { threshold: 0.5 });
-  const hasSite = Boolean(project.siteWeb);
-  const siteHref = project.siteWeb?.startsWith("http")
-    ? project.siteWeb
-    : `https://${project.siteWeb}`;
+  const hasSite = Boolean(project.website);
 
   return (
     <section
@@ -47,14 +44,14 @@ export default function Intro({ project, children }) {
         <div className="work-infos__year">
           <span className="work-infos__label">Année</span>
           <span className="work-infos__year-value">
-            <SplittingWrapperWord>{project.annee}</SplittingWrapperWord>
+            <SplittingWrapperWord>{project.year}</SplittingWrapperWord>
           </span>
         </div>
 
         <div className="work-infos__intervention">
           <span className="work-infos__label">Intervention</span>
           <ol className="work-infos__list">
-            {project.intervention.map((item, i) => (
+            {project.interventions.map((item, i) => (
               <li
                 key={item}
                 className="work-infos__item"
@@ -71,7 +68,7 @@ export default function Intro({ project, children }) {
 
         {hasSite && (
           <a
-            href={siteHref}
+            href={project.website}
             target="_blank"
             rel="noopener noreferrer"
             className="work-infos__site"

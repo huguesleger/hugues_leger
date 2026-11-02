@@ -8,7 +8,7 @@ import GlImage from "@/components/work-detail/GlImage";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function Stage({ image, title }) {
+export default function Stage({ image, title, alt }) {
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function Stage({ image, title }) {
   return (
     <section ref={sectionRef} className="work-stage">
       <div className="work-stage__sticky">
-        <GlImage src={image} alt={title} className="work-stage__media" />
+        <GlImage src={image} alt={alt} className="work-stage__media" />
         <div className="work-stage__captions" aria-hidden="true">
           <span className="work-stage__caption-title">{title}</span>
         </div>

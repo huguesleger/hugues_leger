@@ -8,6 +8,8 @@ $color-link-hover: #000000;
 $color-desc: #9b9b9b;
 $color-white: #ffffff;
 $page-padding: 1.5rem;
+// Doit rester égal à PROJECT_HERO_HEIGHT (src/lib/projectHero.js).
+$project-hero-height: 620px;
 
 $font-sf: "SF_pro_display";
 $font-renogare: "Renogare";

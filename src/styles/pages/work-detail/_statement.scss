@@ -21,9 +21,9 @@
     color: $foreground;
   }
 
+  // Les majuscules sont saisies dans DatoCMS : le gras ne les force plus.
   strong {
     font-weight: 600;
-    text-transform: uppercase;
     letter-spacing: -0.04em;
   }
 }

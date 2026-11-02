@@ -16,17 +16,20 @@ const WorkDetailCanvas = dynamic(
 
 export default function WorkDetail({ project, next, children }) {
   const rootRef = useRef(null);
-  const [stageImage, ...rest] = project.images;
 
   return (
     <div ref={rootRef} className="work-detail">
       <Intro project={project}>
         {children}
       </Intro>
-      <Stage image={stageImage} title={project.title} />
-      <Statement text={project.statement} />
-      <Grid images={rest.slice(0, 3)} title={project.title} />
-      <Sequence images={[project.image, ...rest]} title={project.title} />
+      <Stage
+        image={project.stage.image}
+        title={project.stage.title}
+        alt={project.title}
+      />
+      <Statement document={project.statement} />
+      <Grid items={project.grid} title={project.title} />
+      <Sequence images={project.sequenceImages} title={project.title} />
       <Next next={next} />
       <WorkDetailCanvas key={project.id} rootRef={rootRef} />
     </div>

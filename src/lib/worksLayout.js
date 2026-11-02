@@ -31,8 +31,6 @@ export const WORKS_CONFIG = {
  */
 export const WORKS_INTERACTIVE_PROGRESS = 1 / 1.6;
 
-export const WORKS_TRANSITION_TARGET_HEIGHT = 600;
-
 function fitCard(maxHeight, aspect, maxWidth) {
   let height = maxHeight;
   let width = height * aspect;

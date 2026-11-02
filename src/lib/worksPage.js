@@ -1,14 +1,14 @@
 import { request } from "@/lib/datocms";
-import { GALLERY_ITEM_FRAGMENT, toGalleryProjects } from "@/lib/galleryItem";
+import { PROJECT_CARD_FRAGMENT, toProjectCards } from "@/lib/projects";
 
 const WORKS_PAGE_QUERY = /* GraphQL */ `
-  ${GALLERY_ITEM_FRAGMENT}
+  ${PROJECT_CARD_FRAGMENT}
   query WorksPage {
     workPage {
       titleFirstLine
       titleSecondLine
       projects {
-        ...GalleryItem
+        ...ProjectCard
       }
     }
   }
@@ -22,6 +22,6 @@ export async function getWorksPage() {
       firstLine: workPage?.titleFirstLine?.trim() ?? "",
       secondLine: workPage?.titleSecondLine?.trim() ?? "",
     },
-    projects: toGalleryProjects(workPage?.projects),
+    projects: toProjectCards(workPage?.projects),
   };
 }

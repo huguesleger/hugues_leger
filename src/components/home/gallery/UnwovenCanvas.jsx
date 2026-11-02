@@ -12,6 +12,12 @@ import {
   GALLERY_CONFIG,
   syncMeshScrollPositions,
 } from "@/lib/galleryLayout";
+import { PROJECT_HERO_HEIGHT } from "@/lib/projectHero";
+import {
+  coverWithProjectImage,
+  prepareProjectTransition,
+  releaseProjectTransition,
+} from "@/components/transition/TransitionOverlay";
 import GalleryProjectLabels from "./GalleryProjectLabels";
 import GalleryWorksLink from "./GalleryWorksLink";
 
@@ -153,8 +159,10 @@ const UnwovenScene = ({ projects, scrollEnabled = true, layoutSyncRef }) => {
       uCardSize: { value: new THREE.Vector2(cardWidth, cardHeight) },
       uScrollVelocity: { value: 0 },
       uMouse: { value: new THREE.Vector2(-9999, -9999) },
-      uTargetSize: { value: new THREE.Vector2(size.width, 600.0) },
-      uTargetPosition: { value: new THREE.Vector2(0, size.height / 2 - 300.0) },
+      uTargetSize: { value: new THREE.Vector2(size.width, PROJECT_HERO_HEIGHT) },
+      uTargetPosition: {
+        value: new THREE.Vector2(0, size.height / 2 - PROJECT_HERO_HEIGHT / 2),
+      },
     }),
     [size.height, size.width, cardWidth, cardHeight],
   );
@@ -238,6 +246,8 @@ const UnwovenScene = ({ projects, scrollEnabled = true, layoutSyncRef }) => {
     });
 
     const runReverse = () => {
+      // La carte agrandie est peinte sous l'image de transition : elle prend le relais.
+      releaseProjectTransition();
       gsap.to(materials[index].uniforms.uTransitionProgress, {
         value: 0.0,
         duration: 1.0,
@@ -365,17 +375,17 @@ const UnwovenScene = ({ projects, scrollEnabled = true, layoutSyncRef }) => {
     });
 
     const targetMaterial = materials[index];
-    const { id, slug } = projects[index];
+    const { slug } = projects[index];
     const src = images[index];
-    import("@/components/transition/TransitionOverlay").then((m) =>
-      m.triggerTransition(null, src, id),
-    );
+    const href = `/works/${slug}`;
+    router.prefetch(href);
+    prepareProjectTransition(src);
     gsap.to(targetMaterial.uniforms.uTransitionProgress, {
       value: 1,
       duration: 1.0,
       ease: "power3.inOut",
       onComplete: () => {
-        router.push(`/works/${slug}`);
+        coverWithProjectImage().then(() => router.push(href));
       },
     });
   };

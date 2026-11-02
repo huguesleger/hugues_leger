@@ -2,25 +2,27 @@ import { notFound } from "next/navigation";
 import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import WorkDetail from "@/components/work-detail/WorkDetail";
-import { WORKS, getWork } from "@/lib/works";
+import WorkPreview from "@/components/work-detail/WorkPreview";
+import { getProject, getProjectSlugs } from "@/lib/projects";
 
-export function generateStaticParams() {
-  return WORKS.map((project) => ({ slug: project.slug }));
+export async function generateStaticParams() {
+  const slugs = await getProjectSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const data = getWork(slug);
+  const data = await getProject(slug);
   if (!data) return {};
   return {
     title: data.project.title,
-    description: `${data.project.title}, ${data.project.category.toLowerCase()} (${data.project.annee}).`,
+    description: `${data.project.title}, ${data.project.category.toLowerCase()} (${data.project.year}).`,
   };
 }
 
 export default async function WorkPage({ params }) {
   const { slug } = await params;
-  const data = getWork(slug);
+  const data = await getProject(slug);
   if (!data) notFound();
 
   const { project } = data;
@@ -28,11 +30,7 @@ export default async function WorkPage({ params }) {
   return (
     <>
       <main className="page-work">
-        <figure className="work-preview">
-          {/* Même URL que l'image de transition, sinon elle saute à l'arrivée. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={project.image} alt={project.title} />
-        </figure>
+        <WorkPreview src={project.image} alt={project.title} />
         <WorkDetail {...data}>
           <BackButton slug={project.slug} src={project.image} />
         </WorkDetail>

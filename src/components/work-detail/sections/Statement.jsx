@@ -1,22 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getScrollWrapper } from "@/lib/scroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// "Une *nuit sans fin*" → [{ word: "Une" }, { word: "nuit", strong }, …]
-function parseStatement(text) {
-  const words = text.split(/(\*[^*]+\*)/).flatMap((chunk) => {
-    const strong = chunk.startsWith("*") && chunk.endsWith("*");
-    const clean = strong ? chunk.slice(1, -1) : chunk;
-    return clean
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((word) => ({ word, strong }));
-  });
+// Structured Text DatoCMS → [{ word: "Une" }, { word: "NUIT", strong }, …]
+// Chaque paragraphe commence par un retour à la ligne (`breakBefore`).
+function parseStatement(document) {
+  const paragraphs = (document?.children ?? []).filter((node) => node.type === "paragraph");
+  const words = paragraphs.flatMap((paragraph, p) =>
+    paragraph.children
+      .filter((node) => node.type === "span")
+      .flatMap((span) => {
+        const strong = span.marks?.includes("strong") ?? false;
+        return span.value
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((word) => ({ word, strong }));
+      })
+      .map((item, i) => (p > 0 && i === 0 ? { ...item, breakBefore: true } : item)),
+  );
 
   // La ponctuation seule (« . », « , ») reste collée au mot précédent.
   return words.reduce((acc, item) => {
@@ -30,9 +36,9 @@ function parseStatement(text) {
   }, []);
 }
 
-export default function Statement({ text }) {
+export default function Statement({ document }) {
   const sectionRef = useRef(null);
-  const words = useMemo(() => parseStatement(text), [text]);
+  const words = useMemo(() => parseStatement(document), [document]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -67,11 +73,14 @@ export default function Statement({ text }) {
     <section ref={sectionRef} className="work-statement">
       <span className="work-section-label">Intention</span>
       <p className="work-statement__text">
-        {words.map(({ word, strong, after }, i) => (
-          <span key={i} className="work-statement__word">
-            {strong ? <strong>{word}</strong> : word}
-            {after}{" "}
-          </span>
+        {words.map(({ word, strong, after, breakBefore }, i) => (
+          <Fragment key={i}>
+            {breakBefore && <br />}
+            <span className="work-statement__word">
+              {strong ? <strong>{word}</strong> : word}
+              {after}{" "}
+            </span>
+          </Fragment>
         ))}
       </p>
     </section>

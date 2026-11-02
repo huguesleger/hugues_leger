@@ -12,7 +12,6 @@ import { getIntroGate } from "@/lib/introGate";
 import {
   WORKS_CONFIG,
   WORKS_INTERACTIVE_PROGRESS,
-  WORKS_TRANSITION_TARGET_HEIGHT,
   getArcTransform,
   getLineTransform,
   getUnrolledX,
@@ -23,6 +22,12 @@ import {
   wrap,
 } from "@/lib/worksLayout";
 import { stepWorksScroll } from "@/hooks/useWorksScroll";
+import { PROJECT_HERO_HEIGHT } from "@/lib/projectHero";
+import {
+  coverWithProjectImage,
+  prepareProjectTransition,
+  releaseProjectTransition,
+} from "@/components/transition/TransitionOverlay";
 import { WORKS_FRAGMENT_SHADER, WORKS_VERTEX_SHADER } from "./worksShaders";
 
 export const WORKS_STORAGE = {
@@ -184,6 +189,8 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
 
     let frame = requestAnimationFrame(() => {
       frame = requestAnimationFrame(() => {
+        // La carte agrandie est peinte sous l'image de transition : elle prend le relais.
+        releaseProjectTransition();
         gsap.to(cards[index].material.uniforms.uTransition, {
           value: 0,
           duration: 1,
@@ -240,15 +247,17 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       gsap.to(other.fade, { value: 0, duration: 0.4, ease: "power2.out" });
     });
 
-    import("@/components/transition/TransitionOverlay").then((m) =>
-      m.triggerTransition(null, project.image, project.id),
-    );
+    const href = `/works/${project.slug}`;
+    router.prefetch(href);
+    prepareProjectTransition(project.image);
 
     gsap.to(card.material.uniforms.uTransition, {
       value: 1,
       duration: 1,
       ease: "power3.inOut",
-      onComplete: () => router.push(`/works/${project.slug}`),
+      onComplete: () => {
+        coverWithProjectImage().then(() => router.push(href));
+      },
     });
   };
 
@@ -308,7 +317,6 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       group.rotation.z = arcAmount * WORKS_CONFIG.arcRoll;
     }
 
-    const targetHeight = Math.min(WORKS_TRANSITION_TARGET_HEIGHT, size.height);
     const { arc: arcDims, line: lineDims } = dims;
     const arcScale = arcDims.pitch / lineDims.pitch;
     const cardWidth = lerp(arcDims.width, lineDims.width, progress);
@@ -350,8 +358,8 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       uniforms.uOpacity.value = visibility * card.fade.value;
       uniforms.uHover.value += ((isHovered ? 1 : 0) - uniforms.uHover.value) * 0.1;
       uniforms.uCardSize.value.set(cardWidth, cardHeight);
-      uniforms.uTargetSize.value.set(size.width, targetHeight);
-      uniforms.uTargetPosition.value.set(0, size.height / 2 - targetHeight / 2);
+      uniforms.uTargetSize.value.set(size.width, PROJECT_HERO_HEIGHT);
+      uniforms.uTargetPosition.value.set(0, size.height / 2 - PROJECT_HERO_HEIGHT / 2);
       mesh.renderOrder = uniforms.uTransition.value > 0 ? 10 : 0;
 
       if (Math.abs(u) < activeDistance) {
