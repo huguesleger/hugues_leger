@@ -155,14 +155,6 @@ export const WORKS_FRAGMENT_SHADER = `
   const vec3  LIGHT_DIR   = normalize(vec3(-0.4, 0.5, 1.0));
   const float LIGHT_GLOSS = 48.0;
   const float LIGHT_SPEC  = 0.35;
-  const float LIGHT_DIFF  = 0.12;
-
-  float sheetShade(float wx, vec2 uv) {
-    if (uSheetD < 0.001) return 0.0;
-    float d = clamp((uSheetD - sheetZ(wx)) / (2.0 * uSheetD), 0.0, 1.0) * uSheetP;
-    d += (uHover * uDent * uCardSize.y * sheetDome(uv)) / (2.0 * uSheetD);
-    return clamp(d, 0.0, 1.0);
-  }
 
   float sheetOffset(float wx, vec2 uv) {
     return sheetZ(wx) * uSheetP
@@ -185,8 +177,6 @@ export const WORKS_FRAGMENT_SHADER = `
   }
 
   vec3 sheetLit(vec3 col, vec3 n, vec3 v, float amt) {
-    float d = dot(n, LIGHT_DIR) * 0.5 + 0.5;
-    col *= 1.0 - LIGHT_DIFF * amt * (1.0 - d);
     vec3 h = normalize(LIGHT_DIR + v);
     return col + pow(max(dot(n, h), 0.0), LIGHT_GLOSS) * LIGHT_SPEC * amt;
   }
@@ -225,9 +215,6 @@ export const WORKS_FRAGMENT_SHADER = `
     }
 
     if (uSheetP > 0.001) {
-      float depth = sheetShade(vFlat.x, vUv);
-      color = mix(color, vec3(0.059), uShade * 0.8 * depth);
-
       vec3 p = vFlat + vec3(0.0, 0.0, sheetOffset(vFlat.x, vUv));
       color = sheetLit(color, sheetNormal(vFlat.x), normalize(cameraPosition - p), uSheetP);
     }

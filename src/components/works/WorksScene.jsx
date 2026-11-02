@@ -85,7 +85,6 @@ export default function WorksScene({ projects, scrollRef, syncRef }) {
       tex.generateMipmaps = false;
       tex.minFilter = THREE.LinearFilter;
       tex.magFilter = THREE.LinearFilter;
-      tex.colorSpace = THREE.SRGBColorSpace;
       tex.needsUpdate = true;
 
       const isTarget = transitionState.isReturning && transitionState.targetIndex === i;
